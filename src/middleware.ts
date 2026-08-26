@@ -54,6 +54,6 @@ export const config = {
      * Run on every page except static assets, images and the public
      * homeowner tracking links (which are intentionally login-free).
      */
-    "/((?!_next/static|_next/image|favicon.ico|icons|track|api/cron|api/stripe|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icons|track|quote|api/cron|api/stripe|api/quote|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
