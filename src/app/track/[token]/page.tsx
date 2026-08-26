@@ -1,9 +1,7 @@
-import { notFound } from "next/navigation";
-import { createServiceClient } from "@/lib/supabase/service";
-import { PERMIT_STAGES, getStageByKey, getStageIndex } from "@/lib/stages";
+import { createClient } from "@supabase/supabase-js";
+import { PERMIT_STAGES } from "@/lib/stages";
 import { StageStepper } from "@/components/homeowner/stage-stepper";
 import { CurrentStageCard } from "@/components/homeowner/current-stage-card";
-import { ActivityTimeline } from "@/components/homeowner/activity-timeline";
 import { ContactCard } from "@/components/homeowner/contact-card";
 import { BrandHeader } from "@/components/homeowner/brand-header";
 import { format } from "date-fns";
@@ -12,136 +10,146 @@ interface PageProps {
   params: { token: string };
 }
 
+// Simple server-side supabase client using service role
+function getServiceClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !key) {
+    throw new Error("Missing Supabase environment variables");
+  }
+
+  return createClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
 export default async function TrackPage({ params }: PageProps) {
-  const { token } = params;
+  const token = params.token;
 
-  if (!token || token.length < 16) {
-    notFound();
+  if (!token || token.length < 20) {
+    return <InvalidLink />;
   }
 
-  const supabase = createServiceClient();
+  try {
+    const supabase = getServiceClient();
 
-  // Use the secure function we created earlier, or fall back to direct query
-  const { data: link } = await supabase
-    .from("homeowner_links")
-    .select("job_id, token, last_viewed_at")
-    .eq("token", token)
-    .maybeSingle();
+    // 1. Find the link
+    const { data: link, error: linkError } = await supabase
+      .from("homeowner_links")
+      .select("job_id, token")
+      .eq("token", token)
+      .maybeSingle();
 
-  if (!link) {
-    notFound();
-  }
+    if (linkError || !link) {
+      return <InvalidLink />;
+    }
 
-  const { data: job } = await supabase
-    .from("jobs")
-    .select("*")
-    .eq("id", link.job_id)
-    .single();
+    // 2. Get the job
+    const { data: job, error: jobError } = await supabase
+      .from("jobs")
+      .select("*")
+      .eq("id", link.job_id)
+      .single();
 
-  if (!job) {
-    notFound();
-  }
+    if (jobError || !job) {
+      return <InvalidLink />;
+    }
 
-  // Update last viewed
-  await supabase
-    .from("homeowner_links")
-    .update({ last_viewed_at: new Date().toISOString() })
-    .eq("token", token);
+    // Update last viewed (fire and forget)
+    supabase
+      .from("homeowner_links")
+      .update({ last_viewed_at: new Date().toISOString() })
+      .eq("token", token)
+      .then(() => {});
 
-  // Fetch documents that are customer-visible
-  const { data: documents } = await supabase
-    .from("documents")
-    .select("*")
-    .eq("job_id", job.id)
-    .eq("is_customer_visible", true)
-    .order("created_at", { ascending: false });
+    // Map stage to one of our 8 stages (very forgiving)
+    const stageText = (job.stage || "").toLowerCase();
+    let currentIndex = 2; // default to "Under review"
 
-  // Map current stage (fallback to first stage if key doesn't match)
-  const stageKey =
-    job.stage?.toLowerCase().replace(/\s+/g, "_") || "getting_ready";
-  const currentStage = getStageByKey(stageKey);
-  const currentIndex = getStageIndex(currentStage.key);
+    if (stageText.includes("ready") || stageText.includes("getting")) currentIndex = 0;
+    else if (stageText.includes("submit")) currentIndex = 1;
+    else if (stageText.includes("review")) currentIndex = 2;
+    else if (stageText.includes("correct")) currentIndex = 3;
+    else if (stageText.includes("approv")) currentIndex = 4;
+    else if (stageText.includes("inspect")) currentIndex = 5;
+    else if (stageText.includes("final")) currentIndex = 6;
+    else if (stageText.includes("close") || stageText.includes("complete") || stageText.includes("done")) currentIndex = 7;
 
-  const brandName =
-    job.brand === "The Permit Closer" ? "The Permit Closer" : "Majestic Permits";
+    const currentStage = PERMIT_STAGES[currentIndex];
+    const brandName = job.brand === "The Permit Closer" ? "The Permit Closer" : "Majestic Permits";
 
-  return (
-    <div className="min-h-screen bg-surface-light dark:bg-background-dark">
-      <BrandHeader brand={brandName} />
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
+        <BrandHeader brand={brandName} />
 
-      <main className="mx-auto max-w-3xl px-4 pb-20 pt-8 sm:px-6">
-        {/* Address + meta */}
-        <div className="mb-10 text-center">
-          <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            Project status
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-navy dark:text-white sm:text-4xl">
-            {job.property_address}
-          </h1>
-          {job.permit_number && (
-            <p className="mt-2 text-base text-muted-foreground">
-              Permit #{job.permit_number}
+        <main className="mx-auto max-w-3xl px-4 pb-20 pt-8 sm:px-6">
+          {/* Address */}
+          <div className="mb-10 text-center">
+            <p className="text-sm font-medium uppercase tracking-wider text-slate-500">
+              Project status
             </p>
-          )}
-          {job.permit_eta && (
-            <p className="mt-1 text-base font-medium text-gold">
-              Estimated ready:{" "}
-              {format(new Date(job.permit_eta), "MMMM d, yyyy")}
-            </p>
-          )}
-        </div>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0B1F3F] dark:text-white sm:text-4xl">
+              {job.property_address || "Your Project"}
+            </h1>
+            {job.permit_number && (
+              <p className="mt-2 text-base text-slate-500">
+                Permit #{job.permit_number}
+              </p>
+            )}
+            {job.permit_eta && (
+              <p className="mt-1 text-base font-medium text-[#C9A24B]">
+                Estimated ready: {format(new Date(job.permit_eta), "MMMM d, yyyy")}
+              </p>
+            )}
+          </div>
 
-        {/* Visual stepper */}
-        <div className="mb-12">
-          <StageStepper
-            stages={PERMIT_STAGES}
-            currentIndex={currentIndex}
+          {/* Stepper */}
+          <div className="mb-12">
+            <StageStepper stages={PERMIT_STAGES} currentIndex={currentIndex} />
+          </div>
+
+          {/* Current stage card */}
+          <CurrentStageCard
+            stage={currentStage}
+            stageNumber={currentIndex + 1}
+            totalStages={PERMIT_STAGES.length}
+            customNote={job.notes}
+            nextStep={job.next_step}
+            permitEta={job.permit_eta}
           />
-        </div>
 
-        {/* Big "You are here" card */}
-        <CurrentStageCard
-          stage={currentStage}
-          stageNumber={currentIndex + 1}
-          totalStages={PERMIT_STAGES.length}
-          customNote={job.notes}
-          nextStep={job.next_step}
-          permitEta={job.permit_eta}
-        />
+          {/* Contact */}
+          <div className="mt-16">
+            <ContactCard brand={brandName} />
+          </div>
+        </main>
+      </div>
+    );
+  } catch (err) {
+    console.error("Track page error:", err);
+    return <InvalidLink />;
+  }
+}
 
-        {/* Documents */}
-        {documents && documents.length > 0 && (
-          <section className="mt-12">
-            <h2 className="mb-4 text-xl font-semibold text-navy dark:text-white">
-              Documents
-            </h2>
-            <ul className="space-y-2">
-              {documents.map((doc: any) => (
-                <li
-                  key={doc.id}
-                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-5 py-4 dark:border-slate-800 dark:bg-surface-dark"
-                >
-                  <span className="font-medium">{doc.file_name}</span>
-                  <a
-                    href={`/api/documents/${doc.id}`}
-                    className="text-sm font-medium text-navy underline-offset-4 hover:underline dark:text-gold"
-                  >
-                    Download
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Activity / past updates */}
-        <ActivityTimeline jobId={job.id} />
-
-        {/* Contact */}
-        <div className="mt-16">
-          <ContactCard brand={brandName} />
-        </div>
-      </main>
+function InvalidLink() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-[#0A0F1C]">
+      <div className="max-w-md text-center">
+        <h1 className="text-3xl font-bold text-[#0B1F3F] dark:text-white">
+          This link isn&apos;t valid
+        </h1>
+        <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
+          The tracking link you used may have expired or been typed incorrectly.
+          Please contact Majestic Permits for a new link.
+        </p>
+        <a
+          href="mailto:hello@majesticpermits.com"
+          className="mt-8 inline-flex rounded-2xl bg-[#0B1F3F] px-6 py-3 text-sm font-semibold text-white"
+        >
+          Email us
+        </a>
+      </div>
     </div>
   );
 }
