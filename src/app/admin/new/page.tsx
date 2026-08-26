@@ -30,6 +30,8 @@ export default function NewJobPage() {
     const payload = {
       client_type: formData.get("client_type") as string,
       contractor_id: (formData.get("contractor_id") as string) || null,
+      jurisdiction: (formData.get("jurisdiction") as string) || null,
+      building_dept_url: (formData.get("building_dept_url") as string) || null,
       brand: formData.get("brand") as string,
       property_address: formData.get("property_address") as string,
       homeowner_name: formData.get("homeowner_name") as string,
@@ -136,6 +138,17 @@ export default function NewJobPage() {
             <div>
               <label className="mb-1.5 block text-sm font-medium">Trade type</label>
               <input name="trade_type" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#111827]" placeholder="Windows, Roofing, etc." />
+            </div>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">Jurisdiction</label>
+              <input name="jurisdiction" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#111827]" placeholder="City of Hialeah" />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">Building dept. portal URL</label>
+              <input name="building_dept_url" type="url" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#111827]" placeholder="https://hialeahfl.gov/permits" />
             </div>
           </div>
 

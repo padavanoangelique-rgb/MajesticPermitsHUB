@@ -17,6 +17,10 @@ const ALLOWED_FIELDS = [
   "permit_eta",
   "next_step",
   "notes",
+  "trade_type",
+  "jurisdiction",
+  "building_dept_url",
+  "noc_status",
 ] as const;
 
 export async function POST(req: Request) {

@@ -6,6 +6,7 @@ import { CopyLinkButton } from "@/components/admin/copy-link-button";
 import { UpdateStageForm } from "@/components/admin/update-stage-form";
 import { SendQuoteForm } from "@/components/admin/send-quote-form";
 import { AssignContractorForm } from "@/components/admin/assign-contractor-form";
+import { JurisdictionForm } from "@/components/admin/jurisdiction-form";
 import { SITE_URL } from "@/lib/email";
 
 interface PageProps {
@@ -116,6 +117,21 @@ export default async function JobDetailPage({ params }: PageProps) {
             jobId={job.id}
             currentContractorId={job.contractor_id ?? null}
             contractors={contractors || []}
+          />
+        </div>
+
+        {/* Jurisdiction, portal URL, NOC status */}
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+            Jurisdiction &amp; NOC
+          </h2>
+          <JurisdictionForm
+            jobId={job.id}
+            initial={{
+              jurisdiction: job.jurisdiction ?? null,
+              building_dept_url: job.building_dept_url ?? null,
+              noc_status: job.noc_status ?? null,
+            }}
           />
         </div>
 
