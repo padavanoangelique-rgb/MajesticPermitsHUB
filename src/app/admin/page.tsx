@@ -33,7 +33,12 @@ export default async function AdminPage() {
             </div>
           </div>
           <Link
-            href="/admin/new"
+            href="/admin/inspections" className="text-sm font-medium text-slate-600 hover:text-[#0B1F3F] dark:text-slate-300"
+            >
+              Inspections
+            </Link>
+            <Link
+              href="/admin/new"
             className="rounded-xl bg-[#0B1F3F] px-4 py-2 text-sm font-semibold text-white hover:bg-[#152C56]"
           >
             + New Job

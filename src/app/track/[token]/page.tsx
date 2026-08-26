@@ -4,13 +4,13 @@ import { StageStepper } from "@/components/homeowner/stage-stepper";
 import { CurrentStageCard } from "@/components/homeowner/current-stage-card";
 import { ContactCard } from "@/components/homeowner/contact-card";
 import { BrandHeader } from "@/components/homeowner/brand-header";
+import { RequestInspection } from "@/components/homeowner/request-inspection";
 import { format } from "date-fns";
 
 interface PageProps {
   params: { token: string };
 }
 
-// Simple server-side supabase client using service role
 function getServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -34,7 +34,6 @@ export default async function TrackPage({ params }: PageProps) {
   try {
     const supabase = getServiceClient();
 
-    // 1. Find the link
     const { data: link, error: linkError } = await supabase
       .from("homeowner_links")
       .select("job_id, token")
@@ -45,7 +44,6 @@ export default async function TrackPage({ params }: PageProps) {
       return <InvalidLink />;
     }
 
-    // 2. Get the job
     const { data: job, error: jobError } = await supabase
       .from("jobs")
       .select("*")
@@ -56,16 +54,15 @@ export default async function TrackPage({ params }: PageProps) {
       return <InvalidLink />;
     }
 
-    // Update last viewed (fire and forget)
+    // Update last viewed
     supabase
       .from("homeowner_links")
       .update({ last_viewed_at: new Date().toISOString() })
       .eq("token", token)
       .then(() => {});
 
-    // Map stage to one of our 8 stages (very forgiving)
     const stageText = (job.stage || "").toLowerCase();
-    let currentIndex = 2; // default to "Under review"
+    let currentIndex = 2;
 
     if (stageText.includes("ready") || stageText.includes("getting")) currentIndex = 0;
     else if (stageText.includes("submit")) currentIndex = 1;
@@ -84,7 +81,6 @@ export default async function TrackPage({ params }: PageProps) {
         <BrandHeader brand={brandName} />
 
         <main className="mx-auto max-w-3xl px-4 pb-20 pt-8 sm:px-6">
-          {/* Address */}
           <div className="mb-10 text-center">
             <p className="text-sm font-medium uppercase tracking-wider text-slate-500">
               Project status
@@ -104,12 +100,10 @@ export default async function TrackPage({ params }: PageProps) {
             )}
           </div>
 
-          {/* Stepper */}
           <div className="mb-12">
             <StageStepper stages={PERMIT_STAGES} currentIndex={currentIndex} />
           </div>
 
-          {/* Current stage card */}
           <CurrentStageCard
             stage={currentStage}
             stageNumber={currentIndex + 1}
@@ -119,7 +113,9 @@ export default async function TrackPage({ params }: PageProps) {
             permitEta={job.permit_eta}
           />
 
-          {/* Contact */}
+          {/* Inspection request button */}
+          <RequestInspection jobId={job.id} token={token} />
+
           <div className="mt-16">
             <ContactCard brand={brandName} />
           </div>
