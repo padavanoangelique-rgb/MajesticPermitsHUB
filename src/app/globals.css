@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 215 55% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 55% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 55% 15%;
+    --primary: 215 70% 15%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 215 55% 15%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 15% 45%;
+    --accent: 43 55% 54%;
+    --accent-foreground: 215 70% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 215 70% 15%;
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 222 40% 7%;
+    --foreground: 210 20% 96%;
+    --card: 222 30% 10%;
+    --card-foreground: 210 20% 96%;
+    --popover: 222 30% 10%;
+    --popover-foreground: 210 20% 96%;
+    --primary: 210 20% 96%;
+    --primary-foreground: 215 70% 15%;
+    --secondary: 217 25% 15%;
+    --secondary-foreground: 210 20% 96%;
+    --muted: 217 25% 15%;
+    --muted-foreground: 215 15% 60%;
+    --accent: 43 55% 54%;
+    --accent-foreground: 215 70% 15%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 217 25% 18%;
+    --input: 217 25% 18%;
+    --ring: 43 55% 54%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+/* Print styles for homeowner tracker */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
