@@ -41,8 +41,20 @@ interface Ctx {
   brand: "Majestic Permits" | "The Permit Closer";
 }
 
+/** Standard PDF fonts only support WinAnsi. Replace anything they can't encode. */
+function sanitize(text: string): string {
+  return text
+    .replace(/[\u2014\u2013]/g, "-") // em/en dash
+    .replace(/[\u2018\u2019]/g, "'") // curly single quotes
+    .replace(/[\u201C\u201D]/g, '"') // curly double quotes
+    .replace(/[\u2026]/g, "...") // ellipsis
+    .replace(/[\u2192\u2197\u2198\u2199\u2190]/g, "->") // arrows
+    .replace(/[\u00B7]/g, "·") // middot is WinAnsi-safe
+    .replace(/[^\x00-\xFF]/g, "?"); // catch-all
+}
+
 function fmtDate(iso?: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     return new Date(iso).toLocaleDateString("en-US", {
       month: "short",
@@ -50,12 +62,13 @@ function fmtDate(iso?: string | null): string {
       year: "numeric",
     });
   } catch {
-    return "—";
+    return "-";
   }
 }
 
 function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
   if (!text) return [""];
+  text = sanitize(text);
   const words = text.split(/\s+/);
   const lines: string[] = [];
   let current = "";
@@ -105,21 +118,21 @@ function drawHeader(ctx: Ctx) {
     color: GOLD,
   });
 
-  page.drawText(ctx.brand, {
+  page.drawText(sanitize(ctx.brand), {
     x: MARGIN,
     y: PAGE_H - 42,
     size: 20,
     font: fonts.bold,
     color: rgb(1, 1, 1),
   });
-  page.drawText(ctx.title, {
+  page.drawText(sanitize(ctx.title), {
     x: MARGIN,
     y: PAGE_H - 62,
     size: 12,
     font: fonts.regular,
     color: GOLD,
   });
-  page.drawText(ctx.subtitle, {
+  page.drawText(sanitize(ctx.subtitle), {
     x: MARGIN,
     y: PAGE_H - 78,
     size: 9,
@@ -133,7 +146,9 @@ function drawHeader(ctx: Ctx) {
 function drawFooter(ctx: Ctx, pageNum: number, totalPages: number) {
   const { page, fonts } = ctx;
   page.drawText(
-    `Majestic Permits · Confidential · Generated ${fmtDate(new Date().toISOString())}`,
+    sanitize(
+      `Majestic Permits · Confidential · Generated ${fmtDate(new Date().toISOString())}`
+    ),
     {
       x: MARGIN,
       y: 24,
@@ -161,7 +176,8 @@ function ensureRoom(ctx: Ctx, needed: number) {
 
 function drawSectionTitle(ctx: Ctx, title: string, count: number) {
   ensureRoom(ctx, 40);
-  ctx.page.drawText(title, {
+  const safeTitle = sanitize(title);
+  ctx.page.drawText(safeTitle, {
     x: MARGIN,
     y: ctx.y,
     size: 13,
@@ -171,14 +187,14 @@ function drawSectionTitle(ctx: Ctx, title: string, count: number) {
   const badge = `${count} ${count === 1 ? "permit" : "permits"}`;
   const bw = ctx.fonts.regular.widthOfTextAtSize(badge, 9);
   ctx.page.drawRectangle({
-    x: MARGIN + ctx.fonts.bold.widthOfTextAtSize(title, 13) + 10,
+    x: MARGIN + ctx.fonts.bold.widthOfTextAtSize(safeTitle, 13) + 10,
     y: ctx.y - 3,
     width: bw + 12,
     height: 16,
     color: rgb(0.94, 0.96, 1),
   });
   ctx.page.drawText(badge, {
-    x: MARGIN + ctx.fonts.bold.widthOfTextAtSize(title, 13) + 16,
+    x: MARGIN + ctx.fonts.bold.widthOfTextAtSize(safeTitle, 13) + 16,
     y: ctx.y + 1,
     size: 9,
     font: ctx.fonts.regular,
@@ -217,7 +233,7 @@ function drawTable(ctx: Ctx, columns: Column[], rows: JobRow[]) {
   });
   let x = MARGIN;
   for (const col of columns) {
-    ctx.page.drawText(col.label, {
+    ctx.page.drawText(sanitize(col.label), {
       x: x + pad,
       y: ctx.y - 10,
       size: 9,
@@ -232,11 +248,13 @@ function drawTable(ctx: Ctx, columns: Column[], rows: JobRow[]) {
   rows.forEach((row, idx) => {
     // Compute wrapped lines per column so we know the row height
     const perColLines: string[][] = columns.map((col) => {
+      // For link cells we only show the clickable label, not the raw URL.
+      if (col.isLink) return [""];
       let text = "";
       if (col.key === "index") text = String(idx + 1);
       else {
         const v = row[col.key];
-        text = v == null || v === "" ? "—" : String(v);
+        text = v == null || v === "" ? "-" : String(v);
       }
       return wrapText(text, ctx.fonts.regular, size, col.width - pad * 2);
     });
@@ -262,7 +280,7 @@ function drawTable(ctx: Ctx, columns: Column[], rows: JobRow[]) {
       const lines = perColLines[colIdx];
       let ly = ctx.y - 4;
       lines.forEach((line) => {
-        ctx.page.drawText(line, {
+        ctx.page.drawText(sanitize(line), {
           x: cx + pad,
           y: ly,
           size,
@@ -272,19 +290,20 @@ function drawTable(ctx: Ctx, columns: Column[], rows: JobRow[]) {
         ly -= size + 3;
       });
 
-      // Building-dept link cell: render URL as a clickable annotation
+      // Building-dept link cell: render just a clickable label, no wrapped URL.
       if (col.isLink) {
         const href = col.isLink(row);
         if (href) {
-          const label = "Open portal ↗";
+          const label = "Open portal ->";
+          const labelY = ctx.y - 4 - Math.floor(rowH / 3);
           ctx.page.drawText(label, {
             x: cx + pad,
-            y: ctx.y - 4 - (lines.length - 1) * (size + 3) - (size + 3),
+            y: labelY,
             size,
             font: ctx.fonts.bold,
             color: GOLD,
           });
-          const linkY = ctx.y - 4 - (lines.length - 1) * (size + 3) - (size + 3);
+          const linkY = labelY;
           const linkW = ctx.fonts.bold.widthOfTextAtSize(label, size);
           ctx.page.node.addAnnot(
             ctx.pdf.context.register(
@@ -374,8 +393,9 @@ export async function buildContractorWeeklyPdf(opts: {
   );
 
   // Intro paragraph
-  const intro =
-    "Here is where each of your open permits stands this week, and the specific next step required to keep it moving. Permits marked complete or closed have been excluded.";
+  const intro = sanitize(
+    "Here is where each of your open permits stands this week, and the specific next step required to keep it moving. Permits marked complete or closed have been excluded."
+  );
   const lines = wrapText(intro, ctx.fonts.regular, 10, CONTENT_W);
   for (const line of lines) {
     ctx.page.drawText(line, {
@@ -390,7 +410,7 @@ export async function buildContractorWeeklyPdf(opts: {
   ctx.y -= 8;
 
   if (opts.jobs.length === 0) {
-    ctx.page.drawText("No open permits this week. Have a great one.", {
+    ctx.page.drawText(sanitize("No open permits this week. Have a great one."), {
       x: MARGIN,
       y: ctx.y,
       size: 11,
@@ -485,7 +505,7 @@ export async function buildAdminWeeklyPdf(opts: {
   // NOC section (always show even when empty)
   drawSectionTitle(ctx, "NOCs needing attention", opts.nocsToRecord.length);
   if (opts.nocsToRecord.length === 0) {
-    ctx.page.drawText("Nothing outstanding. NOCs are current.", {
+    ctx.page.drawText(sanitize("Nothing outstanding. NOCs are current."), {
       x: MARGIN,
       y: ctx.y,
       size: 10,
