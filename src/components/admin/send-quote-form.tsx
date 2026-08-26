@@ -11,11 +11,13 @@ export function SendQuoteForm({ jobId }: { jobId: string }) {
   const [error, setError] = useState("");
   const [payUrl, setPayUrl] = useState<string | null>(null);
   const [emailed, setEmailed] = useState(false);
+  const [emailError, setEmailError] = useState("");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setEmailError("");
     setPayUrl(null);
 
     try {
@@ -34,7 +36,7 @@ export function SendQuoteForm({ jobId }: { jobId: string }) {
 
       setPayUrl(data.pay_url || null);
       setEmailed(Boolean(data.emailed));
-      if (data.email_error && !data.emailed) setError(data.email_error);
+      setEmailError(data.emailed ? "" : data.email_error || "");
       setAmount("");
       setDescription("");
       router.refresh();
@@ -95,6 +97,13 @@ export function SendQuoteForm({ jobId }: { jobId: string }) {
           <p className="font-medium">
             Quote created{emailed ? " and emailed to the client" : ""}.
           </p>
+          {!emailed && (
+            <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+              The email could not be sent
+              {emailError ? ` (${emailError})` : ""} — copy the payment link
+              below and send it to the client manually.
+            </p>
+          )}
           <a
             href={payUrl}
             target="_blank"
