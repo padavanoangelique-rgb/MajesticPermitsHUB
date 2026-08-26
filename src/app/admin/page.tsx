@@ -13,7 +13,7 @@ export default async function AdminPage() {
 
   const { data: jobs } = await supabase
     .from("jobs")
-    .select("id, property_address, client_type, brand, stage, sub_status, permit_number, permit_eta, homeowner_name, updated_at")
+    .select("id, property_address, client_type, brand, stage, sub_status, permit_number, submitted_date, permit_eta, homeowner_name, updated_at")
     .order("updated_at", { ascending: false });
 
   return (
@@ -66,6 +66,7 @@ export default async function AdminPage() {
                 <th className="px-5 py-3">Client</th>
                 <th className="px-5 py-3">Stage</th>
                 <th className="px-5 py-3">Permit #</th>
+                <th className="px-5 py-3">Submitted</th>
                 <th className="px-5 py-3">ETA</th>
                 <th className="px-5 py-3"></th>
               </tr>
@@ -89,7 +90,12 @@ export default async function AdminPage() {
                     </span>
                   </td>
                   <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
-                    {job.permit_number || "—"}
+                    {job.permit_number || "Pending"}
+                  </td>
+                  <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
+                    {job.submitted_date
+                      ? format(new Date(job.submitted_date), "MMM d, yyyy")
+                      : "—"}
                   </td>
                   <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
                     {job.permit_eta
@@ -108,7 +114,7 @@ export default async function AdminPage() {
               ))}
               {(!jobs || jobs.length === 0) && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-slate-500">
+                  <td colSpan={7} className="px-5 py-12 text-center text-slate-500">
                     No jobs yet. Create your first one.
                   </td>
                 </tr>

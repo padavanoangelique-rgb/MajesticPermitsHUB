@@ -16,6 +16,7 @@ const ALLOWED_FIELDS = [
   "sub_status",
   "permit_number",
   "permit_eta",
+  "submitted_date",
   "next_step",
   "notes",
   "trade_type",
