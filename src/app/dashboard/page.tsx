@@ -1,25 +1,17 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { format } from "date-fns";
+import { requireUser } from "@/lib/auth-guard";
+import { getContractorForUser } from "@/lib/contractor";
+
+export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+  const user = await requireUser("/dashboard");
   const supabase = createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  // Find the contractor record linked to this auth user
-  const { data: contractor } = await supabase
-    .from("contractors")
-    .select("id, name, company_name")
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
+  const contractor = await getContractorForUser(user);
 
   // If no contractor record, show a friendly message
   if (!contractor) {
@@ -55,9 +47,14 @@ export default async function DashboardPage() {
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0B1F3F] text-sm font-bold text-white">
-              M
-            </div>
+            <Image
+              src="/icons/icon-512.png"
+              alt="Majestic Permits"
+              width={36}
+              height={36}
+              priority
+              className="rounded-lg"
+            />
             <div>
               <p className="text-sm font-semibold text-[#0B1F3F] dark:text-white">
                 {contractor.company_name || contractor.name}
@@ -95,6 +92,11 @@ export default async function DashboardPage() {
                 <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
                   {job.stage}
                 </span>
+                {job.sub_status && (
+                  <span className="inline-flex rounded-full bg-[#0B1F3F]/5 px-2.5 py-1 text-xs font-medium text-[#0B1F3F] dark:bg-[#C9A24B]/15 dark:text-[#C9A24B]">
+                    {job.sub_status}
+                  </span>
+                )}
               </div>
               {job.permit_eta && (
                 <p className="mt-3 text-sm text-[#C9A24B]">
@@ -111,8 +113,12 @@ export default async function DashboardPage() {
 
           {(!jobs || jobs.length === 0) && (
             <div className="col-span-full rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-700 dark:bg-[#111827]">
-              <p className="text-slate-500">
-                No projects assigned yet.
+              <p className="font-medium text-[#0B1F3F] dark:text-white">
+                No projects assigned yet
+              </p>
+              <p className="mt-2 text-sm text-slate-500">
+                As soon as Majestic Permits assigns a permit to your company, it
+                will appear here with live status and inspection updates.
               </p>
             </div>
           )}

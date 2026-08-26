@@ -1,17 +1,15 @@
+import { createServiceClient } from "@/lib/supabase/service";
+import { Logo } from "@/components/layout/logo";
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
+import { requireAdmin } from "@/lib/auth-guard";
 import { format } from "date-fns";
 
-function getServiceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
+export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const supabase = getServiceClient();
+  await requireAdmin();
+
+  const supabase = createServiceClient();
 
   const { data: jobs } = await supabase
     .from("jobs")
@@ -23,26 +21,30 @@ export default async function AdminPage() {
       {/* Header */}
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0B1F3F] text-sm font-bold text-white">
-              M
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[#0B1F3F] dark:text-white">Majestic Permits</p>
-              <p className="text-xs text-slate-500">Admin</p>
-            </div>
-          </div>
-          <Link
-            href="/admin/inspections" className="text-sm font-medium text-slate-600 hover:text-[#0B1F3F] dark:text-slate-300"
+          <Logo subtitle="Admin" />
+
+          <nav className="flex items-center gap-3">
+            <Link
+              href="/admin/inspections"
+              className="text-sm font-medium text-slate-600 hover:text-[#0B1F3F] dark:text-slate-300"
             >
               Inspections
             </Link>
             <Link
               href="/admin/new"
-            className="rounded-xl bg-[#0B1F3F] px-4 py-2 text-sm font-semibold text-white hover:bg-[#152C56]"
-          >
-            + New Job
-          </Link>
+              className="rounded-xl bg-[#0B1F3F] px-4 py-2 text-sm font-semibold text-white hover:bg-[#152C56]"
+            >
+              + New Job
+            </Link>
+            <form action="/auth/signout" method="post">
+              <button
+                type="submit"
+                className="text-sm font-medium text-slate-500 hover:text-[#0B1F3F] dark:text-slate-400"
+              >
+                Sign out
+              </button>
+            </form>
+          </nav>
         </div>
       </header>
 

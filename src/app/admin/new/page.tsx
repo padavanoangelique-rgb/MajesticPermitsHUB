@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -8,6 +8,16 @@ export default function NewJobPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [contractors, setContractors] = useState<
+    Array<{ id: string; name: string | null; company_name: string | null }>
+  >([]);
+
+  useEffect(() => {
+    fetch("/api/admin/contractors")
+      .then((r) => (r.ok ? r.json() : { contractors: [] }))
+      .then((d) => setContractors(d.contractors || []))
+      .catch(() => setContractors([]));
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -19,6 +29,7 @@ export default function NewJobPage() {
 
     const payload = {
       client_type: formData.get("client_type") as string,
+      contractor_id: (formData.get("contractor_id") as string) || null,
       brand: formData.get("brand") as string,
       property_address: formData.get("property_address") as string,
       homeowner_name: formData.get("homeowner_name") as string,
@@ -84,6 +95,21 @@ export default function NewJobPage() {
                 <option value="The Permit Closer">The Permit Closer</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium">Assign to contractor</label>
+            <select name="contractor_id" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#111827]">
+              <option value="">Not assigned (homeowner-only job)</option>
+              {contractors.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.company_name || c.name || c.id}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1.5 text-xs text-slate-500">
+              Assigning a contractor makes this job show up in their dashboard.
+            </p>
           </div>
 
           <div>

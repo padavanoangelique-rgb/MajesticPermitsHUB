@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createServiceClient } from "@/lib/supabase/service";
 import { PERMIT_STAGES } from "@/lib/stages";
 import { StageStepper } from "@/components/homeowner/stage-stepper";
 import { CurrentStageCard } from "@/components/homeowner/current-stage-card";
@@ -11,19 +11,6 @@ interface PageProps {
   params: { token: string };
 }
 
-function getServiceClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!url || !key) {
-    throw new Error("Missing Supabase environment variables");
-  }
-
-  return createClient(url, key, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
-
 export default async function TrackPage({ params }: PageProps) {
   const token = params.token;
 
@@ -32,7 +19,7 @@ export default async function TrackPage({ params }: PageProps) {
   }
 
   try {
-    const supabase = getServiceClient();
+    const supabase = createServiceClient();
 
     const { data: link, error: linkError } = await supabase
       .from("homeowner_links")

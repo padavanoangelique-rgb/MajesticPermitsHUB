@@ -1,23 +1,23 @@
+import { createServiceClient } from "@/lib/supabase/service";
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
+import { requireAdmin } from "@/lib/auth-guard";
 import { format } from "date-fns";
 import { CopyLinkButton } from "@/components/admin/copy-link-button";
 import { UpdateStageForm } from "@/components/admin/update-stage-form";
-
-function getServiceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
+import { SendQuoteForm } from "@/components/admin/send-quote-form";
+import { AssignContractorForm } from "@/components/admin/assign-contractor-form";
+import { SITE_URL } from "@/lib/email";
 
 interface PageProps {
   params: { id: string };
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function JobDetailPage({ params }: PageProps) {
-  const supabase = getServiceClient();
+  await requireAdmin();
+
+  const supabase = createServiceClient();
 
   const { data: job } = await supabase
     .from("jobs")
@@ -39,9 +39,18 @@ export default async function JobDetailPage({ params }: PageProps) {
     .eq("job_id", job.id)
     .maybeSingle();
 
-  const trackingUrl = link
-    ? `https://majestic-permits-hub.vercel.app/track/${link.token}`
-    : null;
+  const trackingUrl = link ? `${SITE_URL}/track/${link.token}` : null;
+
+  const { data: contractors } = await supabase
+    .from("contractors")
+    .select("id, name, company_name")
+    .order("company_name", { ascending: true });
+
+  const { data: quotes } = await supabase
+    .from("quotes")
+    .select("id, amount, description, status, paid_at, created_at")
+    .eq("job_id", job.id)
+    .order("created_at", { ascending: false });
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
@@ -95,6 +104,54 @@ export default async function JobDetailPage({ params }: PageProps) {
           <div className="mt-6">
             <UpdateStageForm jobId={job.id} currentStage={job.stage} currentSubStatus={job.sub_status} />
           </div>
+        </div>
+
+
+        {/* Assigned contractor */}
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+            Assigned contractor
+          </h2>
+          <AssignContractorForm
+            jobId={job.id}
+            currentContractorId={job.contractor_id ?? null}
+            contractors={contractors || []}
+          />
+        </div>
+
+        {/* Quotes and invoices */}
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+            Quotes &amp; payments
+          </h2>
+
+          {(quotes || []).length > 0 && (
+            <ul className="mt-4 divide-y divide-slate-100 dark:divide-slate-700">
+              {(quotes || []).map((q: any) => (
+                <li key={q.id} className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[#0B1F3F] dark:text-white">
+                      ${Number(q.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    </p>
+                    {q.description && (
+                      <p className="text-xs text-slate-500">{q.description}</p>
+                    )}
+                  </div>
+                  <span
+                    className={
+                      q.status === "Accepted"
+                        ? "rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                        : "rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                    }
+                  >
+                    {q.status === "Accepted" ? "Paid" : q.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <SendQuoteForm jobId={job.id} />
         </div>
 
         {/* Details */}

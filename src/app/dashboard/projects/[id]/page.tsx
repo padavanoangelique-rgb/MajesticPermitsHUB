@@ -4,25 +4,20 @@ import { createClient } from "@/lib/supabase/server";
 import { format } from "date-fns";
 import { PERMIT_STAGES } from "@/lib/stages";
 import { StageStepper } from "@/components/homeowner/stage-stepper";
+import { requireUser } from "@/lib/auth-guard";
+import { getContractorForUser } from "@/lib/contractor";
 
 interface PageProps {
   params: { id: string };
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function ContractorProjectPage({ params }: PageProps) {
+  const user = await requireUser(`/dashboard/projects/${params.id}`);
   const supabase = createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
-
-  const { data: contractor } = await supabase
-    .from("contractors")
-    .select("id")
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
+  const contractor = await getContractorForUser(user);
 
   if (!contractor) redirect("/dashboard");
 

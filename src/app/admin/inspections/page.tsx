@@ -1,18 +1,15 @@
+import { createServiceClient } from "@/lib/supabase/service";
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
+import { requireAdmin } from "@/lib/auth-guard";
 import { format } from "date-fns";
 import { MarkHandledButton } from "@/components/admin/mark-handled-button";
 
-function getServiceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
+export const dynamic = "force-dynamic";
 
 export default async function InspectionsPage() {
-  const supabase = getServiceClient();
+  await requireAdmin();
+
+  const supabase = createServiceClient();
 
   const { data: requests } = await supabase
     .from("inspection_requests")

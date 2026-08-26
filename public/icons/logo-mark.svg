@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Majestic Permits">
+  <rect width="512" height="512" rx="112" fill="#0B1F3F"/>
+  <!-- Crown -->
+  <path d="M256 118 L300 196 L378 158 L360 262 L152 262 L134 158 L212 196 Z"
+        fill="#C9A24B"/>
+  <rect x="152" y="284" width="208" height="26" rx="13" fill="#C9A24B"/>
+  <!-- MP monogram -->
+  <text x="256" y="424" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="128" font-weight="bold" fill="#FFFFFF"
+       >MP</text>
+</svg>
