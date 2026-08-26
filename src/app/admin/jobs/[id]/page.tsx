@@ -50,7 +50,7 @@ export default async function JobDetailPage({ params }: PageProps) {
 
   const { data: quotes } = await supabase
     .from("quotes")
-    .select("id, amount, description, status, bill_to, paid_at, expires_at, approved_at, created_at, version")
+    .select("id, amount, description, status, bill_to, paid_at, expires_at, approved_at, approved_by_name, declined_at, approval_token, created_at, version")
     .eq("job_id", job.id)
     .order("created_at", { ascending: false });
 
@@ -174,20 +174,44 @@ export default async function JobDetailPage({ params }: PageProps) {
                       <p className="text-xs text-slate-500">{q.description}</p>
                     )}
                   </div>
-                  <span
-                    className={
-                      q.status === "Accepted" || q.paid_at
-                        ? "rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                        : "rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200"
-                    }
-                  >
-                    {q.paid_at ? "Paid" : q.status}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span
+                      className={
+                        q.paid_at || q.approved_at
+                          ? "rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                          : q.declined_at
+                          ? "rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                          : q.expires_at && new Date(q.expires_at) < new Date()
+                          ? "rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+                          : "rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                      }
+                    >
+                      {q.paid_at
+                        ? "Paid"
+                        : q.approved_at
+                        ? `Approved${q.approved_by_name ? " \u00b7 " + q.approved_by_name : ""}`
+                        : q.declined_at
+                        ? "Declined"
+                        : q.expires_at && new Date(q.expires_at) < new Date()
+                        ? "Expired"
+                        : q.status}
+                    </span>
+                    {q.approval_token && !q.paid_at && (
+                      <a
+                        href={`/quote/${q.approval_token}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[11px] text-slate-500 underline hover:text-slate-700 dark:text-slate-400"
+                      >
+                        Open approval page
+                      </a>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
           )}
-          <SendQuoteForm jobId={job.id} />
+          <SendQuoteForm jobId={job.id} hasContractor={Boolean(job.contractor_id)} />
         </Section>
 
         <Section title="Details">

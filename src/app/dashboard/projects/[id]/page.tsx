@@ -65,7 +65,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
         .order("created_at", { ascending: false }),
       service
         .from("quotes")
-        .select("id, amount, description, status, bill_to, paid_at, created_at, version")
+        .select("id, amount, description, status, bill_to, paid_at, approved_at, declined_at, expires_at, approval_token, created_at, version")
         .eq("job_id", job.id)
         .in("bill_to", ["contractor", null as any])
         .order("created_at", { ascending: false }),
@@ -201,15 +201,40 @@ export default async function ContractorProjectPage({ params }: PageProps) {
                       {format(new Date(q.created_at), "MMM d, yyyy")}
                     </p>
                   </div>
-                  <span
-                    className={
-                      q.paid_at || q.status === "Accepted"
-                        ? "rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                        : "rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200"
-                    }
-                  >
-                    {q.paid_at ? "Paid" : q.status}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span
+                      className={
+                        q.paid_at || q.approved_at
+                          ? "rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                          : q.declined_at
+                          ? "rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                          : q.expires_at && new Date(q.expires_at) < new Date()
+                          ? "rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+                          : "rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                      }
+                    >
+                      {q.paid_at
+                        ? "Paid"
+                        : q.approved_at
+                        ? "Approved"
+                        : q.declined_at
+                        ? "Declined"
+                        : q.expires_at && new Date(q.expires_at) < new Date()
+                        ? "Expired"
+                        : q.status}
+                    </span>
+                    {q.approval_token &&
+                      !q.paid_at &&
+                      !q.approved_at &&
+                      !q.declined_at && (
+                        <a
+                          href={`/quote/${q.approval_token}`}
+                          className="text-[11px] font-semibold text-[#0B1F3F] underline hover:opacity-80 dark:text-white"
+                        >
+                          Review &amp; approve
+                        </a>
+                      )}
+                  </div>
                 </li>
               ))}
             </ul>
