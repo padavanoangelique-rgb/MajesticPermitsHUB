@@ -1,9 +1,12 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { format } from "date-fns";
 import { PERMIT_STAGES } from "@/lib/stages";
 import { StageStepper } from "@/components/homeowner/stage-stepper";
+import { PermitHeader } from "@/components/shared/permit-header";
+import { DocDownload } from "@/components/contractor/doc-download";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
 
@@ -13,12 +16,26 @@ interface PageProps {
 
 export const dynamic = "force-dynamic";
 
+const INSPECTION_STATUS_LABEL: Record<string, string> = {
+  not_required: "Not required",
+  not_requested: "Not requested",
+  requested: "Requested",
+  scheduled: "Scheduled",
+  passed: "Passed",
+  partial_pass: "Partial pass",
+  failed: "Failed — corrections",
+  reinspection_requested: "Reinspection requested",
+  reinspection_scheduled: "Reinspection scheduled",
+  cancelled: "Cancelled",
+  closed: "Closed",
+};
+
 export default async function ContractorProjectPage({ params }: PageProps) {
   const user = await requireUser(`/dashboard/projects/${params.id}`);
   const supabase = createClient();
+  const service = createServiceClient();
 
   const contractor = await getContractorForUser(user);
-
   if (!contractor) redirect("/dashboard");
 
   const { data: job } = await supabase
@@ -30,6 +47,30 @@ export default async function ContractorProjectPage({ params }: PageProps) {
 
   if (!job) notFound();
 
+  // Contractor-visible inspections, docs, quotes/invoices
+  const [{ data: inspections }, { data: docs }, { data: quotes }] =
+    await Promise.all([
+      service
+        .from("job_inspections")
+        .select(
+          "id, slot, inspection_type, status, scheduled_date, result_date, correction_notes"
+        )
+        .eq("job_id", job.id)
+        .order("slot", { ascending: true }),
+      service
+        .from("job_documents")
+        .select("id, category, label, file_name, created_at, visible_to_contractor")
+        .eq("job_id", job.id)
+        .eq("visible_to_contractor", true)
+        .order("created_at", { ascending: false }),
+      service
+        .from("quotes")
+        .select("id, amount, description, status, bill_to, paid_at, created_at, version")
+        .eq("job_id", job.id)
+        .in("bill_to", ["contractor", null as any])
+        .order("created_at", { ascending: false }),
+    ]);
+
   const stageText = (job.stage || "").toLowerCase();
   let currentIndex = 2;
   if (stageText.includes("ready") || stageText.includes("getting")) currentIndex = 0;
@@ -39,7 +80,8 @@ export default async function ContractorProjectPage({ params }: PageProps) {
   else if (stageText.includes("approv")) currentIndex = 4;
   else if (stageText.includes("inspect")) currentIndex = 5;
   else if (stageText.includes("final")) currentIndex = 6;
-  else if (stageText.includes("close") || stageText.includes("complete") || stageText.includes("done")) currentIndex = 7;
+  else if (stageText.includes("close") || stageText.includes("complete") || stageText.includes("done"))
+    currentIndex = 7;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
@@ -55,24 +97,21 @@ export default async function ContractorProjectPage({ params }: PageProps) {
         <h1 className="text-2xl font-bold text-[#0B1F3F] dark:text-white">
           {job.property_address}
         </h1>
-        {job.permit_number && (
-          <p className="mt-1 text-slate-500">Permit #{job.permit_number}</p>
-        )}
-        {job.permit_eta && (
-          <p className="mt-1 font-medium text-[#C9A24B]">
-            ETA: {format(new Date(job.permit_eta), "MMMM d, yyyy")}
-          </p>
-        )}
+
+        <div className="mt-4">
+          <PermitHeader
+            permitNumber={job.permit_number}
+            submittedDate={job.submitted_date}
+            permitEta={job.permit_eta}
+          />
+        </div>
 
         <div className="mt-10">
           <StageStepper stages={PERMIT_STAGES} currentIndex={currentIndex} />
         </div>
 
-        <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
-          <p className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-            Current stage
-          </p>
-          <p className="mt-2 text-xl font-semibold text-[#0B1F3F] dark:text-white">
+        <Section title="Current stage">
+          <p className="text-xl font-semibold text-[#0B1F3F] dark:text-white">
             {job.stage}
           </p>
           {job.next_step && (
@@ -87,8 +126,127 @@ export default async function ContractorProjectPage({ params }: PageProps) {
               <p className="mt-1">{job.notes}</p>
             </div>
           )}
-        </div>
+        </Section>
+
+        <Section title="Inspections">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-700">
+            {(inspections || []).map((i: any) => (
+              <li key={i.id} className="py-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-[#0B1F3F] dark:text-white">
+                      Inspection {i.slot}
+                      {i.inspection_type ? ` · ${i.inspection_type}` : ""}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {i.scheduled_date
+                        ? `Scheduled ${format(new Date(i.scheduled_date), "MMM d, yyyy")}`
+                        : i.result_date
+                          ? `Result ${format(new Date(i.result_date), "MMM d, yyyy")}`
+                          : "Not scheduled"}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                    {INSPECTION_STATUS_LABEL[i.status] ?? i.status}
+                  </span>
+                </div>
+                {i.correction_notes && (
+                  <p className="mt-1 text-xs text-slate-500">
+                    Notes: {i.correction_notes}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </Section>
+
+        <Section title="Documents">
+          {(docs || []).length === 0 ? (
+            <p className="text-sm text-slate-500">No documents available yet.</p>
+          ) : (
+            <ul className="divide-y divide-slate-100 dark:divide-slate-700">
+              {(docs || []).map((d: any) => (
+                <li key={d.id} className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[#0B1F3F] dark:text-white">
+                      {d.label || d.file_name}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {categoryLabel(d.category)} ·{" "}
+                      {format(new Date(d.created_at), "MMM d, yyyy")}
+                    </p>
+                  </div>
+                  <DocDownload id={d.id} label="Download" />
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+
+        <Section title="Invoices & payments">
+          {(quotes || []).length === 0 ? (
+            <p className="text-sm text-slate-500">No invoices for this job.</p>
+          ) : (
+            <ul className="divide-y divide-slate-100 dark:divide-slate-700">
+              {(quotes || []).map((q: any) => (
+                <li key={q.id} className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[#0B1F3F] dark:text-white">
+                      ${Number(q.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    </p>
+                    {q.description && (
+                      <p className="text-xs text-slate-500">{q.description}</p>
+                    )}
+                    <p className="text-xs text-slate-400">
+                      {format(new Date(q.created_at), "MMM d, yyyy")}
+                    </p>
+                  </div>
+                  <span
+                    className={
+                      q.paid_at || q.status === "Accepted"
+                        ? "rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                        : "rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                    }
+                  >
+                    {q.paid_at ? "Paid" : q.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
       </main>
     </div>
   );
 }
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
+      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-500">
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+function categoryLabel(cat: string) {
+  const map: Record<string, string> = {
+    intake: "Intake",
+    submitted_package: "Submitted package",
+    corrections: "Corrections",
+    approved_permit: "Approved permit",
+    inspections: "Inspections",
+    closeout: "Closeout",
+    other: "Other",
+  };
+  return map[cat] ?? cat;
+}
+

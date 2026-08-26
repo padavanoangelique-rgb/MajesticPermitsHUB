@@ -1,9 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
-import { format } from "date-fns";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
+import { PermitHeader } from "@/components/shared/permit-header";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +38,7 @@ export default async function DashboardPage() {
   // Get this contractor's jobs
   const { data: jobs } = await supabase
     .from("jobs")
-    .select("id, property_address, stage, sub_status, permit_number, permit_eta, updated_at")
+    .select("id, property_address, stage, sub_status, permit_number, permit_eta, submitted_date, updated_at")
     .eq("contractor_id", contractor.id)
     .order("updated_at", { ascending: false });
 
@@ -98,16 +98,14 @@ export default async function DashboardPage() {
                   </span>
                 )}
               </div>
-              {job.permit_eta && (
-                <p className="mt-3 text-sm text-[#C9A24B]">
-                  ETA: {format(new Date(job.permit_eta), "MMM d, yyyy")}
-                </p>
-              )}
-              {job.permit_number && (
-                <p className="mt-1 text-sm text-slate-500">
-                  Permit #{job.permit_number}
-                </p>
-              )}
+              <div className="mt-4">
+                <PermitHeader
+                  variant="compact"
+                  permitNumber={job.permit_number}
+                  submittedDate={job.submitted_date}
+                  permitEta={job.permit_eta}
+                />
+              </div>
             </Link>
           ))}
 
