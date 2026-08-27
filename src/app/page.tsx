@@ -16,8 +16,10 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white dark:bg-background-dark">
       {/* Nav */}
       <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-background-dark/90">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-3">
+        {/* 3-column grid keeps nav truly centered and left/right blocks balanced */}
+        <div className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6">
+          {/* Left: logo */}
+          <div className="flex items-center gap-3 justify-self-start">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-navy text-sm font-bold text-white">
               M
             </div>
@@ -26,7 +28,8 @@ export default function LandingPage() {
             </span>
           </div>
 
-          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300 md:flex">
+          {/* Center: nav */}
+          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 justify-self-center dark:text-slate-300 md:flex">
             <a href="#how" className="hover:text-navy dark:hover:text-white">
               How it Works
             </a>
@@ -41,7 +44,8 @@ export default function LandingPage() {
             </a>
           </nav>
 
-          <div className="flex items-center gap-3">
+          {/* Right: actions */}
+          <div className="flex items-center gap-3 justify-self-end">
             <ThemeToggle />
             <Link
               href="/login"
