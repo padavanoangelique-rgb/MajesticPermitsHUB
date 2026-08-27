@@ -92,10 +92,115 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Placeholder product mock */}
-        <div className="mt-16 overflow-hidden rounded-3xl border border-slate-200 bg-surface-light shadow-soft-lg dark:border-slate-700 dark:bg-surface-dark">
-          <div className="flex h-64 items-center justify-center text-muted-foreground sm:h-80">
-            <p className="text-sm">Contractor dashboard preview</p>
+        {/* Contractor dashboard preview — hand-drawn mock of the real UI */}
+        <div className="mt-16 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-soft-lg dark:border-slate-700 dark:bg-surface-dark">
+          {/* Browser chrome */}
+          <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+            <span className="h-3 w-3 rounded-full bg-slate-300 dark:bg-slate-600" />
+            <span className="h-3 w-3 rounded-full bg-slate-300 dark:bg-slate-600" />
+            <span className="h-3 w-3 rounded-full bg-slate-300 dark:bg-slate-600" />
+            <div className="ml-4 flex-1 truncate rounded-md bg-white px-3 py-1 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              hub.majesticpermits.com/dashboard
+            </div>
+          </div>
+
+          {/* App shell */}
+          <div className="grid gap-6 p-6 sm:grid-cols-[220px_1fr] sm:p-8">
+            {/* Sidebar */}
+            <aside className="hidden flex-col gap-1 rounded-2xl bg-slate-50 p-4 text-sm dark:bg-slate-900 sm:flex">
+              <div className="flex items-center gap-2 pb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-navy text-xs font-bold text-white">
+                  M
+                </div>
+                <span className="font-semibold text-navy dark:text-white">Majestic</span>
+              </div>
+              <div className="rounded-lg bg-navy px-3 py-2 font-medium text-white">
+                My permits
+              </div>
+              <div className="px-3 py-2 text-slate-600 dark:text-slate-400">Documents</div>
+              <div className="px-3 py-2 text-slate-600 dark:text-slate-400">Invoices</div>
+              <div className="px-3 py-2 text-slate-600 dark:text-slate-400">Team</div>
+            </aside>
+
+            {/* Main pane */}
+            <div className="space-y-5">
+              {/* Page header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-slate-500">
+                    A Plus Impact Windows &amp; Doors
+                  </p>
+                  <h3 className="text-xl font-semibold text-navy dark:text-white">My permits</h3>
+                </div>
+                <span className="rounded-full bg-navy px-3 py-1.5 text-xs font-semibold text-white">
+                  9 active
+                </span>
+              </div>
+
+              {/* Job rows */}
+              <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700 dark:bg-slate-900">
+                {[
+                  {
+                    address: "1550 SW 52nd Ter, Plantation",
+                    permit: "B26-02786",
+                    stage: "Approved",
+                    stageClass:
+                      "bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300",
+                    eta: "Ready to build",
+                  },
+                  {
+                    address: "3500 Mystic Pointe #1906, Aventura",
+                    permit: "WIND2607-0015",
+                    stage: "Submitted · In Review",
+                    stageClass:
+                      "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+                    eta: "ETA Sep 3",
+                  },
+                  {
+                    address: "7200 Biltmore Blvd, Miramar",
+                    permit: "BLDR-009218-2026",
+                    stage: "Submitted · In Review",
+                    stageClass:
+                      "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+                    eta: "ETA Sep 8",
+                  },
+                  {
+                    address: "3500 Mystic Pointe #2801, Aventura",
+                    permit: "—",
+                    stage: "Need to submit",
+                    stageClass:
+                      "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+                    eta: "Awaiting package",
+                  },
+                ].map((row) => (
+                  <div
+                    key={row.address}
+                    className="flex items-center justify-between gap-4 px-5 py-4"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-navy dark:text-white">
+                        {row.address}
+                      </p>
+                      <p className="text-xs text-slate-500">Permit {row.permit}</p>
+                    </div>
+                    <div className="flex flex-shrink-0 items-center gap-3">
+                      <span
+                        className={`hidden rounded-full px-2.5 py-1 text-xs font-medium sm:inline-flex ${row.stageClass}`}
+                      >
+                        {row.stage}
+                      </span>
+                      <span className="hidden text-xs text-slate-500 md:inline">
+                        {row.eta}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-center text-xs text-slate-400">
+                Sample data — your real dashboard shows every permit, inspection, and document in one place.
+              </p>
+            </div>
           </div>
         </div>
       </section>
