@@ -50,9 +50,14 @@ export default async function TrackPage({ params }: PageProps) {
       return <DisabledLink />;
     }
 
+    // Homeowner-safe column list only.
+    // Do NOT select notes, internal_notes, or contract_value — those can
+    // contain fees, contractor billing detail, or internal wording.
     const { data: job, error: jobError } = await supabase
       .from("jobs")
-      .select("*")
+      .select(
+        "id, brand, property_address, homeowner_name, trade_type, permit_number, jurisdiction, stage, sub_status, next_step, homeowner_note, submitted_date, approved_date, permit_eta, building_dept_url"
+      )
       .eq("id", link.job_id)
       .single();
 
@@ -127,7 +132,7 @@ export default async function TrackPage({ params }: PageProps) {
             stage={currentStage}
             stageNumber={currentIndex + 1}
             totalStages={PERMIT_STAGES.length}
-            customNote={job.notes}
+            customNote={job.homeowner_note}
             nextStep={job.next_step}
             permitEta={job.permit_eta}
           />
