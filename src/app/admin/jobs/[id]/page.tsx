@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth-guard";
 import { format } from "date-fns";
 import { UpdateStageForm } from "@/components/admin/update-stage-form";
 import { SendQuoteForm } from "@/components/admin/send-quote-form";
+import { HomeownerNoteForm } from "@/components/admin/homeowner-note-form";
 import { AssignContractorForm } from "@/components/admin/assign-contractor-form";
 import { JurisdictionForm } from "@/components/admin/jurisdiction-form";
 import { PermitHeader } from "@/components/shared/permit-header";
@@ -222,11 +223,15 @@ export default async function JobDetailPage({ params }: PageProps) {
             </div>
             {job.notes && (
               <div>
-                <dt className="text-slate-500">Notes (visible to client)</dt>
+                <dt className="text-slate-500">Internal notes (admin only)</dt>
                 <dd className="mt-1 rounded-lg bg-slate-50 p-3 dark:bg-slate-800">{job.notes}</dd>
               </div>
             )}
           </dl>
+        </Section>
+
+        <Section title="Homeowner-visible note">
+          <HomeownerNoteForm jobId={job.id} initialValue={job.homeowner_note} />
         </Section>
       </main>
     </div>

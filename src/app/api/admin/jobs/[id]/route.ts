@@ -19,6 +19,8 @@ const ALLOWED_FIELDS = [
   "submitted_date",
   "next_step",
   "notes",
+  "homeowner_note",
+  "internal_notes",
   "trade_type",
   "jurisdiction",
   "building_dept_url",
