@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-guard";
 import { format } from "date-fns";
 import { MarkHandledButton } from "@/components/admin/mark-handled-button";
+import { InspectionResultForm } from "@/components/admin/inspection-result-form";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,13 @@ export default async function InspectionsPage() {
     .select(`
       id,
       inspection_type,
+      inspection_code,
+      request_type,
+      preferred_date,
+      scheduled_date,
+      result,
+      result_date,
+      correction_notes,
       notes,
       status,
       requested_by,
@@ -78,19 +86,39 @@ export default async function InspectionsPage() {
                   </p>
                   <p className="mt-3">
                     <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
-                      {req.inspection_type}
+                      {req.inspection_code || req.inspection_type}
+                      {req.request_type === "final" ? " · Final" : ""}
                     </span>
                   </p>
+                  {req.preferred_date && (
+                    <p className="mt-2 text-sm text-slate-500">
+                      Preferred date:{" "}
+                      {format(
+                        new Date(`${req.preferred_date}T12:00:00`),
+                        "MMM d, yyyy"
+                      )}
+                    </p>
+                  )}
                   {req.notes && (
                     <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
                       {req.notes}
                     </p>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <MarkHandledButton id={req.id} status="Scheduled" label="Mark Scheduled" />
                   <MarkHandledButton id={req.id} status="Dismissed" label="Dismiss" />
                 </div>
+              </div>
+
+              <div className="mt-4">
+                <InspectionResultForm
+                  id={req.id}
+                  scheduledDate={req.scheduled_date}
+                  result={req.result}
+                  resultDate={req.result_date}
+                  correctionNotes={req.correction_notes}
+                />
               </div>
             </div>
           ))}
@@ -108,9 +136,20 @@ export default async function InspectionsPage() {
                 >
                   <span className="font-medium">{req.jobs?.property_address}</span>
                   <span className="mx-2 text-slate-400">·</span>
-                  <span>{req.inspection_type}</span>
+                  <span>{req.inspection_code || req.inspection_type}</span>
                   <span className="mx-2 text-slate-400">·</span>
-                  <span className="capitalize text-slate-500">{req.status}</span>
+                  <span className="capitalize text-slate-500">
+                    {req.result || req.status}
+                  </span>
+                  <div className="mt-3">
+                    <InspectionResultForm
+                      id={req.id}
+                      scheduledDate={req.scheduled_date}
+                      result={req.result}
+                      resultDate={req.result_date}
+                      correctionNotes={req.correction_notes}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
