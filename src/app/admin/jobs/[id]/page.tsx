@@ -10,6 +10,9 @@ import { JurisdictionForm } from "@/components/admin/jurisdiction-form";
 import { PermitHeader } from "@/components/shared/permit-header";
 import { InspectionSlotForm } from "@/components/admin/inspection-slot-form";
 import { JobDocuments } from "@/components/admin/job-documents";
+import { RoofingSystemForm } from "@/components/admin/roofing-system-form";
+import { FormChecklist } from "@/components/admin/form-checklist";
+import { PackageReadiness } from "@/components/admin/package-readiness";
 import { HomeownerShareControls } from "@/components/admin/homeowner-share-controls";
 import { SITE_URL } from "@/lib/email";
 
@@ -67,6 +70,36 @@ export default async function JobDetailPage({ params }: PageProps) {
     .from("job_documents")
     .select(
       "id, category, label, file_name, visible_to_homeowner, visible_to_contractor, created_at"
+    )
+    .eq("job_id", job.id)
+    .order("created_at", { ascending: false });
+
+  const isRoofing = (job.trade_type || "").toLowerCase().includes("roof");
+
+  const { data: roofingSystem } = await supabase
+    .from("job_roofing_systems")
+    .select("*")
+    .eq("job_id", job.id)
+    .maybeSingle();
+
+  const { data: checklist } = await supabase
+    .from("job_form_checklist")
+    .select(
+      "id, template_code, title, required, status, document_id, waived_reason, notes, sort_order"
+    )
+    .eq("job_id", job.id)
+    .order("sort_order", { ascending: true });
+
+  const { data: readiness } = await supabase
+    .from("job_package_readiness")
+    .select("*")
+    .eq("job_id", job.id)
+    .maybeSingle();
+
+  const { data: calculations } = await supabase
+    .from("job_roof_calculations")
+    .select(
+      "id, method, label, qh_psf, mf_ft_lbf, mg_ft_lbf, mr_required_ft_lbf, mr_noa_ft_lbf, passes, requires_engineering, engineering_reason, standard_ref, created_at"
     )
     .eq("job_id", job.id)
     .order("created_at", { ascending: false });
@@ -133,6 +166,31 @@ export default async function JobDetailPage({ params }: PageProps) {
               />
             ))}
           </div>
+        </Section>
+
+        <Section title="Permit package readiness">
+          <PackageReadiness
+            readiness={readiness ?? null}
+            calculationCount={(calculations || []).length}
+          />
+        </Section>
+
+        {isRoofing && (
+          <Section title="Roof system">
+            <RoofingSystemForm jobId={job.id} initial={roofingSystem ?? null} />
+          </Section>
+        )}
+
+        <Section title="Required forms">
+          <FormChecklist
+            jobId={job.id}
+            items={checklist || []}
+            documents={(documents || []).map((d: any) => ({
+              id: d.id,
+              file_name: d.file_name,
+              category: d.category,
+            }))}
+          />
         </Section>
 
         <Section title="Documents">
