@@ -13,6 +13,7 @@ import { JobDocuments } from "@/components/admin/job-documents";
 import { RoofingSystemForm } from "@/components/admin/roofing-system-form";
 import { FormChecklist } from "@/components/admin/form-checklist";
 import { PackageReadiness } from "@/components/admin/package-readiness";
+import { Ras127Calculator } from "@/components/admin/ras127-calculator";
 import { HomeownerShareControls } from "@/components/admin/homeowner-share-controls";
 import { SITE_URL } from "@/lib/email";
 
@@ -178,6 +179,24 @@ export default async function JobDetailPage({ params }: PageProps) {
         {isRoofing && (
           <Section title="Roof system">
             <RoofingSystemForm jobId={job.id} initial={roofingSystem ?? null} />
+          </Section>
+        )}
+
+        {isRoofing && (
+          <Section title="Tile uplift calculation — RAS 127-20 Method 1">
+            <Ras127Calculator
+              jobId={job.id}
+              defaults={{
+                slopeRise: roofingSystem?.roof_slope_rise ?? null,
+                meanRoofHeightFt: roofingSystem?.mean_roof_height_ft ?? null,
+                exposureCategory: roofingSystem?.exposure_category ?? null,
+                riskCategory: roofingSystem?.risk_category ?? null,
+                designWindSpeedMph: roofingSystem?.design_wind_speed_mph ?? null,
+                noaNumber: roofingSystem?.noa_number ?? null,
+                tileProfile: roofingSystem?.tile_profile ?? null,
+              }}
+              saved={(calculations || []) as any}
+            />
           </Section>
         )}
 
