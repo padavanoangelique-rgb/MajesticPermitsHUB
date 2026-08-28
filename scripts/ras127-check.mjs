@@ -70,6 +70,77 @@ function check(name, actual, expected, tol = 1e-6) {
 }
 
 // ---------------------------------------------------------------------------
+// 1b. Two real permit packages the contractor filed and had reviewed, read off
+//     Section E of the HVHZ application. These are the strongest evidence we
+//     have that the engine matches what a plans examiner expects to see, so
+//     every printed intermediate value is asserted, not just the outcome.
+//
+//     Package A - 12615 SW 34th Pl, Davie (Broward)
+//       Westlake Royal / Newpoint Saxony 900, NOA 24-0320.02
+//       lambda 0.315, Mg 7.71, Mf 31.3
+//       (Zone 1: 60 x 0.315 = 18.9)  - 7.71 = 11.19
+//       (Zone 2: 96 x 0.315 = 30.24) - 7.71 = 22.53
+//
+//     Note: Mg 7.71 is the 5":12 direct-deck cell our NOA extraction flagged
+//     for breaking the monotonic run (7.51 -> 7.71 -> 7.17). It appears here
+//     in a filed package exactly as printed, which is why the catalog keeps
+//     the NOA's value instead of "fixing" it.
+// ---------------------------------------------------------------------------
+{
+  const r = mod.calculateRas127Method1({
+    lambda: 0.315,
+    mg: 7.71,
+    mf: 31.3,
+    sealedPressures: [
+      { zones: ["1"], pasd: 60 },
+      { zones: ["2"], pasd: 96 },
+    ],
+  });
+  check("Davie pkg: zone 1 Pasd*lambda", r.zones[0].pasdLambda, 18.9, 5e-3);
+  check("Davie pkg: zone 1 Mr", r.zones[0].mr, 11.19, 5e-3);
+  check("Davie pkg: zone 2 Pasd*lambda", r.zones[1].pasdLambda, 30.24, 5e-3);
+  check("Davie pkg: zone 2 Mr", r.zones[1].mr, 22.53, 5e-3);
+  check("Davie pkg: passes", r.passes, true);
+}
+
+// ---------------------------------------------------------------------------
+// 1c. Package B - 1020 NE 203rd Terrace, Miami (Miami-Dade)
+//       Westlake / Newpoint Barcelona 900, NOA 24-1008.13
+//       lambda 0.301, Mg 6.76, Mf 29
+//       (Zone 1:  60 x 0.301 = 18.06) - 6.76 = 11.30
+//       (Zone 2:  94 x 0.301 = 28.29) - 6.76 = 21.53
+//       (Zone 3: 114 x 0.301 = 34.31) - 6.76 = 27.55
+//
+//     Rounding note: the form shows 28.29 and 34.31, i.e. the contractor
+//     rounded each product to two decimals before subtracting. We keep full
+//     precision internally and round only at print time, so the tolerance
+//     here absorbs that half-cent difference.
+// ---------------------------------------------------------------------------
+{
+  const r = mod.calculateRas127Method1({
+    lambda: 0.301,
+    mg: 6.76,
+    mf: 29,
+    sealedPressures: [
+      { zones: ["1"], pasd: 60 },
+      { zones: ["2"], pasd: 94 },
+      { zones: ["3"], pasd: 114 },
+    ],
+  });
+  check("Miami pkg: zone 1 Pasd*lambda", r.zones[0].pasdLambda, 18.06, 5e-3);
+  check("Miami pkg: zone 1 Mr", r.zones[0].mr, 11.3, 5e-3);
+  check("Miami pkg: zone 2 Pasd*lambda", r.zones[1].pasdLambda, 28.29, 5e-3);
+  check("Miami pkg: zone 2 Mr", r.zones[1].mr, 21.53, 5e-3);
+  check("Miami pkg: zone 3 Pasd*lambda", r.zones[2].pasdLambda, 34.31, 5e-3);
+  check("Miami pkg: zone 3 Mr", r.zones[2].mr, 27.55, 5e-3);
+  check("Miami pkg: passes", r.passes, true);
+  // Mf 29 against a zone 3 demand of 27.55 leaves only 1.45 ft-lbf of margin.
+  // Worth confirming the engine reports the tightest zone honestly rather than
+  // rounding its way to a comfortable-looking pass.
+  check("Miami pkg: zone 3 is the governing zone", r.zones[2].mr > r.zones[1].mr, true);
+}
+
+// ---------------------------------------------------------------------------
 // 2. Negative Pasd must be treated as a magnitude, not subtracted.
 // ---------------------------------------------------------------------------
 {

@@ -14,10 +14,15 @@
 -- ---------------------------------------------------------------------------
 -- 1. Company profile: the "data that doesn't change"
 -- ---------------------------------------------------------------------------
+-- Keyed to contractor_id because jobs.contractor_id already exists and the
+-- portal is multi-contractor: each company's licence details differ, and the
+-- forms must carry the licence of the contractor pulling that permit. A null
+-- contractor_id is the house default, used when a job has no contractor set.
 create table if not exists public.company_profile (
   id                    uuid primary key default gen_random_uuid(),
-  -- Single-row table in practice; the flag lets us keep history if the
-  -- qualifier or license changes rather than overwriting the old record.
+  contractor_id         uuid references public.contractors(id) on delete cascade,
+  -- Lets us supersede a profile rather than overwrite it when a qualifier or
+  -- licence changes, so a form reprinted later still explains what was filed.
   is_active             boolean not null default true,
 
   company_name          text,
@@ -45,8 +50,17 @@ create table if not exists public.company_profile (
   updated_at            timestamptz not null default now()
 );
 
+-- One active profile per contractor, and one active house default.
+create unique index if not exists company_profile_active_per_contractor
+  on public.company_profile (contractor_id)
+  where is_active and contractor_id is not null;
+
+create unique index if not exists company_profile_active_default
+  on public.company_profile ((true))
+  where is_active and contractor_id is null;
+
 comment on table public.company_profile is
-  'Contractor boilerplate merged into every generated permit form. Filled once.';
+  'Contractor boilerplate merged into every generated permit form. Filled once per contractor.';
 
 -- ---------------------------------------------------------------------------
 -- 2. Product approval library (NOA / Florida Product Approval)
@@ -255,37 +269,42 @@ alter table public.tile_attachment_resistance  enable row level security;
 alter table public.job_product_selections      enable row level security;
 alter table public.job_package_exports         enable row level security;
 
+-- is_admin() is not created by any migration in this repo - it already exists
+-- in the deployed database. Guarding on it keeps a fresh database from failing
+-- here, matching how the two earlier migrations handle the same function.
 do $$
 begin
-  -- Admin full access on all six tables.
-  if not exists (select 1 from pg_policies where tablename = 'company_profile' and policyname = 'company_profile_admin_all') then
-    create policy company_profile_admin_all on public.company_profile
-      for all using (public.is_admin()) with check (public.is_admin());
-  end if;
+  if exists (select 1 from pg_proc where proname = 'is_admin') then
+    -- Admin full access on all six tables.
+    if not exists (select 1 from pg_policies where tablename = 'company_profile' and policyname = 'company_profile_admin_all') then
+      create policy company_profile_admin_all on public.company_profile
+        for all using (public.is_admin()) with check (public.is_admin());
+    end if;
 
-  if not exists (select 1 from pg_policies where tablename = 'product_approvals' and policyname = 'product_approvals_admin_all') then
-    create policy product_approvals_admin_all on public.product_approvals
-      for all using (public.is_admin()) with check (public.is_admin());
-  end if;
+    if not exists (select 1 from pg_policies where tablename = 'product_approvals' and policyname = 'product_approvals_admin_all') then
+      create policy product_approvals_admin_all on public.product_approvals
+        for all using (public.is_admin()) with check (public.is_admin());
+    end if;
 
-  if not exists (select 1 from pg_policies where tablename = 'tile_attachment_values' and policyname = 'tile_values_admin_all') then
-    create policy tile_values_admin_all on public.tile_attachment_values
-      for all using (public.is_admin()) with check (public.is_admin());
-  end if;
+    if not exists (select 1 from pg_policies where tablename = 'tile_attachment_values' and policyname = 'tile_values_admin_all') then
+      create policy tile_values_admin_all on public.tile_attachment_values
+        for all using (public.is_admin()) with check (public.is_admin());
+    end if;
 
-  if not exists (select 1 from pg_policies where tablename = 'tile_attachment_resistance' and policyname = 'tile_resistance_admin_all') then
-    create policy tile_resistance_admin_all on public.tile_attachment_resistance
-      for all using (public.is_admin()) with check (public.is_admin());
-  end if;
+    if not exists (select 1 from pg_policies where tablename = 'tile_attachment_resistance' and policyname = 'tile_resistance_admin_all') then
+      create policy tile_resistance_admin_all on public.tile_attachment_resistance
+        for all using (public.is_admin()) with check (public.is_admin());
+    end if;
 
-  if not exists (select 1 from pg_policies where tablename = 'job_product_selections' and policyname = 'job_products_admin_all') then
-    create policy job_products_admin_all on public.job_product_selections
-      for all using (public.is_admin()) with check (public.is_admin());
-  end if;
+    if not exists (select 1 from pg_policies where tablename = 'job_product_selections' and policyname = 'job_products_admin_all') then
+      create policy job_products_admin_all on public.job_product_selections
+        for all using (public.is_admin()) with check (public.is_admin());
+    end if;
 
-  if not exists (select 1 from pg_policies where tablename = 'job_package_exports' and policyname = 'job_exports_admin_all') then
-    create policy job_exports_admin_all on public.job_package_exports
-      for all using (public.is_admin()) with check (public.is_admin());
+    if not exists (select 1 from pg_policies where tablename = 'job_package_exports' and policyname = 'job_exports_admin_all') then
+      create policy job_exports_admin_all on public.job_package_exports
+        for all using (public.is_admin()) with check (public.is_admin());
+    end if;
   end if;
 
   -- The approval library is reference data every authenticated user may read;
