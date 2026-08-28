@@ -9,6 +9,9 @@ import { PermitHeader } from "@/components/shared/permit-header";
 import { DocDownload } from "@/components/contractor/doc-download";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
+import { InspectionRequestPanel } from "@/components/contractor/inspection-request-panel";
+import { TrackingLinkShare } from "@/components/contractor/tracking-link-share";
+import { resolveTrackingLink } from "@/lib/tracking-links";
 
 interface PageProps {
   params: { id: string };
@@ -47,9 +50,14 @@ export default async function ContractorProjectPage({ params }: PageProps) {
 
   if (!job) notFound();
 
-  // Contractor-visible inspections, docs, quotes/invoices
-  const [{ data: inspections }, { data: docs }, { data: quotes }] =
-    await Promise.all([
+  // Contractor-visible inspections, docs, quotes/invoices, requests, share link
+  const [
+    { data: inspections },
+    { data: docs },
+    { data: quotes },
+    { data: requests },
+    { data: link },
+  ] = await Promise.all([
       service
         .from("job_inspections")
         .select(
@@ -69,7 +77,21 @@ export default async function ContractorProjectPage({ params }: PageProps) {
         .eq("job_id", job.id)
         .in("bill_to", ["contractor", null as any])
         .order("created_at", { ascending: false }),
+      service
+        .from("inspection_requests")
+        .select("*")
+        .eq("job_id", job.id)
+        .order("created_at", { ascending: false }),
+      service
+        .from("homeowner_links")
+        .select("job_id, token, enabled, expires_at")
+        .eq("job_id", job.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
+
+  const trackingLink = resolveTrackingLink(link as any);
 
   const stageText = (job.stage || "").toLowerCase();
   let currentIndex = 2;
@@ -128,7 +150,80 @@ export default async function ContractorProjectPage({ params }: PageProps) {
           )}
         </Section>
 
-        <Section title="Inspections">
+        <Section title="Homeowner update link">
+          <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">
+            Share this private link with your customer so they can follow permit
+            progress without signing in. Majestic Permits manages whether the
+            link is active.
+          </p>
+          <TrackingLinkShare url={trackingLink.url} status={trackingLink.status} />
+        </Section>
+
+        <Section title="Request an inspection">
+          <InspectionRequestPanel jobId={job.id} />
+        </Section>
+
+        <Section title="Your inspection requests">
+          {(requests || []).length === 0 ? (
+            <p className="text-sm text-slate-500">
+              No inspection requests submitted yet.
+            </p>
+          ) : (
+            <ul className="divide-y divide-slate-100 dark:divide-slate-700">
+              {(requests || []).map((r: any) => (
+                <li key={r.id} className="py-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-[#0B1F3F] dark:text-white">
+                        {r.inspection_code || r.inspection_type || "Inspection"}
+                        {r.request_type === "final" ? " · Final" : ""}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        Requested{" "}
+                        {format(new Date(r.created_at), "MMM d, yyyy h:mm a")}
+                        {r.preferred_date
+                          ? ` · Preferred ${format(
+                              new Date(`${r.preferred_date}T12:00:00`),
+                              "MMM d, yyyy"
+                            )}`
+                          : ""}
+                      </p>
+                      {r.scheduled_date && (
+                        <p className="text-xs text-slate-500">
+                          Scheduled{" "}
+                          {format(
+                            new Date(`${r.scheduled_date}T12:00:00`),
+                            "MMM d, yyyy"
+                          )}
+                        </p>
+                      )}
+                      {r.notes && (
+                        <p className="mt-1 text-xs text-slate-500">
+                          Your note: {r.notes}
+                        </p>
+                      )}
+                      {r.correction_notes && (
+                        <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+                          Corrections: {r.correction_notes}
+                        </p>
+                      )}
+                    </div>
+                    <span className={requestBadgeClass(r.result || r.status)}>
+                      {r.result || r.status}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+
+        <Section title="Inspection history">
+          {(inspections || []).length === 0 && (
+            <p className="text-sm text-slate-500">
+              No inspection results recorded yet.
+            </p>
+          )}
           <ul className="divide-y divide-slate-100 dark:divide-slate-700">
             {(inspections || []).map((i: any) => (
               <li key={i.id} className="py-3">
@@ -260,6 +355,24 @@ function Section({
       {children}
     </section>
   );
+}
+
+function requestBadgeClass(value?: string | null) {
+  const base = "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium";
+  const v = (value || "").toLowerCase();
+
+  if (v.includes("pass") && !v.includes("partial"))
+    return `${base} bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300`;
+  if (v.includes("partial"))
+    return `${base} bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300`;
+  if (v.includes("fail"))
+    return `${base} bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300`;
+  if (v.includes("schedul"))
+    return `${base} bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300`;
+  if (v.includes("pending"))
+    return `${base} bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300`;
+
+  return `${base} bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200`;
 }
 
 function categoryLabel(cat: string) {
