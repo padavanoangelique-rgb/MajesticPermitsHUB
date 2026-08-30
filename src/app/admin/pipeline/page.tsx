@@ -90,8 +90,8 @@ export default async function AdminPipelinePage() {
 
         <PipelineBoard
           jobs={pipelineJobs}
-          jobHref={(job) => `/admin/jobs/${job.id}`}
-          updateHref={(id) => `/api/admin/jobs/${id}`}
+          jobHrefPrefix="/admin/jobs"
+          updateHrefTemplate="/api/admin/jobs/{id}"
           canDrag={true}
         />
       </main>

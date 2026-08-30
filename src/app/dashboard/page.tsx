@@ -109,8 +109,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 permit_eta: j.permit_eta,
                 updated_at: j.updated_at,
               }))}
-              jobHref={(job) => `/dashboard/projects/${job.id}`}
-              updateHref={(id) => `/api/contractor/jobs/${id}/stage`}
+              jobHrefPrefix="/dashboard/projects"
+              updateHrefTemplate="/api/contractor/jobs/{id}/stage"
               canDrag={true}
             />
           </div>

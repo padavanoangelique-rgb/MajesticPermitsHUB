@@ -33,16 +33,25 @@ export interface PipelineJob {
  */
 export function PipelineBoard({
   jobs,
-  jobHref,
-  updateHref,
+  jobHrefPrefix,
+  updateHrefTemplate,
   canDrag,
 }: {
   jobs: PipelineJob[];
-  /** Where to link when a card is clicked. Given the job, return the href. */
-  jobHref: (job: PipelineJob) => string;
-  /** Endpoint that accepts PATCH `{ stage }` for a given job id. */
-  updateHref: (jobId: string) => string;
-  /** If false, cards render read-only (useful for contractor view later). */
+  /**
+   * Path prefix for the card link. The job id is appended, so
+   * "/admin/jobs" becomes "/admin/jobs/<id>".
+   */
+  jobHrefPrefix: string;
+  /**
+   * Endpoint template containing the literal string "{id}" which will be
+   * replaced with the job id before the PATCH request. Example:
+   * "/api/admin/jobs/{id}".
+   * We pass a template instead of a function because a Server Component
+   * can't serialize a function prop into a Client Component.
+   */
+  updateHrefTemplate: string;
+  /** If false, cards render read-only. */
   canDrag: boolean;
 }) {
   const router = useRouter();
@@ -80,7 +89,7 @@ export function PipelineBoard({
     );
 
     try {
-      const res = await fetch(updateHref(jobId), {
+      const res = await fetch(updateHrefTemplate.replace("{id}", jobId), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stage: toStageTitle }),
@@ -149,7 +158,7 @@ export function PipelineBoard({
                   <PipelineCard
                     key={job.id}
                     job={job}
-                    href={jobHref(job)}
+                    href={`${jobHrefPrefix}/${job.id}`}
                     draggable={canDrag}
                     saving={savingJobId === job.id}
                   />
@@ -179,7 +188,7 @@ export function PipelineBoard({
                 <PipelineCard
                   key={job.id}
                   job={job}
-                  href={jobHref(job)}
+                  href={`${jobHrefPrefix}/${job.id}`}
                   draggable={canDrag}
                   saving={savingJobId === job.id}
                 />
