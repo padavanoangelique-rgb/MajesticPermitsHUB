@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-guard";
 import { format } from "date-fns";
 import { MarkHandledButton } from "@/components/admin/mark-handled-button";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,7 @@ export default async function InspectionsPage() {
               Inspection Requests
             </p>
           </div>
+          <ThemeToggle />
         </div>
       </header>
 

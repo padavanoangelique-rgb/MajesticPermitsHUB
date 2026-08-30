@@ -9,6 +9,7 @@ import {
   PipelineBoard,
   type PipelineJob,
 } from "@/components/shared/pipeline-board";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +60,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <Image
               src="/icons/icon-512.png"
@@ -76,15 +77,18 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               <p className="text-xs text-slate-500">Contractor Portal</p>
             </div>
           </div>
-          <form action="/auth/signout" method="post">
-            <button className="text-sm text-slate-500 hover:text-[#0B1F3F]">
-              Sign out
-            </button>
-          </form>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <form action="/auth/signout" method="post">
+              <button className="text-sm text-slate-500 hover:text-[#0B1F3F]">
+                Sign out
+              </button>
+            </form>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <main className="mx-auto max-w-screen-xl px-4 py-10 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-[#0B1F3F] dark:text-white">

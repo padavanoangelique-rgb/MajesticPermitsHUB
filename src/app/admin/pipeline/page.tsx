@@ -4,6 +4,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-guard";
 import { List } from "lucide-react";
 import { PipelineBoard, type PipelineJob } from "@/components/shared/pipeline-board";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,7 @@ export default async function AdminPipelinePage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
           <Link href="/admin" className="flex items-center gap-3">
             <Logo size={36} />
             <span className="font-semibold text-[#0B1F3F] dark:text-white">
@@ -65,6 +66,7 @@ export default async function AdminPipelinePage() {
             >
               + New Job
             </Link>
+            <ThemeToggle />
             <form action="/auth/signout" method="post">
               <button
                 type="submit"
@@ -77,7 +79,7 @@ export default async function AdminPipelinePage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+      <main className="mx-auto max-w-screen-2xl px-4 py-10 sm:px-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#0B1F3F] dark:text-white">
             Pipeline

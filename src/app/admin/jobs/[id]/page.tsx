@@ -12,6 +12,7 @@ import { InspectionSlotForm } from "@/components/admin/inspection-slot-form";
 import { JobDocuments } from "@/components/admin/job-documents";
 import { HomeownerShareControls } from "@/components/admin/homeowner-share-controls";
 import { DeleteJobButton } from "@/components/admin/delete-job-button";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { SITE_URL } from "@/lib/email";
 
 interface PageProps {
@@ -79,6 +80,7 @@ export default async function JobDetailPage({ params }: PageProps) {
           <Link href="/admin" className="text-sm font-medium text-slate-500 hover:text-[#0B1F3F]">
             ← All jobs
           </Link>
+          <ThemeToggle />
         </div>
       </header>
 
