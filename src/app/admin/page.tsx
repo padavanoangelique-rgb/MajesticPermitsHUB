@@ -3,9 +3,10 @@ import { Logo } from "@/components/layout/logo";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-guard";
 import { format } from "date-fns";
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, LayoutGrid } from "lucide-react";
 import { PERMIT_STAGES, getStageOrderByTitle } from "@/lib/stages";
 import { JobsFilterBar } from "@/components/admin/jobs-filter-bar";
+import { AdminKpiTiles } from "@/components/admin/admin-kpi-tiles";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,30 @@ export default async function AdminPage({ searchParams }: PageProps) {
     .select(
       "id, property_address, client_type, brand, stage, sub_status, permit_number, submitted_date, permit_eta, homeowner_name, updated_at, contractor_id"
     );
+
+  // KPI: which jobs still have any inspection slot in "not_scheduled"
+  const { data: openInspections } = await supabase
+    .from("job_inspections")
+    .select("job_id")
+    .eq("status", "not_scheduled");
+  const needsInspectionJobIds = new Set<string>(
+    (openInspections || []).map((r: any) => r.job_id)
+  );
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const kpiCounts = (jobs || []).reduce(
+    (acc, job: any) => {
+      if (job.stage === "Under review") acc.inReview += 1;
+      if (job.stage === "Approved \u2014 ready to build") acc.approved += 1;
+      if (needsInspectionJobIds.has(job.id)) acc.needsInspection += 1;
+      if (job.updated_at && new Date(job.updated_at) < sevenDaysAgo)
+        acc.needsFollowUp += 1;
+      return acc;
+    },
+    { inReview: 0, approved: 0, needsInspection: 0, needsFollowUp: 0 }
+  );
 
   const { data: contractors } = await supabase
     .from("contractors")
@@ -127,11 +152,29 @@ export default async function AdminPage({ searchParams }: PageProps) {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        <h1 className="text-2xl font-bold text-[#0B1F3F] dark:text-white">All Jobs</h1>
-        <p className="mt-1 text-slate-500">
-          {sorted.length} of {jobs?.length || 0}
-          {sorted.length !== (jobs?.length || 0) ? " shown" : " total"}
-        </p>
+        <AdminKpiTiles
+          inReview={kpiCounts.inReview}
+          approved={kpiCounts.approved}
+          needsInspection={kpiCounts.needsInspection}
+          needsFollowUp={kpiCounts.needsFollowUp}
+        />
+
+        <div className="mt-10 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-[#0B1F3F] dark:text-white">All Jobs</h1>
+            <p className="mt-1 text-slate-500">
+              {sorted.length} of {jobs?.length || 0}
+              {sorted.length !== (jobs?.length || 0) ? " shown" : " total"}
+            </p>
+          </div>
+          <Link
+            href="/admin/pipeline"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-200"
+          >
+            <LayoutGrid className="h-4 w-4" />
+            Pipeline view
+          </Link>
+        </div>
 
         <div className="mt-6">
           <JobsFilterBar contractors={contractorOptions} stages={stageOptions} />
