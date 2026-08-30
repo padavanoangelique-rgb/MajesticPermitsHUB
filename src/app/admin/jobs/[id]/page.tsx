@@ -124,7 +124,7 @@ export default async function JobDetailPage({ params }: PageProps) {
         </Section>
 
         <Section title="Inspections (up to 3)">
-          <div className="space-y-4">
+          <div className="-mx-6 -mb-6 divide-y divide-slate-200 dark:divide-slate-700">
             {(inspections || []).map((slot: any) => (
               <InspectionSlotForm
                 key={slot.id}

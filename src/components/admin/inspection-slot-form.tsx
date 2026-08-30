@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { ChevronDown } from "lucide-react";
 
 export interface InspectionSlot {
   id: string;
@@ -39,6 +41,7 @@ export function InspectionSlotForm({
   tradeType?: string | null;
 }) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -83,126 +86,165 @@ export function InspectionSlotForm({
     }
   }
 
+  const summary = summarizeSlot(slot);
+
   return (
-    <form
-      action={save}
-      className="rounded-xl border border-slate-200 p-4 dark:border-slate-700"
-    >
-      <div className="flex items-baseline justify-between">
-        <h3 className="text-sm font-semibold text-[#0B1F3F] dark:text-white">
-          Inspection {slot.slot}
-        </h3>
-        <StatusPill status={slot.status} />
-      </div>
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5"
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="shrink-0 text-sm font-semibold text-[#0B1F3F] dark:text-white">
+            Inspection {slot.slot}
+          </span>
+          <span className="truncate text-sm text-slate-500 dark:text-slate-400">
+            {defaultType}
+          </span>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          {summary && (
+            <span className="hidden text-xs text-slate-500 dark:text-slate-400 sm:inline">
+              {summary}
+            </span>
+          )}
+          <StatusPill status={slot.status} />
+          <ChevronDown
+            className={
+              "h-4 w-4 text-slate-400 transition-transform " +
+              (open ? "rotate-180" : "")
+            }
+          />
+        </div>
+      </button>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <Field label="Type">
-          <input
-            name="inspection_type"
-            defaultValue={defaultType}
-            className="input"
-          />
-        </Field>
-        <Field label="Status">
-          <select
-            name="status"
-            defaultValue={slot.status}
-            className="input"
-          >
-            {STATUS_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Requested">
-          <input
-            type="date"
-            name="requested_date"
-            defaultValue={slot.requested_date ?? ""}
-            className="input"
-          />
-        </Field>
-        <Field label="Scheduled">
-          <input
-            type="date"
-            name="scheduled_date"
-            defaultValue={slot.scheduled_date ?? ""}
-            className="input"
-          />
-        </Field>
-        <Field label="Result date">
-          <input
-            type="date"
-            name="result_date"
-            defaultValue={slot.result_date ?? ""}
-            className="input"
-          />
-        </Field>
-        <Field label="Inspector name">
-          <input
-            name="inspector_name"
-            defaultValue={slot.inspector_name ?? ""}
-            className="input"
-          />
-        </Field>
-        <Field label="Inspection # / code">
-          <input
-            name="inspector_number"
-            defaultValue={slot.inspector_number ?? ""}
-            className="input"
-          />
-        </Field>
-        <Field label="" className="sm:col-span-2">
-          <label className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-            <input
-              type="checkbox"
-              name="visible_to_homeowner"
-              defaultChecked={slot.visible_to_homeowner}
-            />
-            Show this inspection on the homeowner tracking page
-          </label>
-        </Field>
-        <Field label="Correction notes" className="sm:col-span-2">
-          <textarea
-            name="correction_notes"
-            defaultValue={slot.correction_notes ?? ""}
-            rows={2}
-            className="input"
-          />
-        </Field>
-      </div>
-
-      <div className="mt-4 flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-xl bg-[#0B1F3F] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+      {open && (
+        <form
+          action={save}
+          className="border-t border-slate-200 px-4 py-4 dark:border-slate-700"
         >
-          {saving ? "Saving…" : "Save inspection"}
-        </button>
-        {msg && <span className="text-xs text-slate-500">{msg}</span>}
-      </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Field label="Type">
+              <input
+                name="inspection_type"
+                defaultValue={defaultType}
+                className="input"
+              />
+            </Field>
+            <Field label="Status">
+              <select name="status" defaultValue={slot.status} className="input">
+                {STATUS_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Inspector name">
+              <input
+                name="inspector_name"
+                defaultValue={slot.inspector_name ?? ""}
+                className="input"
+              />
+            </Field>
+            <Field label="Requested">
+              <input
+                type="date"
+                name="requested_date"
+                defaultValue={slot.requested_date ?? ""}
+                className="input"
+              />
+            </Field>
+            <Field label="Scheduled">
+              <input
+                type="date"
+                name="scheduled_date"
+                defaultValue={slot.scheduled_date ?? ""}
+                className="input"
+              />
+            </Field>
+            <Field label="Result date">
+              <input
+                type="date"
+                name="result_date"
+                defaultValue={slot.result_date ?? ""}
+                className="input"
+              />
+            </Field>
+            <Field label="Inspection # / code" className="sm:col-span-3">
+              <input
+                name="inspector_number"
+                defaultValue={slot.inspector_number ?? ""}
+                className="input sm:max-w-xs"
+              />
+            </Field>
+            <Field label="Correction notes" className="sm:col-span-3">
+              <textarea
+                name="correction_notes"
+                defaultValue={slot.correction_notes ?? ""}
+                rows={2}
+                className="input"
+              />
+            </Field>
+            <Field label="" className="sm:col-span-3">
+              <label className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                <input
+                  type="checkbox"
+                  name="visible_to_homeowner"
+                  defaultChecked={slot.visible_to_homeowner}
+                />
+                Show this inspection on the homeowner tracking page
+              </label>
+            </Field>
+          </div>
 
-      <style jsx>{`
-        :global(.input) {
-          width: 100%;
-          border-radius: 0.5rem;
-          border: 1px solid rgb(226 232 240);
-          background: #fff;
-          padding: 0.5rem 0.75rem;
-          font-size: 0.875rem;
-          color: #0f172a;
-        }
-        :global(.dark .input) {
-          background: #0f172a;
-          border-color: rgb(51 65 85);
-          color: #e2e8f0;
-        }
-      `}</style>
-    </form>
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-xl bg-[#0B1F3F] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              {saving ? "Saving…" : "Save inspection"}
+            </button>
+            {msg && <span className="text-xs text-slate-500">{msg}</span>}
+          </div>
+
+          <style jsx>{`
+            :global(.input) {
+              width: 100%;
+              border-radius: 0.5rem;
+              border: 1px solid rgb(226 232 240);
+              background: #fff;
+              padding: 0.5rem 0.75rem;
+              font-size: 0.875rem;
+              color: #0f172a;
+            }
+            :global(.dark .input) {
+              background: #0f172a;
+              border-color: rgb(51 65 85);
+              color: #e2e8f0;
+            }
+          `}</style>
+        </form>
+      )}
+    </div>
   );
+}
+
+function summarizeSlot(slot: InspectionSlot): string | null {
+  if (slot.result_date) {
+    const date = format(new Date(slot.result_date), "MMM d");
+    return slot.inspector_name ? `${date} · ${slot.inspector_name}` : date;
+  }
+  if (slot.scheduled_date) {
+    return `Scheduled ${format(new Date(slot.scheduled_date), "MMM d")}`;
+  }
+  if (slot.requested_date) {
+    return `Requested ${format(new Date(slot.requested_date), "MMM d")}`;
+  }
+  return null;
 }
 
 function Field({
@@ -250,7 +292,7 @@ function StatusPill({ status }: { status: string }) {
   return (
     <span
       className={
-        "rounded-full px-2.5 py-1 text-xs font-medium " +
+        "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium " +
         (map[status] ?? map.not_required)
       }
     >
