@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { isAdminEmail } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -92,6 +94,20 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Defense-in-depth admin check. Middleware already blocks non-admins from
+    // /api/admin/*, but delete is destructive enough to re-verify here so a
+    // future middleware/matcher change can't silently open it up.
+    const auth = createClient();
+    const {
+      data: { user },
+    } = await auth.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+    }
+    if (!isAdminEmail(user.email)) {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+    }
+
     const supabase = createServiceClient();
 
     // Verify the job actually exists first so the caller gets a clean 404
