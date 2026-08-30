@@ -53,6 +53,16 @@
   * {
     @apply border-border;
   }
+  /*
+   * Bump the root font size ~6% from the 16px browser default. Because
+   * Tailwind's text-*, spacing, and rounded utilities are rem-based, this
+   * lifts every text and gap size across the whole app in one place without
+   * touching individual components. 17px is comfortable on desktop and
+   * still fine on mobile.
+   */
+  html {
+    font-size: 17px;
+  }
   body {
     @apply bg-background text-foreground antialiased;
   }

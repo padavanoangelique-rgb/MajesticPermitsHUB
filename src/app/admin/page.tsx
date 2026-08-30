@@ -7,6 +7,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, LayoutGrid } from "lucide-react";
 import { PERMIT_STAGES, getStageOrderByTitle } from "@/lib/stages";
 import { JobsFilterBar } from "@/components/admin/jobs-filter-bar";
 import { AdminKpiTiles } from "@/components/admin/admin-kpi-tiles";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -117,7 +118,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
       {/* Header */}
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
           <Logo subtitle="Admin" />
 
           <nav className="flex items-center gap-3">
@@ -139,6 +140,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             >
               + New Job
             </Link>
+            <ThemeToggle />
             <form action="/auth/signout" method="post">
               <button
                 type="submit"
@@ -151,7 +153,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <main className="mx-auto max-w-screen-2xl px-4 py-10 sm:px-6">
         <AdminKpiTiles
           inReview={kpiCounts.inReview}
           approved={kpiCounts.approved}
