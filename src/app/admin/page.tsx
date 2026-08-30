@@ -233,7 +233,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   <td className="px-5 py-4 text-right">
                     <Link
                       href={`/admin/jobs/${job.id}`}
-                      className="text-sm font-medium text-[#156cdd] hover:underline dark:text-[#C9A24B]"
+                      className="text-sm font-medium text-[#156cdd] hover:underline dark:text-[#e2ba00]"
                     >
                       View
                     </Link>

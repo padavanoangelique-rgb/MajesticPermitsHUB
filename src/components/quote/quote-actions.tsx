@@ -64,7 +64,7 @@ export function QuoteActions({
           type="button"
           onClick={() => submit("approve")}
           disabled={mode !== "idle"}
-          className="rounded-xl bg-[#0B1F3F] px-4 py-2 text-sm font-semibold text-white hover:bg-[#152C56] disabled:opacity-60"
+          className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
         >
           {mode === "approving" ? "Approving..." : "Approve this quote"}
         </button>

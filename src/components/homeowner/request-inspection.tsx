@@ -52,13 +52,13 @@ export function RequestInspection({ jobId, token }: { jobId: string; token: stri
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="w-full rounded-2xl border-2 border-[#0B1F3F] bg-white py-4 text-base font-semibold text-[#0B1F3F] transition hover:bg-[#0B1F3F] hover:text-white dark:border-[#C9A24B] dark:text-[#C9A24B] dark:hover:bg-[#C9A24B] dark:hover:text-[#0B1F3F]"
+          className="w-full rounded-2xl border-2 border-[#156cdd] bg-white py-4 text-base font-semibold text-[#156cdd] transition hover:bg-[#156cdd] hover:text-white dark:border-[#e2ba00] dark:text-[#e2ba00] dark:hover:bg-[#e2ba00] dark:hover:text-[#156cdd]"
         >
           Request an Inspection
         </button>
       ) : (
         <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
-          <h3 className="text-lg font-semibold text-[#0B1F3F] dark:text-white">
+          <h3 className="text-lg font-semibold text-[#156cdd] dark:text-white">
             Request an Inspection
           </h3>
           <p className="mt-1 text-sm text-slate-500">
@@ -96,7 +96,7 @@ export function RequestInspection({ jobId, token }: { jobId: string; token: stri
               <button
                 onClick={submit}
                 disabled={loading}
-                className="flex-1 rounded-xl bg-[#0B1F3F] py-3 text-sm font-semibold text-white hover:bg-[#152C56] disabled:opacity-60"
+                className="flex-1 rounded-xl bg-[#156cdd] py-3 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
               >
                 {loading ? "Sending..." : "Send request"}
               </button>

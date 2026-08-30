@@ -67,7 +67,7 @@ function LoginForm() {
             priority
             className="mx-auto rounded-2xl"
           />
-          <h1 className="mt-4 text-2xl font-bold text-[#0B1F3F] dark:text-white">
+          <h1 className="mt-4 text-2xl font-bold text-[#156cdd] dark:text-white">
             Contractor Login
           </h1>
           <p className="mt-2 text-sm text-slate-500">
@@ -79,7 +79,7 @@ function LoginForm() {
           <div>
             <label
               htmlFor="email"
-              className="mb-1.5 block text-sm font-medium text-[#0B1F3F] dark:text-white"
+              className="mb-1.5 block text-sm font-medium text-[#156cdd] dark:text-white"
             >
               Email
             </label>
@@ -91,14 +91,14 @@ function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#0B1F3F] focus:ring-2 focus:ring-[#0B1F3F]/20 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#156cdd] focus:ring-2 focus:ring-[#156cdd]/20 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
               placeholder="you@company.com"
             />
           </div>
           <div>
             <label
               htmlFor="password"
-              className="mb-1.5 block text-sm font-medium text-[#0B1F3F] dark:text-white"
+              className="mb-1.5 block text-sm font-medium text-[#156cdd] dark:text-white"
             >
               Password
             </label>
@@ -110,7 +110,7 @@ function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#0B1F3F] focus:ring-2 focus:ring-[#0B1F3F]/20 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#156cdd] focus:ring-2 focus:ring-[#156cdd]/20 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
               placeholder="••••••••"
             />
           </div>
@@ -127,7 +127,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-[#0B1F3F] py-3 text-sm font-semibold text-white transition hover:bg-[#152C56] disabled:opacity-60"
+            className="w-full rounded-xl bg-[#156cdd] py-3 text-sm font-semibold text-white transition hover:bg-[#1157b8] disabled:opacity-60"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
@@ -137,7 +137,7 @@ function LoginForm() {
           Need an account?{" "}
           <a
             href="mailto:hello@majesticpermits.com"
-            className="text-[#0B1F3F] underline dark:text-[#C9A24B]"
+            className="text-[#156cdd] underline dark:text-[#e2ba00]"
           >
             Contact us
           </a>

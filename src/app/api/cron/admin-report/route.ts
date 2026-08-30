@@ -52,27 +52,27 @@ export async function GET(req: Request) {
     .join("");
 
   const html = `<!DOCTYPE html>
-<html><body style="margin:0;padding:0;background:#F5F7FB;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#0B1F3F">
+<html><body style="margin:0;padding:0;background:#F5F7FB;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#156cdd">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F7FB;padding:32px 0">
     <tr><td align="center">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#FFFFFF;border-radius:16px;overflow:hidden">
         <tr>
-          <td style="background:#0B1F3F;padding:24px 32px">
+          <td style="background:#156cdd;padding:24px 32px">
             <div style="font-size:20px;font-weight:700;color:#FFFFFF">Majestic Permits</div>
-            <div style="font-size:13px;color:#C9A24B;margin-top:4px">Admin operations report</div>
+            <div style="font-size:13px;color:#e2ba00;margin-top:4px">Admin operations report</div>
           </td>
         </tr>
-        <tr><td style="height:4px;background:#C9A24B;line-height:4px;font-size:0">&nbsp;</td></tr>
+        <tr><td style="height:4px;background:#e2ba00;line-height:4px;font-size:0">&nbsp;</td></tr>
         <tr>
           <td style="padding:28px 32px">
             <p style="margin:0 0 12px 0;font-size:15px">Here is this week's operations snapshot.</p>
             <p style="margin:0 0 16px 0;font-size:14px;color:#4B5568">
-              <strong style="color:#0B1F3F">${result.totalOpen}</strong> open permits ·
-              <strong style="color:#0B1F3F">${result.nocsToRecord.length}</strong> NOC${result.nocsToRecord.length === 1 ? "" : "s"} needing attention
+              <strong style="color:#156cdd">${result.totalOpen}</strong> open permits ·
+              <strong style="color:#156cdd">${result.nocsToRecord.length}</strong> NOC${result.nocsToRecord.length === 1 ? "" : "s"} needing attention
             </p>
             ${
               result.nocsToRecord.length
-                ? `<div style="background:#FFF7E6;border-left:4px solid #C9A24B;padding:12px 16px;border-radius:8px;margin-top:8px">
+                ? `<div style="background:#FFF7E6;border-left:4px solid #e2ba00;padding:12px 16px;border-radius:8px;margin-top:8px">
                     <div style="font-size:13px;font-weight:600;margin-bottom:6px">NOCs to record this week</div>
                     <ul style="margin:0;padding-left:18px;font-size:13px;color:#3B4560">${summaryRows}${
                     result.nocsToRecord.length > 6
