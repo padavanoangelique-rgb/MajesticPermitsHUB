@@ -3,18 +3,90 @@ import { Logo } from "@/components/layout/logo";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-guard";
 import { format } from "date-fns";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { PERMIT_STAGES, getStageOrderByTitle } from "@/lib/stages";
+import { JobsFilterBar } from "@/components/admin/jobs-filter-bar";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+type SortField = "updated" | "address" | "stage" | "contractor" | "eta";
+
+interface PageProps {
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default async function AdminPage({ searchParams }: PageProps) {
   await requireAdmin();
 
   const supabase = createServiceClient();
 
   const { data: jobs } = await supabase
     .from("jobs")
-    .select("id, property_address, client_type, brand, stage, sub_status, permit_number, submitted_date, permit_eta, homeowner_name, updated_at")
-    .order("updated_at", { ascending: false });
+    .select(
+      "id, property_address, client_type, brand, stage, sub_status, permit_number, submitted_date, permit_eta, homeowner_name, updated_at, contractor_id"
+    );
+
+  const { data: contractors } = await supabase
+    .from("contractors")
+    .select("id, name, company_name")
+    .order("company_name", { ascending: true });
+
+  const contractorMap = new Map(
+    (contractors || []).map((c) => [c.id, c.company_name || c.name || "Contractor"])
+  );
+
+  const typeParam = typeof searchParams.type === "string" ? searchParams.type : "all";
+  const contractorParam =
+    typeof searchParams.contractor === "string" ? searchParams.contractor : "";
+  const selectedContractorIds = contractorParam ? contractorParam.split(",").filter(Boolean) : [];
+  const stageParam = typeof searchParams.stage === "string" ? searchParams.stage : "";
+  const selectedStages = stageParam ? stageParam.split(",").filter(Boolean) : [];
+
+  const sort: SortField = (
+    typeof searchParams.sort === "string" ? searchParams.sort : "updated"
+  ) as SortField;
+  const dir: "asc" | "desc" =
+    searchParams.dir === "asc" ? "asc" : searchParams.dir === "desc" ? "desc" : sort === "updated" ? "desc" : "asc";
+
+  const filtered = (jobs || []).filter((job: any) => {
+    if (typeParam === "contractor" && job.client_type !== "contractor") return false;
+    if (typeParam === "homeowner" && job.client_type !== "homeowner") return false;
+    if (selectedContractorIds.length > 0) {
+      if (!job.contractor_id || !selectedContractorIds.includes(job.contractor_id)) return false;
+    }
+    if (selectedStages.length > 0 && !selectedStages.includes(job.stage)) return false;
+    return true;
+  });
+
+  const sorted = [...filtered].sort((a: any, b: any) => {
+    let cmp = 0;
+    switch (sort) {
+      case "stage":
+        cmp = getStageOrderByTitle(a.stage) - getStageOrderByTitle(b.stage);
+        break;
+      case "contractor":
+        cmp = (contractorMap.get(a.contractor_id) || "").localeCompare(
+          contractorMap.get(b.contractor_id) || ""
+        );
+        break;
+      case "address":
+        cmp = (a.property_address || "").localeCompare(b.property_address || "");
+        break;
+      case "eta":
+        cmp = (a.permit_eta || "").localeCompare(b.permit_eta || "");
+        break;
+      default:
+        cmp = (a.updated_at || "").localeCompare(b.updated_at || "");
+    }
+    return dir === "asc" ? cmp : -cmp;
+  });
+
+  const contractorOptions = (contractors || []).map((c) => ({
+    id: c.id,
+    label: c.company_name || c.name || "Contractor",
+  }));
+
+  const stageOptions = PERMIT_STAGES.map((s) => ({ title: s.title, short: s.short }));
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
@@ -56,23 +128,31 @@ export default async function AdminPage() {
 
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <h1 className="text-2xl font-bold text-[#0B1F3F] dark:text-white">All Jobs</h1>
-        <p className="mt-1 text-slate-500">{jobs?.length || 0} total</p>
+        <p className="mt-1 text-slate-500">
+          {sorted.length} of {jobs?.length || 0}
+          {sorted.length !== (jobs?.length || 0) ? " shown" : " total"}
+        </p>
 
-        <div className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]">
+        <div className="mt-6">
+          <JobsFilterBar contractors={contractorOptions} stages={stageOptions} />
+        </div>
+
+        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-100 bg-slate-50 text-xs font-medium uppercase tracking-wider text-slate-500 dark:border-slate-700 dark:bg-slate-800/50">
               <tr>
-                <th className="px-5 py-3">Address</th>
+                <SortTh field="address" label="Address" sort={sort} dir={dir} searchParams={searchParams} />
                 <th className="px-5 py-3">Client</th>
-                <th className="px-5 py-3">Stage</th>
+                <SortTh field="contractor" label="Contractor" sort={sort} dir={dir} searchParams={searchParams} />
+                <SortTh field="stage" label="Stage" sort={sort} dir={dir} searchParams={searchParams} />
                 <th className="px-5 py-3">Permit #</th>
                 <th className="px-5 py-3">Submitted</th>
-                <th className="px-5 py-3">ETA</th>
+                <SortTh field="eta" label="ETA" sort={sort} dir={dir} searchParams={searchParams} />
                 <th className="px-5 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {(jobs || []).map((job: any) => (
+              {sorted.map((job: any) => (
                 <tr key={job.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                   <td className="px-5 py-4">
                     <p className="font-medium text-[#0B1F3F] dark:text-white">
@@ -83,6 +163,9 @@ export default async function AdminPage() {
                   <td className="px-5 py-4 capitalize text-slate-600 dark:text-slate-300">
                     {job.client_type}
                     <span className="mt-0.5 block text-xs text-slate-400">{job.brand}</span>
+                  </td>
+                  <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
+                    {contractorMap.get(job.contractor_id) || "—"}
                   </td>
                   <td className="px-5 py-4">
                     <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
@@ -112,10 +195,12 @@ export default async function AdminPage() {
                   </td>
                 </tr>
               ))}
-              {(!jobs || jobs.length === 0) && (
+              {sorted.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-5 py-12 text-center text-slate-500">
-                    No jobs yet. Create your first one.
+                  <td colSpan={8} className="px-5 py-12 text-center text-slate-500">
+                    {jobs && jobs.length > 0
+                      ? "No jobs match these filters."
+                      : "No jobs yet. Create your first one."}
                   </td>
                 </tr>
               )}
@@ -124,5 +209,51 @@ export default async function AdminPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+function SortTh({
+  field,
+  label,
+  sort,
+  dir,
+  searchParams,
+}: {
+  field: SortField;
+  label: string;
+  sort: SortField;
+  dir: "asc" | "desc";
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const active = sort === field;
+  const nextDir = active && dir === "asc" ? "desc" : "asc";
+
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (value === undefined || key === "sort" || key === "dir") continue;
+    if (Array.isArray(value)) value.forEach((v) => params.append(key, v));
+    else params.set(key, value);
+  }
+  params.set("sort", field);
+  params.set("dir", nextDir);
+
+  return (
+    <th className="px-5 py-3">
+      <Link
+        href={`/admin?${params.toString()}`}
+        className="inline-flex items-center gap-1 hover:text-slate-700 dark:hover:text-slate-200"
+      >
+        {label}
+        {active ? (
+          dir === "asc" ? (
+            <ArrowUp className="h-3 w-3" />
+          ) : (
+            <ArrowDown className="h-3 w-3" />
+          )
+        ) : (
+          <ArrowUpDown className="h-3 w-3 opacity-40" />
+        )}
+      </Link>
+    </th>
   );
 }
