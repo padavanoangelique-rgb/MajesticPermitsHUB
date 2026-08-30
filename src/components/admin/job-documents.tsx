@@ -123,7 +123,7 @@ export function JobDocuments({
               type="file"
               name="file"
               required
-              className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[#0B1F3F] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+              className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[#156cdd] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
             />
           </label>
         </div>
@@ -139,7 +139,7 @@ export function JobDocuments({
           <button
             type="submit"
             disabled={busy}
-            className="rounded-xl bg-[#0B1F3F] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
             {busy ? "Uploading…" : "Upload document"}
           </button>
@@ -165,7 +165,7 @@ export function JobDocuments({
                     <div className="min-w-0">
                       <button
                         onClick={() => download(d)}
-                        className="truncate text-sm font-medium text-[#0B1F3F] hover:underline dark:text-white"
+                        className="truncate text-sm font-medium text-[#156cdd] hover:underline dark:text-white"
                       >
                         {d.file_name}
                       </button>

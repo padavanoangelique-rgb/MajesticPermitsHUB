@@ -108,7 +108,7 @@ export function JobsFilterBar({
             className={
               "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors " +
               (type === opt.value
-                ? "bg-[#0B1F3F] text-white"
+                ? "bg-[#156cdd] text-white"
                 : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200")
             }
           >
@@ -127,7 +127,7 @@ export function JobsFilterBar({
           >
             Contractor
             {selectedContractorIds.length > 0 && (
-              <span className="rounded-full bg-[#0B1F3F] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+              <span className="rounded-full bg-[#156cdd] px-1.5 py-0.5 text-[11px] font-semibold text-white">
                 {selectedContractorIds.length}
               </span>
             )}
@@ -172,7 +172,7 @@ export function JobsFilterBar({
         >
           Stage
           {selectedStages.length > 0 && (
-            <span className="rounded-full bg-[#0B1F3F] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+            <span className="rounded-full bg-[#156cdd] px-1.5 py-0.5 text-[11px] font-semibold text-white">
               {selectedStages.length}
             </span>
           )}

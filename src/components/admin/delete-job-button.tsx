@@ -67,7 +67,7 @@ export function DeleteJobButton({
             className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-[#111827]"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold text-[#0B1F3F] dark:text-white">
+            <h2 className="text-lg font-semibold text-[#156cdd] dark:text-white">
               Delete this job permanently?
             </h2>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
@@ -80,7 +80,7 @@ export function DeleteJobButton({
               <p className="text-slate-500 dark:text-slate-400">
                 Type the property address to confirm:
               </p>
-              <p className="mt-1 font-semibold text-[#0B1F3F] dark:text-white">
+              <p className="mt-1 font-semibold text-[#156cdd] dark:text-white">
                 {propertyAddress}
               </p>
             </div>

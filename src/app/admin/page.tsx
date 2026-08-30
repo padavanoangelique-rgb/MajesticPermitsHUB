@@ -124,19 +124,19 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <nav className="flex items-center gap-3">
             <Link
               href="/admin/inspections"
-              className="text-sm font-medium text-slate-600 hover:text-[#0B1F3F] dark:text-slate-300"
+              className="text-sm font-medium text-slate-600 hover:text-[#156cdd] dark:text-slate-300"
             >
               Inspections
             </Link>
             <a
               href="/api/admin/report"
-              className="text-sm font-medium text-slate-600 hover:text-[#0B1F3F] dark:text-slate-300"
+              className="text-sm font-medium text-slate-600 hover:text-[#156cdd] dark:text-slate-300"
             >
               Download report
             </a>
             <Link
               href="/admin/new"
-              className="rounded-xl bg-[#0B1F3F] px-4 py-2 text-sm font-semibold text-white hover:bg-[#152C56]"
+              className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8]"
             >
               + New Job
             </Link>
@@ -144,7 +144,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             <form action="/auth/signout" method="post">
               <button
                 type="submit"
-                className="text-sm font-medium text-slate-500 hover:text-[#0B1F3F] dark:text-slate-400"
+                className="text-sm font-medium text-slate-500 hover:text-[#156cdd] dark:text-slate-400"
               >
                 Sign out
               </button>
@@ -163,7 +163,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
         <div className="mt-10 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[#0B1F3F] dark:text-white">All Jobs</h1>
+            <h1 className="text-2xl font-bold text-[#156cdd] dark:text-white">All Jobs</h1>
             <p className="mt-1 text-slate-500">
               {sorted.length} of {jobs?.length || 0}
               {sorted.length !== (jobs?.length || 0) ? " shown" : " total"}
@@ -200,7 +200,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
               {sorted.map((job: any) => (
                 <tr key={job.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                   <td className="px-5 py-4">
-                    <p className="font-medium text-[#0B1F3F] dark:text-white">
+                    <p className="font-medium text-[#156cdd] dark:text-white">
                       {job.property_address}
                     </p>
                     <p className="text-xs text-slate-500">{job.homeowner_name}</p>
@@ -233,7 +233,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   <td className="px-5 py-4 text-right">
                     <Link
                       href={`/admin/jobs/${job.id}`}
-                      className="text-sm font-medium text-[#0B1F3F] hover:underline dark:text-[#C9A24B]"
+                      className="text-sm font-medium text-[#156cdd] hover:underline dark:text-[#C9A24B]"
                     >
                       View
                     </Link>

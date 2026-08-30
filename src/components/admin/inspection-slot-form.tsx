@@ -97,7 +97,7 @@ export function InspectionSlotForm({
         className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5"
       >
         <div className="flex min-w-0 items-center gap-3">
-          <span className="shrink-0 text-sm font-semibold text-[#0B1F3F] dark:text-white">
+          <span className="shrink-0 text-sm font-semibold text-[#156cdd] dark:text-white">
             Inspection {slot.slot}
           </span>
           <span className="truncate text-sm text-slate-500 dark:text-slate-400">
@@ -204,7 +204,7 @@ export function InspectionSlotForm({
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-[#0B1F3F] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {saving ? "Saving…" : "Save inspection"}
             </button>

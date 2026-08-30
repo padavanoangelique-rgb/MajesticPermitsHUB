@@ -37,10 +37,10 @@ export default async function InspectionsPage() {
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-sm text-slate-500 hover:text-[#0B1F3F]">
+            <Link href="/admin" className="text-sm text-slate-500 hover:text-[#156cdd]">
               ← Jobs
             </Link>
-            <p className="text-sm font-semibold text-[#0B1F3F] dark:text-white">
+            <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
               Inspection Requests
             </p>
           </div>
@@ -49,7 +49,7 @@ export default async function InspectionsPage() {
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
-        <h1 className="text-2xl font-bold text-[#0B1F3F] dark:text-white">
+        <h1 className="text-2xl font-bold text-[#156cdd] dark:text-white">
           Inspection Requests
         </h1>
         <p className="mt-1 text-slate-500">
@@ -71,7 +71,7 @@ export default async function InspectionsPage() {
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="font-semibold text-[#0B1F3F] dark:text-white">
+                  <p className="font-semibold text-[#156cdd] dark:text-white">
                     {req.jobs?.property_address || "Unknown address"}
                   </p>
                   <p className="mt-1 text-sm text-slate-500">

@@ -75,7 +75,7 @@ export function SendQuoteForm({
           disabled={!hasContractor}
           className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
             billTo === "contractor"
-              ? "bg-[#0B1F3F] text-white"
+              ? "bg-[#156cdd] text-white"
               : "bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-40 dark:bg-slate-700 dark:text-slate-200"
           }`}
           title={
@@ -91,7 +91,7 @@ export function SendQuoteForm({
           onClick={() => setBillTo("homeowner")}
           className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
             billTo === "homeowner"
-              ? "bg-[#0B1F3F] text-white"
+              ? "bg-[#156cdd] text-white"
               : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200"
           }`}
         >
@@ -157,7 +157,7 @@ export function SendQuoteForm({
       <button
         type="submit"
         disabled={loading}
-        className="rounded-xl bg-[#0B1F3F] px-4 py-2 text-sm font-semibold text-white hover:bg-[#152C56] disabled:opacity-60"
+        className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
       >
         {loading
           ? "Creating quote..."

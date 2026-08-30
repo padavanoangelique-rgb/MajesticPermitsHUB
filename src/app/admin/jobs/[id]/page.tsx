@@ -77,7 +77,7 @@ export default async function JobDetailPage({ params }: PageProps) {
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4 sm:px-6">
-          <Link href="/admin" className="text-sm font-medium text-slate-500 hover:text-[#0B1F3F]">
+          <Link href="/admin" className="text-sm font-medium text-slate-500 hover:text-[#156cdd]">
             ← All jobs
           </Link>
           <ThemeToggle />
@@ -85,7 +85,7 @@ export default async function JobDetailPage({ params }: PageProps) {
       </header>
 
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-        <h1 className="text-2xl font-bold text-[#0B1F3F] dark:text-white">
+        <h1 className="text-2xl font-bold text-[#156cdd] dark:text-white">
           {job.property_address}
         </h1>
         <p className="mt-1 text-slate-500">
@@ -109,7 +109,7 @@ export default async function JobDetailPage({ params }: PageProps) {
         </Section>
 
         <Section title="Current status">
-          <p className="text-lg font-medium text-[#0B1F3F] dark:text-white">
+          <p className="text-lg font-medium text-[#156cdd] dark:text-white">
             {job.stage} · {job.sub_status}
           </p>
           {job.permit_eta && (
@@ -167,7 +167,7 @@ export default async function JobDetailPage({ params }: PageProps) {
               {(quotes || []).map((q: any) => (
                 <li key={q.id} className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-sm font-semibold text-[#0B1F3F] dark:text-white">
+                    <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
                       ${Number(q.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                       <span className="ml-2 text-xs font-normal text-slate-500">
                         {q.bill_to === "contractor" ? "Contractor" : "Homeowner"}
