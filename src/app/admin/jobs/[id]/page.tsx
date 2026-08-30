@@ -11,6 +11,7 @@ import { PermitHeader } from "@/components/shared/permit-header";
 import { InspectionSlotForm } from "@/components/admin/inspection-slot-form";
 import { JobDocuments } from "@/components/admin/job-documents";
 import { HomeownerShareControls } from "@/components/admin/homeowner-share-controls";
+import { DeleteJobButton } from "@/components/admin/delete-job-button";
 import { SITE_URL } from "@/lib/email";
 
 interface PageProps {
@@ -233,6 +234,20 @@ export default async function JobDetailPage({ params }: PageProps) {
         <Section title="Homeowner-visible note">
           <HomeownerNoteForm jobId={job.id} initialValue={job.homeowner_note} />
         </Section>
+
+        <section className="mt-6 rounded-2xl border border-red-200 bg-red-50/40 p-6 dark:border-red-900/40 dark:bg-red-950/20">
+          <h2 className="mb-1 text-sm font-semibold uppercase tracking-wider text-red-700 dark:text-red-400">
+            Danger zone
+          </h2>
+          <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">
+            Permanently deletes this job and all of its documents, inspections,
+            quotes, and homeowner links. There is no undo.
+          </p>
+          <DeleteJobButton
+            jobId={job.id}
+            propertyAddress={job.property_address}
+          />
+        </section>
       </main>
     </div>
   );
