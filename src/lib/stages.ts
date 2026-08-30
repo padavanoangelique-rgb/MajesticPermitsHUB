@@ -83,3 +83,12 @@ export function getStageIndex(key: string) {
   const idx = PERMIT_STAGES.findIndex((s) => s.key === key);
   return idx >= 0 ? idx : 0;
 }
+
+// jobs.stage stores the title string, not the key. Used to sort jobs in
+// canonical pipeline order instead of alphabetically. Unrecognized/legacy
+// free-text values sort last rather than crashing the sort.
+export function getStageOrderByTitle(title: string | null | undefined) {
+  if (!title) return PERMIT_STAGES.length;
+  const idx = PERMIT_STAGES.findIndex((s) => s.title === title);
+  return idx >= 0 ? idx : PERMIT_STAGES.length;
+}
