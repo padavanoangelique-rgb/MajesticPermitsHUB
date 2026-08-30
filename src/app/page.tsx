@@ -79,7 +79,7 @@ export default function LandingPage() {
               </div>
               <div className="px-3 py-2 text-slate-600 dark:text-slate-400">Documents</div>
               <div className="px-3 py-2 text-slate-600 dark:text-slate-400">Invoices</div>
-              <div className="px-3 py-2 text-slate-600 dark:text-slate-400">Team</div>
+              <div className="px-3 py-2 text-slate-600 dark:text-slate-400">Inspections</div>
             </aside>
 
             {/* Main pane */}
@@ -229,7 +229,7 @@ export default function LandingPage() {
                 <li>• Private portal for all your projects</li>
                 <li>• Real-time status and document access</li>
                 <li>• Inspection request button</li>
-                <li>• Quotes, invoices, and notifications</li>
+                <li>• Quotes, invoices, and email notifications</li>
               </ul>
             </div>
 
