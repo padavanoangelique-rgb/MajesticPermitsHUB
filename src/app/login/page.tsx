@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 function LoginForm() {
@@ -124,6 +125,15 @@ function LoginForm() {
             </p>
           )}
 
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-xs font-medium text-slate-500 hover:text-[#0B1F3F] dark:text-slate-400 dark:hover:text-white"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -133,14 +143,14 @@ function LoginForm() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
           Need an account?{" "}
-          <a
-            href="mailto:hello@majesticpermits.com"
-            className="text-[#0B1F3F] underline dark:text-[#C9A24B]"
+          <Link
+            href="/request-access"
+            className="font-medium text-[#0B1F3F] underline dark:text-[#C9A24B]"
           >
-            Contact us
-          </a>
+            Request access
+          </Link>
         </p>
       </div>
     </div>
