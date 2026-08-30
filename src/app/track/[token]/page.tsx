@@ -113,7 +113,7 @@ export default async function TrackPage({ params }: PageProps) {
             <p className="text-sm font-medium uppercase tracking-wider text-slate-500">
               Project status
             </p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0B1F3F] dark:text-white sm:text-4xl">
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#156cdd] dark:text-white sm:text-4xl">
               {job.property_address || "Your Project"}
             </h1>
           </div>
@@ -149,7 +149,7 @@ export default async function TrackPage({ params }: PageProps) {
                     className="flex items-center justify-between py-3"
                   >
                     <div>
-                      <p className="text-sm font-semibold text-[#0B1F3F] dark:text-white">
+                      <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
                         {i.inspection_type || `Inspection ${i.slot}`}
                       </p>
                       <p className="text-xs text-slate-500">
@@ -179,7 +179,7 @@ export default async function TrackPage({ params }: PageProps) {
                   <li key={d.id} className="py-3">
                     <a
                       href={`/api/track/${token}/documents/${d.id}`}
-                      className="text-sm font-medium text-[#0B1F3F] hover:underline dark:text-white"
+                      className="text-sm font-medium text-[#156cdd] hover:underline dark:text-white"
                     >
                       {d.label || d.file_name}
                     </a>
@@ -207,7 +207,7 @@ function InvalidLink() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-[#0A0F1C]">
       <div className="max-w-md text-center">
-        <h1 className="text-3xl font-bold text-[#0B1F3F] dark:text-white">
+        <h1 className="text-3xl font-bold text-[#156cdd] dark:text-white">
           This link isn&apos;t valid
         </h1>
         <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
@@ -216,7 +216,7 @@ function InvalidLink() {
         </p>
         <a
           href="mailto:hello@majesticpermits.com"
-          className="mt-8 inline-flex rounded-2xl bg-[#0B1F3F] px-6 py-3 text-sm font-semibold text-white"
+          className="mt-8 inline-flex rounded-2xl bg-[#156cdd] px-6 py-3 text-sm font-semibold text-white"
         >
           Email us
         </a>
@@ -229,7 +229,7 @@ function DisabledLink() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-[#0A0F1C]">
       <div className="max-w-md text-center">
-        <h1 className="text-3xl font-bold text-[#0B1F3F] dark:text-white">
+        <h1 className="text-3xl font-bold text-[#156cdd] dark:text-white">
           Sharing has been paused
         </h1>
         <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">

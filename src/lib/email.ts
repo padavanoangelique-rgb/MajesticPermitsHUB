@@ -29,7 +29,7 @@ export function findStage(stage?: string | null) {
 }
 
 function shell(brand: string, heading: string, body: string) {
-  const accent = brand === "The Permit Closer" ? "#C9A24B" : "#0B1F3F";
+  const accent = brand === "The Permit Closer" ? "#e2ba00" : "#156cdd";
   return `<!doctype html>
 <html>
   <body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
@@ -43,7 +43,7 @@ function shell(brand: string, heading: string, body: string) {
           </tr>
           <tr>
             <td style="padding:32px 28px;">
-              <h1 style="margin:0 0 14px;font-size:21px;line-height:1.3;color:#0B1F3F;font-weight:700;">${heading}</h1>
+              <h1 style="margin:0 0 14px;font-size:21px;line-height:1.3;color:#156cdd;font-weight:700;">${heading}</h1>
               ${body}
             </td>
           </tr>
@@ -76,7 +76,7 @@ export function stageChangeEmail(opts: {
   const next = stage?.next || "";
 
   const etaRow = opts.permitEta
-    ? `<tr><td style="padding:6px 0;font-size:14px;color:#64748b;">Estimated permit date</td><td style="padding:6px 0;font-size:14px;color:#0B1F3F;font-weight:600;text-align:right;">${new Date(
+    ? `<tr><td style="padding:6px 0;font-size:14px;color:#64748b;">Estimated permit date</td><td style="padding:6px 0;font-size:14px;color:#156cdd;font-weight:600;text-align:right;">${new Date(
         opts.permitEta + "T12:00:00"
       ).toLocaleDateString("en-US", {
         month: "short",
@@ -87,32 +87,32 @@ export function stageChangeEmail(opts: {
 
   const button = opts.trackUrl
     ? `<p style="margin:26px 0 0;">
-         <a href="${opts.trackUrl}" style="display:inline-block;background:#0B1F3F;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:13px 24px;border-radius:10px;">View your permit status</a>
+         <a href="${opts.trackUrl}" style="display:inline-block;background:#156cdd;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:13px 24px;border-radius:10px;">View your permit status</a>
        </p>
        <p style="margin:14px 0 0;font-size:12px;color:#94a3b8;">No login needed — this private link always shows your latest status.</p>`
     : "";
 
   const body = `
     <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:#334155;">
-      Your permit for <strong style="color:#0B1F3F;">${opts.propertyAddress}</strong> just moved forward.
+      Your permit for <strong style="color:#156cdd;">${opts.propertyAddress}</strong> just moved forward.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e2e8f0;border-radius:12px;padding:16px 18px;background:#f8fafc;">
-      <tr><td style="padding:6px 0;font-size:14px;color:#64748b;">New status</td><td style="padding:6px 0;font-size:14px;color:#0B1F3F;font-weight:600;text-align:right;">${title}</td></tr>
+      <tr><td style="padding:6px 0;font-size:14px;color:#64748b;">New status</td><td style="padding:6px 0;font-size:14px;color:#156cdd;font-weight:600;text-align:right;">${title}</td></tr>
       ${
         opts.newSubStatus
-          ? `<tr><td style="padding:6px 0;font-size:14px;color:#64748b;">Detail</td><td style="padding:6px 0;font-size:14px;color:#0B1F3F;font-weight:600;text-align:right;">${opts.newSubStatus}</td></tr>`
+          ? `<tr><td style="padding:6px 0;font-size:14px;color:#64748b;">Detail</td><td style="padding:6px 0;font-size:14px;color:#156cdd;font-weight:600;text-align:right;">${opts.newSubStatus}</td></tr>`
           : ""
       }
       ${etaRow}
     </table>
     ${
       description
-        ? `<p style="margin:20px 0 0;font-size:15px;line-height:1.65;color:#334155;"><strong style="color:#0B1F3F;">What's happening now:</strong> ${description}</p>`
+        ? `<p style="margin:20px 0 0;font-size:15px;line-height:1.65;color:#334155;"><strong style="color:#156cdd;">What's happening now:</strong> ${description}</p>`
         : ""
     }
     ${
       next
-        ? `<p style="margin:12px 0 0;font-size:15px;line-height:1.65;color:#334155;"><strong style="color:#0B1F3F;">What happens next:</strong> ${next}</p>`
+        ? `<p style="margin:12px 0 0;font-size:15px;line-height:1.65;color:#334155;"><strong style="color:#156cdd;">What happens next:</strong> ${next}</p>`
         : ""
     }
     ${button}
@@ -139,10 +139,10 @@ export function weeklyReportEmail(opts: {
       : opts.jobs
           .map(
             (j) => `<tr>
-              <td style="padding:12px 0;border-top:1px solid #e2e8f0;font-size:14px;color:#0B1F3F;font-weight:600;">${j.property_address}</td>
+              <td style="padding:12px 0;border-top:1px solid #e2e8f0;font-size:14px;color:#156cdd;font-weight:600;">${j.property_address}</td>
               <td style="padding:12px 0;border-top:1px solid #e2e8f0;font-size:13px;color:#64748b;text-align:right;">${
                 findStage(j.stage)?.title || j.stage
-              }${j.permit_eta ? `<br /><span style="color:#C9A24B;">ETA ${j.permit_eta}</span>` : ""}</td>
+              }${j.permit_eta ? `<br /><span style="color:#e2ba00;">ETA ${j.permit_eta}</span>` : ""}</td>
             </tr>`
           )
           .join("");
@@ -153,7 +153,7 @@ export function weeklyReportEmail(opts: {
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>
     <p style="margin:26px 0 0;">
-      <a href="${SITE_URL}/dashboard" style="display:inline-block;background:#0B1F3F;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:13px 24px;border-radius:10px;">Open your dashboard</a>
+      <a href="${SITE_URL}/dashboard" style="display:inline-block;background:#156cdd;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:13px 24px;border-radius:10px;">Open your dashboard</a>
     </p>
   `;
 
@@ -179,10 +179,10 @@ export function quoteEmail(opts: {
 
   const body = `
     <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:#334155;">
-      Here is your quote for <strong style="color:#0B1F3F;">${opts.propertyAddress}</strong>.
+      Here is your quote for <strong style="color:#156cdd;">${opts.propertyAddress}</strong>.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e2e8f0;border-radius:12px;padding:18px;background:#f8fafc;">
-      <tr><td style="font-size:14px;color:#64748b;">Total due</td><td style="font-size:22px;color:#0B1F3F;font-weight:700;text-align:right;">${amount}</td></tr>
+      <tr><td style="font-size:14px;color:#64748b;">Total due</td><td style="font-size:22px;color:#156cdd;font-weight:700;text-align:right;">${amount}</td></tr>
       ${
         opts.description
           ? `<tr><td colspan="2" style="padding-top:12px;font-size:14px;line-height:1.6;color:#334155;">${opts.description}</td></tr>`
@@ -190,7 +190,7 @@ export function quoteEmail(opts: {
       }
     </table>
     <p style="margin:26px 0 0;">
-      <a href="${opts.payUrl}" style="display:inline-block;background:#C9A24B;color:#0B1F3F;text-decoration:none;font-size:15px;font-weight:700;padding:14px 26px;border-radius:10px;">Pay securely</a>
+      <a href="${opts.payUrl}" style="display:inline-block;background:#e2ba00;color:#156cdd;text-decoration:none;font-size:15px;font-weight:700;padding:14px 26px;border-radius:10px;">Pay securely</a>
     </p>
     <p style="margin:14px 0 0;font-size:12px;color:#94a3b8;">Payments are processed by Stripe. We never see your card details.</p>
   `;

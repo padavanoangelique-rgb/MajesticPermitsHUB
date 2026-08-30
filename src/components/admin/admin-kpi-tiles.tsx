@@ -50,7 +50,7 @@ export function AdminKpiTiles({
       value: needsInspection,
       href: "/admin",
       Icon: ClipboardCheck,
-      accent: "text-[#C9A24B]",
+      accent: "text-[#e2ba00]",
       ring: "bg-amber-50 dark:bg-amber-950/40",
     },
     {
@@ -78,7 +78,7 @@ export function AdminKpiTiles({
             <p className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {label}
             </p>
-            <p className="mt-0.5 text-2xl font-bold text-[#0B1F3F] dark:text-white">
+            <p className="mt-0.5 text-2xl font-bold text-[#156cdd] dark:text-white">
               {value}
             </p>
           </div>

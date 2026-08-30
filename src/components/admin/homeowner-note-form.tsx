@@ -56,7 +56,7 @@ export function HomeownerNoteForm({
           type="button"
           onClick={save}
           disabled={saving}
-          className="rounded-xl bg-[#0B1F3F] px-4 py-2 text-xs font-semibold text-white hover:bg-[#152C56] disabled:opacity-60"
+          className="rounded-xl bg-[#156cdd] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
         >
           {saving ? "Saving..." : "Save homeowner note"}
         </button>

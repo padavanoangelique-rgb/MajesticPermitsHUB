@@ -27,7 +27,7 @@ export default async function QuoteApprovalPage({ params }: PageProps) {
   if (!quote) {
     return (
       <main className="mx-auto max-w-2xl px-6 py-24 text-center">
-        <h1 className="text-2xl font-semibold text-[#0B1F3F]">
+        <h1 className="text-2xl font-semibold text-[#156cdd]">
           Quote not found
         </h1>
         <p className="mt-3 text-slate-600">
@@ -64,7 +64,7 @@ export default async function QuoteApprovalPage({ params }: PageProps) {
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           {job?.brand || "Majestic Permits"} · Quote for review
         </p>
-        <h1 className="mt-1 text-2xl font-semibold text-[#0B1F3F] dark:text-white">
+        <h1 className="mt-1 text-2xl font-semibold text-[#156cdd] dark:text-white">
           ${amountFormatted}
         </h1>
         {quote.description && (

@@ -87,14 +87,14 @@ export default async function ContractorProjectPage({ params }: PageProps) {
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
         <div className="mx-auto flex h-16 max-w-3xl items-center px-4 sm:px-6">
-          <Link href="/dashboard" className="text-sm text-slate-500 hover:text-[#0B1F3F]">
+          <Link href="/dashboard" className="text-sm text-slate-500 hover:text-[#156cdd]">
             ← All projects
           </Link>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <h1 className="text-2xl font-bold text-[#0B1F3F] dark:text-white">
+        <h1 className="text-2xl font-bold text-[#156cdd] dark:text-white">
           {job.property_address}
         </h1>
 
@@ -111,7 +111,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
         </div>
 
         <Section title="Current stage">
-          <p className="text-xl font-semibold text-[#0B1F3F] dark:text-white">
+          <p className="text-xl font-semibold text-[#156cdd] dark:text-white">
             {job.stage}
           </p>
           {job.next_step && (
@@ -134,7 +134,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
               <li key={i.id} className="py-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-[#0B1F3F] dark:text-white">
+                    <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
                       Inspection {i.slot}
                       {i.inspection_type ? ` · ${i.inspection_type}` : ""}
                     </p>
@@ -168,7 +168,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
               {(docs || []).map((d: any) => (
                 <li key={d.id} className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-sm font-semibold text-[#0B1F3F] dark:text-white">
+                    <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
                       {d.label || d.file_name}
                     </p>
                     <p className="text-xs text-slate-500">
@@ -191,7 +191,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
               {(quotes || []).map((q: any) => (
                 <li key={q.id} className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-sm font-semibold text-[#0B1F3F] dark:text-white">
+                    <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
                       ${Number(q.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </p>
                     {q.description && (
@@ -229,7 +229,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
                       !q.declined_at && (
                         <a
                           href={`/quote/${q.approval_token}`}
-                          className="text-[11px] font-semibold text-[#0B1F3F] underline hover:opacity-80 dark:text-white"
+                          className="text-[11px] font-semibold text-[#156cdd] underline hover:opacity-80 dark:text-white"
                         >
                           Review &amp; approve
                         </a>

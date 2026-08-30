@@ -2,50 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Design tokens — lifted from permitaio.com to unify both apps under one
+ * visual system. Light mode: white surface, near-black text, permitaio
+ * primary blue #156cdd. Dark mode: near-black surface, off-white text,
+ * permitaio chartreuse #9ce824 primary with a true-gold secondary accent.
+ *
+ * All values are in HSL (H S% L%) form because tailwind.config.ts wraps
+ * them in `hsl(var(--token))`. Hex references (for humans):
+ *   #ffffff  → 0 0% 100%
+ *   #0a0a0a  → 0 0% 4%
+ *   #585858  → 0 0% 35%
+ *   #f2f2f2  → 0 0% 95%
+ *   #dedede  → 0 0% 87%
+ *   #156cdd  → 215 74% 47%
+ *   #1157b8  → 214 82% 39% (hover)
+ *   #020202  → 0 0% 1%
+ *   #090909  → 0 0% 3.5%
+ *   #f8f8f8  → 0 0% 97%
+ *   #8f8f8f  → 0 0% 56%
+ *   #9ce824  → 84 82% 53%
+ *   #e2ba00  → 49 100% 44%   (dark-mode gold secondary accent)
+ *   #161616  → 0 0% 9%
+ */
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 215 55% 15%;
+    --foreground: 0 0% 4%;
     --card: 0 0% 100%;
-    --card-foreground: 215 55% 15%;
+    --card-foreground: 0 0% 4%;
     --popover: 0 0% 100%;
-    --popover-foreground: 215 55% 15%;
-    --primary: 215 70% 15%;
+    --popover-foreground: 0 0% 4%;
+    --primary: 215 74% 47%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 20% 96%;
-    --secondary-foreground: 215 55% 15%;
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 15% 45%;
-    --accent: 43 55% 54%;
-    --accent-foreground: 215 70% 15%;
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 4%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 35%;
+    --accent: 0 0% 95%;
+    --accent-foreground: 0 0% 4%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
-    --ring: 215 70% 15%;
+    --border: 0 0% 87%;
+    --input: 0 0% 87%;
+    --ring: 215 74% 47%;
     --radius: 1rem;
   }
 
   .dark {
-    --background: 222 40% 7%;
-    --foreground: 210 20% 96%;
-    --card: 222 30% 10%;
-    --card-foreground: 210 20% 96%;
-    --popover: 222 30% 10%;
-    --popover-foreground: 210 20% 96%;
-    --primary: 210 20% 96%;
-    --primary-foreground: 215 70% 15%;
-    --secondary: 217 25% 15%;
-    --secondary-foreground: 210 20% 96%;
-    --muted: 217 25% 15%;
-    --muted-foreground: 215 15% 60%;
-    --accent: 43 55% 54%;
-    --accent-foreground: 215 70% 15%;
+    --background: 0 0% 1%;
+    --foreground: 0 0% 97%;
+    --card: 0 0% 3.5%;
+    --card-foreground: 0 0% 97%;
+    --popover: 0 0% 3.5%;
+    --popover-foreground: 0 0% 97%;
+    --primary: 84 82% 53%;
+    --primary-foreground: 84 60% 8%;
+    --secondary: 0 0% 9%;
+    --secondary-foreground: 0 0% 97%;
+    --muted: 0 0% 9%;
+    --muted-foreground: 0 0% 56%;
+    --accent: 49 100% 44%;
+    --accent-foreground: 0 0% 4%;
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 217 25% 18%;
-    --input: 217 25% 18%;
-    --ring: 43 55% 54%;
+    --border: 0 0% 15%;
+    --input: 0 0% 20%;
+    --ring: 84 82% 53%;
   }
 }
 

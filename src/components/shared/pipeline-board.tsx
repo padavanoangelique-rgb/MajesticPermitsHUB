@@ -125,7 +125,7 @@ export function PipelineBoard({
               className={
                 "flex w-72 shrink-0 flex-col rounded-2xl border p-3 transition " +
                 (isDropTarget
-                  ? "border-[#0B1F3F] bg-[#0B1F3F]/5 dark:border-[#C9A24B] dark:bg-[#C9A24B]/10"
+                  ? "border-[#156cdd] bg-[#156cdd]/5 dark:border-[#e2ba00] dark:bg-[#e2ba00]/10"
                   : "border-slate-200 bg-slate-50/50 dark:border-slate-700 dark:bg-slate-900/40")
               }
               onDragOver={(e) => {
@@ -227,7 +227,7 @@ function PipelineCard({
         (draggable ? " cursor-grab active:cursor-grabbing" : "")
       }
     >
-      <p className="line-clamp-2 text-sm font-semibold text-[#0B1F3F] dark:text-white">
+      <p className="line-clamp-2 text-sm font-semibold text-[#156cdd] dark:text-white">
         {job.property_address}
       </p>
       <div className="mt-1 flex flex-wrap gap-1.5 text-[11px]">
@@ -237,7 +237,7 @@ function PipelineCard({
           </span>
         )}
         {job.sub_status && (
-          <span className="rounded-full bg-[#0B1F3F]/5 px-2 py-0.5 text-[#0B1F3F] dark:bg-[#C9A24B]/15 dark:text-[#C9A24B]">
+          <span className="rounded-full bg-[#156cdd]/5 px-2 py-0.5 text-[#156cdd] dark:bg-[#e2ba00]/15 dark:text-[#e2ba00]">
             {job.sub_status}
           </span>
         )}

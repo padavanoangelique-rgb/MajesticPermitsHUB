@@ -45,7 +45,7 @@ export function DashboardViewSwitch({
             className={
               "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors " +
               (active
-                ? "bg-[#0B1F3F] text-white"
+                ? "bg-[#156cdd] text-white"
                 : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200")
             }
           >
