@@ -4,32 +4,33 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { LayoutGrid, Rows3 } from "lucide-react";
 
 /**
- * Toggle between card view (default) and pipeline (kanban) view on the
- * contractor dashboard. Persists selection via ?view=<mode> so a link back
- * from a job detail page returns to whichever mode was in use.
+ * Toggle between list view (default, jobs grouped by status) and pipeline
+ * (kanban) view on the contractor dashboard. Persists selection via
+ * ?view=<mode> so a link back from a job detail page returns to whichever
+ * mode was in use.
  */
 export function DashboardViewSwitch({
   view,
 }: {
-  view: "cards" | "pipeline";
+  view: "list" | "pipeline";
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  function setView(next: "cards" | "pipeline") {
+  function setView(next: "list" | "pipeline") {
     const params = new URLSearchParams(searchParams.toString());
-    if (next === "cards") params.delete("view");
+    if (next === "list") params.delete("view");
     else params.set("view", next);
     router.push(params.toString() ? `${pathname}?${params}` : pathname);
   }
 
   const options: Array<{
-    value: "cards" | "pipeline";
+    value: "list" | "pipeline";
     label: string;
     Icon: typeof LayoutGrid;
   }> = [
-    { value: "cards", label: "Card view", Icon: Rows3 },
+    { value: "list", label: "List view", Icon: Rows3 },
     { value: "pipeline", label: "Pipeline", Icon: LayoutGrid },
   ];
 
