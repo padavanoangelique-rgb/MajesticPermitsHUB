@@ -7,6 +7,7 @@ import { PERMIT_STAGES } from "@/lib/stages";
 import { StageStepper } from "@/components/homeowner/stage-stepper";
 import { PermitHeader } from "@/components/shared/permit-header";
 import { DocDownload } from "@/components/contractor/doc-download";
+import { RequestInspection } from "@/components/contractor/request-inspection";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
 
@@ -129,35 +130,50 @@ export default async function ContractorProjectPage({ params }: PageProps) {
         </Section>
 
         <Section title="Inspections">
-          <ul className="divide-y divide-slate-100 dark:divide-slate-700">
-            {(inspections || []).map((i: any) => (
-              <li key={i.id} className="py-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
-                      Inspection {i.slot}
-                      {i.inspection_type ? ` · ${i.inspection_type}` : ""}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {i.scheduled_date
-                        ? `Scheduled ${format(new Date(i.scheduled_date), "MMM d, yyyy")}`
-                        : i.result_date
-                          ? `Result ${format(new Date(i.result_date), "MMM d, yyyy")}`
-                          : "Not scheduled"}
-                    </p>
+          {(inspections || []).length === 0 ? (
+            <p className="text-sm text-slate-500">
+              No inspections on file yet.
+            </p>
+          ) : (
+            <ul className="divide-y divide-slate-100 dark:divide-slate-700">
+              {(inspections || []).map((i: any) => (
+                <li key={i.id} className="py-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
+                        Inspection {i.slot}
+                        {i.inspection_type ? ` · ${i.inspection_type}` : ""}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {i.scheduled_date
+                          ? `Scheduled ${format(new Date(i.scheduled_date), "MMM d, yyyy")}`
+                          : i.result_date
+                            ? `Result ${format(new Date(i.result_date), "MMM d, yyyy")}`
+                            : "Not scheduled"}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                      {INSPECTION_STATUS_LABEL[i.status] ?? i.status}
+                    </span>
                   </div>
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
-                    {INSPECTION_STATUS_LABEL[i.status] ?? i.status}
-                  </span>
-                </div>
-                {i.correction_notes && (
-                  <p className="mt-1 text-xs text-slate-500">
-                    Notes: {i.correction_notes}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
+                  {i.correction_notes && (
+                    <p className="mt-1 text-xs text-slate-500">
+                      Notes: {i.correction_notes}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/*
+           * Contractor can request an inspection at any time until the
+           * permit is fully closed. Not gated on stage — they might need
+           * a re-inspection, partial, or off-schedule visit whenever.
+           */}
+          {job.stage !== "Permit closed — all done" && (
+            <RequestInspection jobId={job.id} />
+          )}
         </Section>
 
         <Section title="Documents">
