@@ -7,29 +7,19 @@ import { PERMIT_STAGES } from "@/lib/stages";
 import { StageStepper } from "@/components/homeowner/stage-stepper";
 import { PermitHeader } from "@/components/shared/permit-header";
 import { DocDownload } from "@/components/contractor/doc-download";
-import { RequestInspection } from "@/components/contractor/request-inspection";
+import { InspectionRow } from "@/components/contractor/inspection-row";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
+import {
+  nextInspectionLabel,
+  nextInspectionReason,
+} from "@/lib/next-inspection-day";
 
 interface PageProps {
   params: { id: string };
 }
 
 export const dynamic = "force-dynamic";
-
-const INSPECTION_STATUS_LABEL: Record<string, string> = {
-  not_required: "Not required",
-  not_requested: "Not requested",
-  requested: "Requested",
-  scheduled: "Scheduled",
-  passed: "Passed",
-  partial_pass: "Partial pass",
-  failed: "Failed — corrections",
-  reinspection_requested: "Reinspection requested",
-  reinspection_scheduled: "Reinspection scheduled",
-  cancelled: "Cancelled",
-  closed: "Closed",
-};
 
 export default async function ContractorProjectPage({ params }: PageProps) {
   const user = await requireUser(`/dashboard/projects/${params.id}`);
@@ -48,13 +38,17 @@ export default async function ContractorProjectPage({ params }: PageProps) {
 
   if (!job) notFound();
 
+  const permitClosed = job.stage === "Permit closed — all done";
+  const nextDayLabel = nextInspectionLabel();
+  const nextDayReason = nextInspectionReason();
+
   // Contractor-visible inspections, docs, quotes/invoices
   const [{ data: inspections }, { data: docs }, { data: quotes }] =
     await Promise.all([
       service
         .from("job_inspections")
         .select(
-          "id, slot, inspection_type, status, scheduled_date, result_date, correction_notes"
+          "id, slot, inspection_type, status, requested_date, scheduled_date, result_date, correction_notes"
         )
         .eq("job_id", job.id)
         .order("slot", { ascending: true }),
@@ -137,42 +131,16 @@ export default async function ContractorProjectPage({ params }: PageProps) {
           ) : (
             <ul className="divide-y divide-slate-100 dark:divide-slate-700">
               {(inspections || []).map((i: any) => (
-                <li key={i.id} className="py-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
-                        Inspection {i.slot}
-                        {i.inspection_type ? ` · ${i.inspection_type}` : ""}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {i.scheduled_date
-                          ? `Scheduled ${format(new Date(i.scheduled_date), "MMM d, yyyy")}`
-                          : i.result_date
-                            ? `Result ${format(new Date(i.result_date), "MMM d, yyyy")}`
-                            : "Not scheduled"}
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
-                      {INSPECTION_STATUS_LABEL[i.status] ?? i.status}
-                    </span>
-                  </div>
-                  {i.correction_notes && (
-                    <p className="mt-1 text-xs text-slate-500">
-                      Notes: {i.correction_notes}
-                    </p>
-                  )}
-                </li>
+                <InspectionRow
+                  key={i.id}
+                  jobId={job.id}
+                  inspection={i}
+                  nextDayLabel={nextDayLabel}
+                  nextDayReason={nextDayReason}
+                  permitClosed={permitClosed}
+                />
               ))}
             </ul>
-          )}
-
-          {/*
-           * Contractor can request an inspection at any time until the
-           * permit is fully closed. Not gated on stage — they might need
-           * a re-inspection, partial, or off-schedule visit whenever.
-           */}
-          {job.stage !== "Permit closed — all done" && (
-            <RequestInspection jobId={job.id} />
           )}
         </Section>
 
