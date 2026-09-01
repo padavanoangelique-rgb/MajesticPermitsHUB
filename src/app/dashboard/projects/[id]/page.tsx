@@ -10,10 +10,7 @@ import { DocDownload } from "@/components/contractor/doc-download";
 import { InspectionRow } from "@/components/contractor/inspection-row";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
-import {
-  nextInspectionLabel,
-  nextInspectionReason,
-} from "@/lib/next-inspection-day";
+import { upcomingInspectionDates } from "@/lib/next-inspection-day";
 
 interface PageProps {
   params: { id: string };
@@ -39,8 +36,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
   if (!job) notFound();
 
   const permitClosed = job.stage === "Permit closed — all done";
-  const nextDayLabel = nextInspectionLabel();
-  const nextDayReason = nextInspectionReason();
+  const dateOptions = upcomingInspectionDates(10);
 
   // Contractor-visible inspections, docs, quotes/invoices
   const [{ data: inspections }, { data: docs }, { data: quotes }] =
@@ -135,8 +131,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
                   key={i.id}
                   jobId={job.id}
                   inspection={i}
-                  nextDayLabel={nextDayLabel}
-                  nextDayReason={nextDayReason}
+                  dateOptions={dateOptions}
                   permitClosed={permitClosed}
                 />
               ))}
