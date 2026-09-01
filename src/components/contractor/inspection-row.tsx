@@ -136,7 +136,7 @@ export function InspectionRow({
           {canRequest && (
             <p className="mt-0.5 text-xs text-slate-400">
               Click to request for{" "}
-              <span className="font-medium text-[#156cdd] dark:text-[#e2ba00]">
+              <span className="font-medium text-[#156cdd] dark:text-[#9CE824]">
                 {nextDayLabel}
               </span>
               {nextDayReason === "after_noon_cutoff" && (
@@ -153,7 +153,7 @@ export function InspectionRow({
         <span
           className={
             localStatus === "requested"
-              ? "rounded-full bg-[#156cdd]/10 px-2.5 py-1 text-xs font-semibold text-[#156cdd] dark:bg-[#e2ba00]/15 dark:text-[#e2ba00]"
+              ? "rounded-full bg-[#156cdd]/10 px-2.5 py-1 text-xs font-semibold text-[#156cdd] dark:bg-[#9CE824]/15 dark:text-[#9CE824]"
               : "rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200"
           }
         >
