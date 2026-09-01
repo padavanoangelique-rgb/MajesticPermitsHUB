@@ -200,9 +200,12 @@ export default async function AdminPage({ searchParams }: PageProps) {
               {sorted.map((job: any) => (
                 <tr key={job.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                   <td className="px-5 py-4">
-                    <p className="font-medium text-[#156cdd] dark:text-white">
+                    <Link
+                      href={`/admin/jobs/${job.id}`}
+                      className="font-medium text-[#156cdd] hover:underline dark:text-white"
+                    >
                       {job.property_address}
-                    </p>
+                    </Link>
                     <p className="text-xs text-slate-500">{job.homeowner_name}</p>
                   </td>
                   <td className="px-5 py-4 capitalize text-slate-600 dark:text-slate-300">
