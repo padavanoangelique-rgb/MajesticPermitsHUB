@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { PERMIT_STAGES } from "@/lib/stages";
 import { format } from "date-fns";
 
@@ -61,6 +62,19 @@ export function PipelineBoard({
   const [dragOverStage, setDragOverStage] = useState<string | null>(null);
   const [savingJobId, setSavingJobId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Per-column collapse state, keyed by stage title ("Other" for the
+  // legacy/unknown-stage column). Collapsed columns stay valid drop
+  // targets — you can still drag a card onto one to move a job there.
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  function toggleCollapsed(key: string) {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
 
   // Regroup when server-side data changes (after router.refresh)
   useMemo(() => setLocalJobs(jobs), [jobs]);
@@ -119,13 +133,16 @@ export function PipelineBoard({
         {PERMIT_STAGES.map((stage) => {
           const items = columns.byStage.get(stage.title) ?? [];
           const isDropTarget = dragOverStage === stage.title;
+          const isCollapsed = collapsed.has(stage.title);
           return (
             <div
               key={stage.key}
               className={
-                "flex w-72 shrink-0 flex-col rounded-2xl border p-3 transition " +
+                "flex shrink-0 flex-col rounded-2xl border transition " +
+                (isCollapsed ? "w-12 p-2" : "w-72 p-3") +
+                " " +
                 (isDropTarget
-                  ? "border-[#156cdd] bg-[#156cdd]/5 dark:border-[#e2ba00] dark:bg-[#e2ba00]/10"
+                  ? "border-[#156cdd] bg-[#156cdd]/5 dark:border-[#9CE824] dark:bg-[#9CE824]/10"
                   : "border-slate-200 bg-slate-50/50 dark:border-slate-700 dark:bg-slate-900/40")
               }
               onDragOver={(e) => {
@@ -142,60 +159,126 @@ export function PipelineBoard({
                 if (jobId) moveJob(jobId, stage.title);
               }}
             >
-              <div className="mb-3 flex items-center justify-between px-1">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              {isCollapsed ? (
+                <button
+                  type="button"
+                  onClick={() => toggleCollapsed(stage.title)}
+                  aria-expanded={false}
+                  title={`Expand ${stage.short}`}
+                  className="flex flex-1 flex-col items-center gap-2 py-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                  <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    {items.length}
+                  </span>
+                  <span
+                    className="text-[11px] font-semibold uppercase tracking-wider"
+                    style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
+                  >
                     {stage.short}
-                  </p>
-                </div>
-                <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                  {items.length}
-                </span>
-              </div>
+                  </span>
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => toggleCollapsed(stage.title)}
+                    aria-expanded={true}
+                    title={`Collapse ${stage.short}`}
+                    className="mb-3 flex w-full items-center justify-between px-1 text-left"
+                  >
+                    <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                      {stage.short}
+                    </span>
+                    <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                      {items.length}
+                    </span>
+                  </button>
 
-              <div className="flex flex-col gap-2">
-                {items.map((job) => (
-                  <PipelineCard
-                    key={job.id}
-                    job={job}
-                    href={`${jobHrefPrefix}/${job.id}`}
-                    draggable={canDrag}
-                    saving={savingJobId === job.id}
-                  />
-                ))}
-                {items.length === 0 && (
-                  <div className="rounded-lg border border-dashed border-slate-200 py-6 text-center text-xs text-slate-400 dark:border-slate-700">
-                    No jobs
+                  <div className="flex flex-col gap-2">
+                    {items.map((job) => (
+                      <PipelineCard
+                        key={job.id}
+                        job={job}
+                        href={`${jobHrefPrefix}/${job.id}`}
+                        draggable={canDrag}
+                        saving={savingJobId === job.id}
+                      />
+                    ))}
+                    {items.length === 0 && (
+                      <div className="rounded-lg border border-dashed border-slate-200 py-6 text-center text-xs text-slate-400 dark:border-slate-700">
+                        No jobs
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </>
+              )}
             </div>
           );
         })}
 
-        {columns.unknown.length > 0 && (
-          <div className="flex w-72 shrink-0 flex-col rounded-2xl border border-amber-200 bg-amber-50/70 p-3 dark:border-amber-900/50 dark:bg-amber-950/20">
-            <div className="mb-3 flex items-center justify-between px-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                Other / legacy
-              </p>
-              <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-slate-800 dark:text-amber-300">
-                {columns.unknown.length}
-              </span>
+        {columns.unknown.length > 0 && (() => {
+          const isCollapsed = collapsed.has("__other__");
+          return (
+            <div
+              className={
+                "flex shrink-0 flex-col rounded-2xl border border-amber-200 bg-amber-50/70 transition dark:border-amber-900/50 dark:bg-amber-950/20 " +
+                (isCollapsed ? "w-12 p-2" : "w-72 p-3")
+              }
+            >
+              {isCollapsed ? (
+                <button
+                  type="button"
+                  onClick={() => toggleCollapsed("__other__")}
+                  aria-expanded={false}
+                  title="Expand Other / legacy"
+                  className="flex flex-1 flex-col items-center gap-2 py-1 text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                  <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-slate-800 dark:text-amber-300">
+                    {columns.unknown.length}
+                  </span>
+                  <span
+                    className="text-[11px] font-semibold uppercase tracking-wider"
+                    style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
+                  >
+                    Other
+                  </span>
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => toggleCollapsed("__other__")}
+                    aria-expanded={true}
+                    title="Collapse Other / legacy"
+                    className="mb-3 flex w-full items-center justify-between px-1 text-left"
+                  >
+                    <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                      <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                      Other / legacy
+                    </span>
+                    <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-slate-800 dark:text-amber-300">
+                      {columns.unknown.length}
+                    </span>
+                  </button>
+                  <div className="flex flex-col gap-2">
+                    {columns.unknown.map((job) => (
+                      <PipelineCard
+                        key={job.id}
+                        job={job}
+                        href={`${jobHrefPrefix}/${job.id}`}
+                        draggable={canDrag}
+                        saving={savingJobId === job.id}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
-            <div className="flex flex-col gap-2">
-              {columns.unknown.map((job) => (
-                <PipelineCard
-                  key={job.id}
-                  job={job}
-                  href={`${jobHrefPrefix}/${job.id}`}
-                  draggable={canDrag}
-                  saving={savingJobId === job.id}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );
@@ -222,7 +305,7 @@ function PipelineCard({
         e.dataTransfer.effectAllowed = "move";
       }}
       className={
-        "block rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-300 hover:shadow-md dark:border-slate-700 dark:bg-[#111827] " +
+        "block rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-300 hover:shadow-md dark:border-slate-700 dark:bg-[#090909] " +
         (saving ? "opacity-60" : "") +
         (draggable ? " cursor-grab active:cursor-grabbing" : "")
       }
@@ -237,7 +320,7 @@ function PipelineCard({
           </span>
         )}
         {job.sub_status && (
-          <span className="rounded-full bg-[#156cdd]/5 px-2 py-0.5 text-[#156cdd] dark:bg-[#e2ba00]/15 dark:text-[#e2ba00]">
+          <span className="rounded-full bg-[#156cdd]/5 px-2 py-0.5 text-[#156cdd] dark:bg-[#9CE824]/15 dark:text-[#9CE824]">
             {job.sub_status}
           </span>
         )}
