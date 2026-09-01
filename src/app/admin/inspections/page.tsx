@@ -33,8 +33,8 @@ export default async function InspectionsPage() {
   const others = (requests || []).filter((r: any) => r.status !== "Pending");
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
+      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#090909]">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-4">
             <Link href="/admin" className="text-sm text-slate-500 hover:text-[#156cdd]">
@@ -59,7 +59,7 @@ export default async function InspectionsPage() {
         {/* Pending */}
         <div className="mt-8 space-y-4">
           {pending.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center dark:border-slate-700 dark:bg-[#111827]">
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center dark:border-slate-700 dark:bg-[#090909]">
               <p className="text-slate-500">No pending requests</p>
             </div>
           )}
@@ -67,7 +67,7 @@ export default async function InspectionsPage() {
           {pending.map((req: any) => (
             <div
               key={req.id}
-              className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]"
+              className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]"
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -106,7 +106,7 @@ export default async function InspectionsPage() {
               {others.map((req: any) => (
                 <div
                   key={req.id}
-                  className="rounded-xl border border-slate-100 bg-white/60 px-5 py-4 text-sm dark:border-slate-800 dark:bg-[#111827]/60"
+                  className="rounded-xl border border-slate-100 bg-white/60 px-5 py-4 text-sm dark:border-slate-800 dark:bg-[#090909]/60"
                 >
                   <span className="font-medium">{req.jobs?.property_address}</span>
                   <span className="mx-2 text-slate-400">·</span>
