@@ -13,9 +13,9 @@ import {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-background-dark">
+    <div className="min-h-screen bg-white dark:bg-background">
       {/* Nav */}
-      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-background-dark/90">
+      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-background/90">
         {/* 3-column grid keeps nav truly centered and left/right blocks balanced */}
         <div className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6">
           {/* Left: logo */}
@@ -70,7 +70,7 @@ export default function LandingPage() {
             You build.
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600 dark:text-slate-300 sm:text-xl">
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-700 dark:text-slate-300 sm:text-xl">
             Majestic Permits is a white-glove permitting service for contractors
             and homeowners across South Florida. From application to final
             inspection — we make it painless.
@@ -206,12 +206,12 @@ export default function LandingPage() {
       </section>
 
       {/* How it works */}
-      <section id="how" className="border-t border-slate-100 bg-surface-light py-20 dark:border-slate-800 dark:bg-background-dark">
+      <section id="how" className="border-t border-slate-100 bg-surface-light py-20 dark:border-slate-800 dark:bg-background">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <h2 className="text-center text-3xl font-bold tracking-tight text-navy dark:text-white sm:text-4xl">
             How it works
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-center text-lg text-slate-600 dark:text-slate-300">
+          <p className="mx-auto mt-4 max-w-xl text-center text-lg text-slate-700 dark:text-slate-300">
             Three simple steps. No jargon. No chasing the city.
           </p>
 
@@ -243,7 +243,7 @@ export default function LandingPage() {
                 <h3 className="mt-5 text-xl font-semibold text-navy dark:text-white">
                   {item.title}
                 </h3>
-                <p className="mt-3 text-slate-600 dark:text-slate-300">
+                <p className="mt-3 text-slate-700 dark:text-slate-300">
                   {item.body}
                 </p>
               </div>
@@ -265,7 +265,7 @@ export default function LandingPage() {
               <h3 className="mt-5 text-2xl font-semibold text-navy dark:text-white">
                 Contractors
               </h3>
-              <ul className="mt-4 space-y-3 text-slate-600 dark:text-slate-300">
+              <ul className="mt-4 space-y-3 text-slate-700 dark:text-slate-300">
                 <li>• Private portal for all your projects</li>
                 <li>• Real-time status and document access</li>
                 <li>• Inspection request button</li>
@@ -278,7 +278,7 @@ export default function LandingPage() {
               <h3 className="mt-5 text-2xl font-semibold text-navy dark:text-white">
                 Homeowners
               </h3>
-              <ul className="mt-4 space-y-3 text-slate-600 dark:text-slate-300">
+              <ul className="mt-4 space-y-3 text-slate-700 dark:text-slate-300">
                 <li>• No login or password required</li>
                 <li>• One private tracking link</li>
                 <li>• Plain-English stage explanations</li>
@@ -290,7 +290,7 @@ export default function LandingPage() {
       </section>
 
       {/* Trust strip */}
-      <section className="border-y border-slate-100 bg-surface-light py-10 dark:border-slate-800 dark:bg-background-dark">
+      <section className="border-y border-slate-100 bg-surface-light py-10 dark:border-slate-800 dark:bg-background">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-8 px-4 text-sm font-medium text-slate-500 sm:gap-12">
           <span className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-gold" /> Licensed & insured
@@ -310,7 +310,7 @@ export default function LandingPage() {
           <h2 className="text-center text-3xl font-bold tracking-tight text-navy dark:text-white sm:text-4xl">
             Simple pricing
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-center text-lg text-slate-600 dark:text-slate-300">
+          <p className="mx-auto mt-4 max-w-xl text-center text-lg text-slate-700 dark:text-slate-300">
             Clear upfront fees. No surprises.
           </p>
 
@@ -319,7 +319,7 @@ export default function LandingPage() {
               <h3 className="text-xl font-semibold text-navy dark:text-white">
                 Per-permit
               </h3>
-              <p className="mt-3 text-slate-600 dark:text-slate-300">
+              <p className="mt-3 text-slate-700 dark:text-slate-300">
                 Flat fee quoted upfront for each permit application. Ideal for
                 one-off or occasional projects.
               </p>
@@ -335,7 +335,7 @@ export default function LandingPage() {
               <h3 className="text-xl font-semibold text-navy dark:text-white">
                 Retainer
               </h3>
-              <p className="mt-3 text-slate-600 dark:text-slate-300">
+              <p className="mt-3 text-slate-700 dark:text-slate-300">
                 Monthly plan for contractors with ongoing volume. Priority
                 handling and consolidated reporting.
               </p>
@@ -370,7 +370,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="border-t border-slate-200 bg-white py-12 dark:border-slate-800 dark:bg-background-dark">
+      <footer id="contact" className="border-t border-slate-200 bg-white py-12 dark:border-slate-800 dark:bg-background">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex flex-col items-start justify-between gap-8 sm:flex-row">
             <div>
