@@ -8,6 +8,7 @@ import { PERMIT_STAGES, getStageOrderByTitle } from "@/lib/stages";
 import { JobsFilterBar } from "@/components/admin/jobs-filter-bar";
 import { AdminKpiTiles } from "@/components/admin/admin-kpi-tiles";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { NotificationBell } from "@/components/admin/notification-bell";
 
 export const dynamic = "force-dynamic";
 
@@ -140,6 +141,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             >
               + New Job
             </Link>
+            <NotificationBell />
             <ThemeToggle />
             <form action="/auth/signout" method="post">
               <button
