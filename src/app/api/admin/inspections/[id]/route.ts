@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { sendSms } from "@/lib/sms";
+import { getJobContactPhone } from "@/lib/job-contact";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +33,10 @@ const VALID_STATUS = new Set([
   "closed",
 ]);
 
+// Statuses that mean "you're on the calendar" — these are what trigger the
+// client-facing "inspection scheduled" text, not every status change.
+const SCHEDULED_STATUSES = new Set(["scheduled", "reinspection_scheduled"]);
+
 function sanitize(body: Record<string, any>) {
   const patch: Record<string, any> = {};
   for (const key of ALLOWED) {
@@ -58,12 +64,38 @@ export async function PATCH(
     }
 
     const supabase = createServiceClient();
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from("job_inspections")
       .update(patch)
-      .eq("id", params.id);
+      .eq("id", params.id)
+      .select("job_id, slot, inspection_type, status, scheduled_date")
+      .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+    // Text the contractor/homeowner when the inspection just got scheduled.
+    if ("status" in patch && updated && SCHEDULED_STATUSES.has(updated.status)) {
+      const { data: job } = await supabase
+        .from("jobs")
+        .select("property_address, client_type, contractor_id, homeowner_phone")
+        .eq("id", updated.job_id)
+        .maybeSingle();
+
+      if (job) {
+        const phone = await getJobContactPhone(job);
+        if (phone) {
+          const what = updated.inspection_type || `Inspection ${updated.slot}`;
+          const when = updated.scheduled_date
+            ? ` for ${updated.scheduled_date}`
+            : "";
+          await sendSms(
+            phone,
+            `Majestic Permits — ${job.property_address}: ${what} is scheduled${when}.`
+          );
+        }
+      }
+    }
+
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     return NextResponse.json(
