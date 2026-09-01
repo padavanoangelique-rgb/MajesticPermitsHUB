@@ -26,7 +26,7 @@ export function Logo({
             Majestic Permits
           </span>
           {subtitle && (
-            <span className="text-xs font-medium text-[#e2ba00]">{subtitle}</span>
+            <span className="text-xs font-medium text-[#e2ba00] dark:text-[#9CE824]">{subtitle}</span>
           )}
         </span>
       )}
