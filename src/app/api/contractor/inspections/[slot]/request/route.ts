@@ -2,21 +2,26 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getContractorForUser } from "@/lib/contractor";
-import { nextInspectionDate } from "@/lib/next-inspection-day";
+import { nextInspectionDate, isValidInspectionDate } from "@/lib/next-inspection-day";
+import { sendAdminSms } from "@/lib/sms";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Contractor-side one-click inspection request for a specific slot.
+ * Contractor-side inspection request for a specific slot.
  *
- * Sets job_inspections.status='requested' and requested_date=<next available
- * Miami business day, using the noon cutoff>, so the admin can see the ask
- * and later fill in scheduled_date + inspector info.
+ * Sets job_inspections.status='requested' and requested_date to the date the
+ * contractor picked, so the admin can see the ask and later fill in
+ * scheduled_date + inspector info. The picked date must be on/after the next
+ * available Miami business day (noon cutoff — see next-inspection-day.ts);
+ * if the client didn't send one, or sent an invalid one, we fall back to
+ * that computed minimum rather than rejecting the request outright.
  *
- * Also inserts a row into inspection_requests for the admin's requests queue.
+ * Also inserts a row into inspection_requests for the admin's requests queue,
+ * and texts the admin that an inspection is needed.
  *
  * URL: POST /api/contractor/inspections/[slot]/request
- * Body: { job_id: string }
+ * Body: { job_id: string, requested_date?: string (YYYY-MM-DD) }
  */
 export async function POST(
   req: Request,
@@ -50,6 +55,12 @@ export async function POST(
       return NextResponse.json({ error: "Missing job_id" }, { status: 400 });
     }
 
+    const requestedDateInput =
+      typeof body?.requested_date === "string" ? body.requested_date : "";
+    const requestedDate = isValidInspectionDate(requestedDateInput)
+      ? requestedDateInput
+      : nextInspectionDate();
+
     // Confirm this contractor owns the job before we touch it
     const service = createServiceClient();
     const { data: job, error: lookupError } = await service
@@ -80,9 +91,7 @@ export async function POST(
       );
     }
 
-    const requestedDate = nextInspectionDate();
-
-    // Flip the slot to 'requested' with the computed date
+    // Flip the slot to 'requested' with the chosen date
     const { error: slotError } = await service
       .from("job_inspections")
       .update({
@@ -106,6 +115,12 @@ export async function POST(
       status: "Pending",
       request_type: "slot_request",
     });
+
+    await sendAdminSms(
+      `Inspection needed — ${job.property_address}. ${
+        inspection.inspection_type || `Inspection ${slot}`
+      } requested for ${requestedDate} (${contractor.company_name || contractor.name}).`
+    );
 
     return NextResponse.json({
       ok: true,
