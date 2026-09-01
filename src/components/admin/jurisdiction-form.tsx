@@ -103,7 +103,7 @@ export function JurisdictionForm({
             href={url}
             target="_blank"
             rel="noreferrer"
-            className="text-sm font-medium text-[#e2ba00] hover:underline"
+            className="text-sm font-medium text-[#e2ba00] hover:underline dark:text-[#9CE824]"
           >
             Open portal ↗
           </a>

@@ -87,7 +87,7 @@ function Cell({
         className={
           "mt-1 text-sm font-semibold " +
           (highlight
-            ? "text-[#e2ba00]"
+            ? "text-[#e2ba00] dark:text-[#9CE824]"
             : "text-[#156cdd] dark:text-white")
         }
       >

@@ -50,7 +50,7 @@ export function AdminKpiTiles({
       value: needsInspection,
       href: "/admin",
       Icon: ClipboardCheck,
-      accent: "text-[#e2ba00]",
+      accent: "text-[#e2ba00] dark:text-[#9CE824]",
       ring: "bg-amber-50 dark:bg-amber-950/40",
     },
     {

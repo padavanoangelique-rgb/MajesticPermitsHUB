@@ -115,7 +115,7 @@ export default async function JobDetailPage({ params }: PageProps) {
             {job.stage} · {job.sub_status}
           </p>
           {job.permit_eta && (
-            <p className="mt-1 text-sm text-[#e2ba00]">
+            <p className="mt-1 text-sm text-[#e2ba00] dark:text-[#9CE824]">
               ETA: {format(new Date(job.permit_eta), "MMMM d, yyyy")}
             </p>
           )}
