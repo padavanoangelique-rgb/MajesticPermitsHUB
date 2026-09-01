@@ -43,8 +43,8 @@ export default async function AdminPipelinePage() {
   }));
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
+      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#090909]">
         <div className="mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
           <Link href="/admin" className="flex items-center gap-3">
             <Logo size={36} />
@@ -55,7 +55,7 @@ export default async function AdminPipelinePage() {
           <nav className="flex items-center gap-6">
             <Link
               href="/admin"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-200"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-[#090909] dark:text-slate-200"
             >
               <List className="h-4 w-4" />
               Table view
