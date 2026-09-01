@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getContractorForUser } from "@/lib/contractor";
+import { sendAdminSms } from "@/lib/sms";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +72,7 @@ export async function POST(req: Request) {
     const service = createServiceClient();
     const { data: job, error: lookupError } = await service
       .from("jobs")
-      .select("id, contractor_id")
+      .select("id, contractor_id, property_address")
       .eq("id", jobId)
       .maybeSingle();
 
@@ -95,6 +96,12 @@ export async function POST(req: Request) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
+
+    await sendAdminSms(
+      `Inspection needed (${contractor.company_name || contractor.name}) — ${
+        job.property_address
+      }. Type: ${inspectionType}`
+    );
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {
