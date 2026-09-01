@@ -56,7 +56,7 @@ export function JurisdictionForm({
             value={jurisdiction}
             onChange={(e) => setJurisdiction(e.target.value)}
             placeholder="City of Hialeah"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
           />
         </div>
         <div>
@@ -68,7 +68,7 @@ export function JurisdictionForm({
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://hialeahfl.gov/permits"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
           />
         </div>
       </div>
@@ -79,7 +79,7 @@ export function JurisdictionForm({
         <select
           value={noc}
           onChange={(e) => setNoc(e.target.value)}
-          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
+          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
         >
           <option value="None">None</option>
           <option value="Pending">Pending</option>

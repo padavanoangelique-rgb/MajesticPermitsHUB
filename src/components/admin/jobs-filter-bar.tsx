@@ -95,7 +95,7 @@ export function JobsFilterBar({
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-[#111827]">
+      <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-[#090909]">
         {[
           { value: "all", label: "All" },
           { value: "contractor", label: "Contractors" },
@@ -123,7 +123,7 @@ export function JobsFilterBar({
             type="button"
             onClick={() => setOpenMenu((m) => (m === "contractor" ? null : "contractor"))}
             aria-expanded={openMenu === "contractor"}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-300"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-[#090909] dark:text-slate-300"
           >
             Contractor
             {selectedContractorIds.length > 0 && (
@@ -133,7 +133,7 @@ export function JobsFilterBar({
             )}
           </button>
           {openMenu === "contractor" && (
-            <div className="absolute left-0 z-10 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-[#111827]">
+            <div className="absolute left-0 z-10 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-[#090909]">
               <div className="max-h-64 overflow-y-auto">
                 {contractors.map((c) => (
                   <label
@@ -168,7 +168,7 @@ export function JobsFilterBar({
           type="button"
           onClick={() => setOpenMenu((m) => (m === "stage" ? null : "stage"))}
           aria-expanded={openMenu === "stage"}
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-300"
+          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-[#090909] dark:text-slate-300"
         >
           Stage
           {selectedStages.length > 0 && (
@@ -178,7 +178,7 @@ export function JobsFilterBar({
           )}
         </button>
         {openMenu === "stage" && (
-          <div className="absolute left-0 z-10 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-[#111827]">
+          <div className="absolute left-0 z-10 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-[#090909]">
             <div className="max-h-64 overflow-y-auto">
               {stages.map((s) => (
                 <label
