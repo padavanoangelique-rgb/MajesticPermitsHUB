@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { sendSms } from "@/lib/sms";
 import { getJobContactPhone } from "@/lib/job-contact";
+import { notifyAdmin } from "@/lib/admin-notify";
 
 export const dynamic = "force-dynamic";
 
@@ -82,12 +83,19 @@ export async function PATCH(
         .maybeSingle();
 
       if (job) {
+        const what = updated.inspection_type || `Inspection ${updated.slot}`;
+        const when = updated.scheduled_date
+          ? ` for ${updated.scheduled_date}`
+          : "";
+
+        await notifyAdmin(
+          "inspection_scheduled",
+          `${job.property_address}: ${what} scheduled${when}.`,
+          updated.job_id
+        );
+
         const phone = await getJobContactPhone(job);
         if (phone) {
-          const what = updated.inspection_type || `Inspection ${updated.slot}`;
-          const when = updated.scheduled_date
-            ? ` for ${updated.scheduled_date}`
-            : "";
           await sendSms(
             phone,
             `Majestic Permits — ${job.property_address}: ${what} is scheduled${when}.`
