@@ -10,7 +10,6 @@ import { JobsFilterBar } from "@/components/admin/jobs-filter-bar";
 import { AdminKpiTiles } from "@/components/admin/admin-kpi-tiles";
 import { NotificationBell } from "@/components/admin/notification-bell";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { NotificationBell } from "@/components/admin/notification-bell";
 
 export const dynamic = "force-dynamic";
 
