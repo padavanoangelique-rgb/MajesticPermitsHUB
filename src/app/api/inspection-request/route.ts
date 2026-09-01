@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendAdminSms } from "@/lib/sms";
 
 export async function POST(req: Request) {
   try {
@@ -39,6 +40,18 @@ export async function POST(req: Request) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
+
+    const { data: job } = await supabase
+      .from("jobs")
+      .select("property_address")
+      .eq("id", job_id)
+      .maybeSingle();
+
+    await sendAdminSms(
+      `Inspection needed (homeowner) — ${job?.property_address || "job " + job_id}. Type: ${
+        inspection_type || "Rough-in"
+      }`
+    );
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {
