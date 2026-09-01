@@ -125,7 +125,7 @@ export function PipelineBoard({
               className={
                 "flex w-72 shrink-0 flex-col rounded-2xl border p-3 transition " +
                 (isDropTarget
-                  ? "border-[#156cdd] bg-[#156cdd]/5 dark:border-[#e2ba00] dark:bg-[#e2ba00]/10"
+                  ? "border-[#156cdd] bg-[#156cdd]/5 dark:border-[#9CE824] dark:bg-[#9CE824]/10"
                   : "border-slate-200 bg-slate-50/50 dark:border-slate-700 dark:bg-slate-900/40")
               }
               onDragOver={(e) => {
@@ -222,7 +222,7 @@ function PipelineCard({
         e.dataTransfer.effectAllowed = "move";
       }}
       className={
-        "block rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-300 hover:shadow-md dark:border-slate-700 dark:bg-[#111827] " +
+        "block rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-300 hover:shadow-md dark:border-slate-700 dark:bg-[#090909] " +
         (saving ? "opacity-60" : "") +
         (draggable ? " cursor-grab active:cursor-grabbing" : "")
       }
@@ -237,7 +237,7 @@ function PipelineCard({
           </span>
         )}
         {job.sub_status && (
-          <span className="rounded-full bg-[#156cdd]/5 px-2 py-0.5 text-[#156cdd] dark:bg-[#e2ba00]/15 dark:text-[#e2ba00]">
+          <span className="rounded-full bg-[#156cdd]/5 px-2 py-0.5 text-[#156cdd] dark:bg-[#9CE824]/15 dark:text-[#9CE824]">
             {job.sub_status}
           </span>
         )}
