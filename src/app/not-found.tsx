@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-surface-light px-4 dark:bg-background-dark">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-surface-light px-4 dark:bg-background">
       <div className="max-w-md text-center">
         <h1 className="text-3xl font-bold text-navy dark:text-white">
           This link isn&apos;t valid

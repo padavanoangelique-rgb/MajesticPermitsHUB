@@ -11,7 +11,7 @@ export function BrandHeader({ brand }: { brand: string }) {
   useEffect(() => setMounted(true), []);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-background-dark/90">
+    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-background/90">
       <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-3">
           {/* Placeholder for logo — drop real PNG into /public/logos/ */}

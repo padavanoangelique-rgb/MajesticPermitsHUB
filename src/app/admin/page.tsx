@@ -29,11 +29,14 @@ export default async function AdminPage({ searchParams }: PageProps) {
     )
     .order("updated_at", { ascending: false });
 
-  // KPI: which jobs still have any inspection slot in "not_scheduled"
+  // KPI: which jobs have an inspection that's been requested but not yet
+  // scheduled. ("not_scheduled" isn't a real job_inspections status — the
+  // check constraint only allows not_required/not_requested/requested/
+  // scheduled/etc — so this always matched zero rows before.)
   const { data: openInspections } = await supabase
     .from("job_inspections")
     .select("job_id")
-    .eq("status", "not_scheduled");
+    .in("status", ["requested", "reinspection_requested"]);
   const needsInspectionJobIds = new Set<string>(
     (openInspections || []).map((r: any) => r.job_id)
   );
