@@ -75,6 +75,16 @@ export default async function JobDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
+      <div className="mx-auto max-w-4xl px-4 pt-6 sm:px-6">
+        <Section title="Assigned contractor">
+          <AssignContractorForm
+            jobId={job.id}
+            currentContractorId={job.contractor_id ?? null}
+            contractors={contractors || []}
+          />
+        </Section>
+      </div>
+
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4 sm:px-6">
           <Link href="/admin" className="text-sm font-medium text-slate-500 hover:text-[#156cdd]">
@@ -99,14 +109,6 @@ export default async function JobDetailPage({ params }: PageProps) {
             permitEta={job.permit_eta}
           />
         </div>
-
-        <Section title="Homeowner tracking link">
-          <HomeownerShareControls
-            jobId={job.id}
-            siteUrl={SITE_URL}
-            link={link ?? null}
-          />
-        </Section>
 
         <Section title="Current status">
           <p className="text-lg font-medium text-[#156cdd] dark:text-white">
@@ -138,18 +140,6 @@ export default async function JobDetailPage({ params }: PageProps) {
           </div>
         </Section>
 
-        <Section title="Documents">
-          <JobDocuments jobId={job.id} documents={documents || []} />
-        </Section>
-
-        <Section title="Assigned contractor">
-          <AssignContractorForm
-            jobId={job.id}
-            currentContractorId={job.contractor_id ?? null}
-            contractors={contractors || []}
-          />
-        </Section>
-
         <Section title="Jurisdiction & NOC">
           <JurisdictionForm
             jobId={job.id}
@@ -159,6 +149,25 @@ export default async function JobDetailPage({ params }: PageProps) {
               noc_status: job.noc_status ?? null,
             }}
           />
+        </Section>
+
+        <Section title="Details">
+          <dl className="space-y-3 text-sm">
+            <div className="flex justify-between">
+              <dt className="text-slate-500">Next step</dt>
+              <dd className="max-w-xs text-right font-medium">{job.next_step || "—"}</dd>
+            </div>
+            {job.notes && (
+              <div>
+                <dt className="text-slate-500">Internal notes (admin only)</dt>
+                <dd className="mt-1 rounded-lg bg-slate-50 p-3 dark:bg-slate-800">{job.notes}</dd>
+              </div>
+            )}
+          </dl>
+        </Section>
+
+        <Section title="Documents">
+          <JobDocuments jobId={job.id} documents={documents || []} />
         </Section>
 
         <Section title="Quotes & payments">
@@ -218,19 +227,12 @@ export default async function JobDetailPage({ params }: PageProps) {
           <SendQuoteForm jobId={job.id} hasContractor={Boolean(job.contractor_id)} />
         </Section>
 
-        <Section title="Details">
-          <dl className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <dt className="text-slate-500">Next step</dt>
-              <dd className="max-w-xs text-right font-medium">{job.next_step || "—"}</dd>
-            </div>
-            {job.notes && (
-              <div>
-                <dt className="text-slate-500">Internal notes (admin only)</dt>
-                <dd className="mt-1 rounded-lg bg-slate-50 p-3 dark:bg-slate-800">{job.notes}</dd>
-              </div>
-            )}
-          </dl>
+        <Section title="Homeowner tracking link">
+          <HomeownerShareControls
+            jobId={job.id}
+            siteUrl={SITE_URL}
+            link={link ?? null}
+          />
         </Section>
 
         <Section title="Homeowner-visible note">
