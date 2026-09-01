@@ -128,6 +128,17 @@ export default async function JobDetailPage({ params }: PageProps) {
           </div>
         </Section>
 
+        <Section title="Jurisdiction & NOC">
+          <JurisdictionForm
+            jobId={job.id}
+            initial={{
+              jurisdiction: job.jurisdiction ?? null,
+              building_dept_url: job.building_dept_url ?? null,
+              noc_status: job.noc_status ?? null,
+            }}
+          />
+        </Section>
+
         <Section title="Inspections (up to 3)">
           <div className="-mx-6 -mb-6 divide-y divide-slate-200 dark:divide-slate-700">
             {(inspections || []).map((slot: any) => (
@@ -138,17 +149,6 @@ export default async function JobDetailPage({ params }: PageProps) {
               />
             ))}
           </div>
-        </Section>
-
-        <Section title="Jurisdiction & NOC">
-          <JurisdictionForm
-            jobId={job.id}
-            initial={{
-              jurisdiction: job.jurisdiction ?? null,
-              building_dept_url: job.building_dept_url ?? null,
-              noc_status: job.noc_status ?? null,
-            }}
-          />
         </Section>
 
         <Section title="Details">
