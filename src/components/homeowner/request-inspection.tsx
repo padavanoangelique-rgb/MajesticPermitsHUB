@@ -52,12 +52,12 @@ export function RequestInspection({ jobId, token }: { jobId: string; token: stri
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="w-full rounded-2xl border-2 border-[#156cdd] bg-white py-4 text-base font-semibold text-[#156cdd] transition hover:bg-[#156cdd] hover:text-white dark:border-[#e2ba00] dark:text-[#e2ba00] dark:hover:bg-[#e2ba00] dark:hover:text-[#156cdd]"
+          className="w-full rounded-2xl border-2 border-[#156cdd] bg-white py-4 text-base font-semibold text-[#156cdd] transition hover:bg-[#156cdd] hover:text-white dark:border-[#9CE824] dark:text-[#9CE824] dark:hover:bg-[#9CE824] dark:hover:text-[#020202]"
         >
           Request an Inspection
         </button>
       ) : (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]">
           <h3 className="text-lg font-semibold text-[#156cdd] dark:text-white">
             Request an Inspection
           </h3>
@@ -71,7 +71,7 @@ export function RequestInspection({ jobId, token }: { jobId: string; token: stri
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#0A0F1C]"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#020202]"
               >
                 <option>Rough-in</option>
                 <option>Final</option>
@@ -88,7 +88,7 @@ export function RequestInspection({ jobId, token }: { jobId: string; token: stri
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
                 placeholder="Any details we should know..."
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#0A0F1C]"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#020202]"
               />
             </div>
 

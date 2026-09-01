@@ -115,9 +115,9 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const stageOptions = PERMIT_STAGES.map((s) => ({ title: s.title, short: s.short }));
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
+      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#090909]">
         <div className="mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
           <Logo subtitle="Admin" />
 
@@ -171,7 +171,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           </div>
           <Link
             href="/admin/pipeline"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-200"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-[#090909] dark:text-slate-200"
           >
             <LayoutGrid className="h-4 w-4" />
             Pipeline view
@@ -182,7 +182,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <JobsFilterBar contractors={contractorOptions} stages={stageOptions} />
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]">
+        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#090909]">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-100 bg-slate-50 text-xs font-medium uppercase tracking-wider text-slate-500 dark:border-slate-700 dark:bg-slate-800/50">
               <tr>
@@ -200,9 +200,12 @@ export default async function AdminPage({ searchParams }: PageProps) {
               {sorted.map((job: any) => (
                 <tr key={job.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                   <td className="px-5 py-4">
-                    <p className="font-medium text-[#156cdd] dark:text-white">
+                    <Link
+                      href={`/admin/jobs/${job.id}`}
+                      className="font-medium text-[#156cdd] hover:underline dark:text-white"
+                    >
                       {job.property_address}
-                    </p>
+                    </Link>
                     <p className="text-xs text-slate-500">{job.homeowner_name}</p>
                   </td>
                   <td className="px-5 py-4 capitalize text-slate-600 dark:text-slate-300">
@@ -233,7 +236,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   <td className="px-5 py-4 text-right">
                     <Link
                       href={`/admin/jobs/${job.id}`}
-                      className="text-sm font-medium text-[#156cdd] hover:underline dark:text-[#e2ba00]"
+                      className="text-sm font-medium text-[#156cdd] hover:underline dark:text-[#9CE824]"
                     >
                       View
                     </Link>

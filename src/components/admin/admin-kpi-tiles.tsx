@@ -50,7 +50,7 @@ export function AdminKpiTiles({
       value: needsInspection,
       href: "/admin",
       Icon: ClipboardCheck,
-      accent: "text-[#e2ba00]",
+      accent: "text-[#e2ba00] dark:text-[#9CE824]",
       ring: "bg-amber-50 dark:bg-amber-950/40",
     },
     {
@@ -69,7 +69,7 @@ export function AdminKpiTiles({
         <Link
           key={label}
           href={href}
-          className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-[#111827]"
+          className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-[#090909]"
         >
           <div className={"flex h-11 w-11 items-center justify-center rounded-xl " + ring}>
             <Icon className={"h-5 w-5 " + accent} />

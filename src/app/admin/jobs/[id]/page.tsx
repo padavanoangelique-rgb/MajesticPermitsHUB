@@ -74,7 +74,7 @@ export default async function JobDetailPage({ params }: PageProps) {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
       <div className="mx-auto max-w-4xl px-4 pt-6 sm:px-6">
         <Section title="Assigned contractor">
           <AssignContractorForm
@@ -85,7 +85,7 @@ export default async function JobDetailPage({ params }: PageProps) {
         </Section>
       </div>
 
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
+      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#090909]">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4 sm:px-6">
           <Link href="/admin" className="text-sm font-medium text-slate-500 hover:text-[#156cdd]">
             ← All jobs
@@ -115,7 +115,7 @@ export default async function JobDetailPage({ params }: PageProps) {
             {job.stage} · {job.sub_status}
           </p>
           {job.permit_eta && (
-            <p className="mt-1 text-sm text-[#e2ba00]">
+            <p className="mt-1 text-sm text-[#e2ba00] dark:text-[#9CE824]">
               ETA: {format(new Date(job.permit_eta), "MMMM d, yyyy")}
             </p>
           )}
@@ -265,7 +265,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
+    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]">
       <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-500">
         {title}
       </h2>

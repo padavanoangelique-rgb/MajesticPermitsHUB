@@ -64,7 +64,7 @@ export function DeleteJobButton({
           onClick={() => !deleting && setOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-[#111827]"
+            className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-[#090909]"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-semibold text-[#156cdd] dark:text-white">

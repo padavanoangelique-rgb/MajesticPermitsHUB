@@ -46,7 +46,7 @@ export function AssignContractorForm({
         <select
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
+          className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
         >
           <option value="">Not assigned (homeowner-only job)</option>
           {contractors.map((c) => (
@@ -58,7 +58,7 @@ export function AssignContractorForm({
         <button
           onClick={save}
           disabled={saving}
-          className="rounded-xl bg-[#e2ba00] px-4 py-2 text-sm font-semibold text-[#156cdd] hover:bg-[#E0C878] disabled:opacity-60"
+          className="rounded-xl bg-[#e2ba00] px-4 py-2 text-sm font-semibold text-[#156cdd] hover:bg-[#E0C878] disabled:opacity-60 dark:bg-[#9CE824] dark:hover:bg-[#85c91c]"
         >
           {saving ? "Saving..." : "Save"}
         </button>

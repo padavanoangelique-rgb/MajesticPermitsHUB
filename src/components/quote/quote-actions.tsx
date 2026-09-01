@@ -54,7 +54,7 @@ export function QuoteActions({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Full name"
-          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
+          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
           disabled={mode !== "idle"}
         />
       </div>

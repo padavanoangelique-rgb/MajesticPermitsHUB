@@ -27,7 +27,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   // If no contractor record, show a friendly message
   if (!contractor) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-[#0A0F1C]">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-[#020202]">
         <div className="max-w-md text-center">
           <h1 className="text-2xl font-bold text-[#156cdd] dark:text-white">
             Account not linked
@@ -73,8 +73,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const other = (jobs || []).filter((j: any) => !bucketedIds.has(j.id));
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
+      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#090909]">
         <div className="mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <Image
@@ -117,7 +117,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         </div>
 
         {totalJobs === 0 ? (
-          <div className="mt-8 rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-700 dark:bg-[#111827]">
+          <div className="mt-8 rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-700 dark:bg-[#090909]">
             <p className="font-medium text-[#156cdd] dark:text-white">
               No projects assigned yet
             </p>
@@ -177,10 +177,10 @@ function StageSection({
   const accentPill =
     accent === "amber"
       ? "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300"
-      : "bg-[#156cdd]/10 text-[#156cdd] dark:bg-[#e2ba00]/15 dark:text-[#e2ba00]";
+      : "bg-[#156cdd]/10 text-[#156cdd] dark:bg-[#9CE824]/15 dark:text-[#9CE824]";
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]">
+    <section className="rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#090909]">
       <header className="flex items-center gap-3 border-b border-slate-100 px-5 py-3 dark:border-slate-800">
         <span
           className={
