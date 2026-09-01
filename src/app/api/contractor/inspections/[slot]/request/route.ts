@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getContractorForUser } from "@/lib/contractor";
 import { nextInspectionDate, isValidInspectionDate } from "@/lib/next-inspection-day";
 import { sendAdminSms } from "@/lib/sms";
+import { notifyAdmin } from "@/lib/admin-notify";
 
 export const dynamic = "force-dynamic";
 
@@ -116,11 +117,14 @@ export async function POST(
       request_type: "slot_request",
     });
 
-    await sendAdminSms(
-      `Inspection needed — ${job.property_address}. ${
-        inspection.inspection_type || `Inspection ${slot}`
-      } requested for ${requestedDate} (${contractor.company_name || contractor.name}).`
-    );
+    const inspectionLabel = inspection.inspection_type || `Inspection ${slot}`;
+    const noticeMessage = `${job.property_address}: ${inspectionLabel} requested for ${requestedDate} (${
+      contractor.company_name || contractor.name
+    }).`;
+
+    await notifyAdmin("inspection_needed", noticeMessage, jobId);
+
+    await sendAdminSms(`Inspection needed — ${noticeMessage}`);
 
     return NextResponse.json({
       ok: true,

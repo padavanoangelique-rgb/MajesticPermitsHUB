@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getContractorForUser } from "@/lib/contractor";
 import { sendAdminSms } from "@/lib/sms";
+import { notifyAdmin } from "@/lib/admin-notify";
 
 export const dynamic = "force-dynamic";
 
@@ -97,11 +98,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    await sendAdminSms(
-      `Inspection needed (${contractor.company_name || contractor.name}) — ${
-        job.property_address
-      }. Type: ${inspectionType}`
-    );
+    const noticeMessage = `${job.property_address}: ${inspectionType} requested (${
+      contractor.company_name || contractor.name
+    }).`;
+
+    await notifyAdmin("inspection_needed", noticeMessage, jobId);
+
+    await sendAdminSms(`Inspection needed — ${noticeMessage}`);
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {

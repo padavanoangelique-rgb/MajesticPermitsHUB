@@ -3,16 +3,16 @@ import { Logo } from "@/components/layout/logo";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-guard";
 import { format } from "date-fns";
-import { ArrowDown, ArrowUp, ArrowUpDown, LayoutGrid } from "lucide-react";
-import { PERMIT_STAGES, getStageOrderByTitle } from "@/lib/stages";
+import { LayoutGrid } from "lucide-react";
+import { PERMIT_STAGES } from "@/lib/stages";
+import { CONTRACTOR_BUCKETS } from "@/lib/dashboard-buckets";
 import { JobsFilterBar } from "@/components/admin/jobs-filter-bar";
 import { AdminKpiTiles } from "@/components/admin/admin-kpi-tiles";
+import { NotificationBell } from "@/components/admin/notification-bell";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { NotificationBell } from "@/components/admin/notification-bell";
 
 export const dynamic = "force-dynamic";
-
-type SortField = "updated" | "address" | "stage" | "contractor" | "eta";
 
 interface PageProps {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -27,7 +27,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
     .from("jobs")
     .select(
       "id, property_address, client_type, brand, stage, sub_status, permit_number, submitted_date, permit_eta, homeowner_name, updated_at, contractor_id"
-    );
+    )
+    .order("updated_at", { ascending: false });
 
   // KPI: which jobs still have any inspection slot in "not_scheduled"
   const { data: openInspections } = await supabase
@@ -38,13 +39,23 @@ export default async function AdminPage({ searchParams }: PageProps) {
     (openInspections || []).map((r: any) => r.job_id)
   );
 
+  // Jobs with a pending inspection request — highlighted in the list below
+  // so a request never gets buried once it's off the Inspections tab.
+  const { data: pendingRequests } = await supabase
+    .from("inspection_requests")
+    .select("job_id")
+    .eq("status", "Pending");
+  const pendingInspectionJobIds = new Set<string>(
+    (pendingRequests || []).map((r: any) => r.job_id)
+  );
+
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   const kpiCounts = (jobs || []).reduce(
     (acc, job: any) => {
       if (job.stage === "Under review") acc.inReview += 1;
-      if (job.stage === "Approved \u2014 ready to build") acc.approved += 1;
+      if (job.stage === "Approved — ready to build") acc.approved += 1;
       if (needsInspectionJobIds.has(job.id)) acc.needsInspection += 1;
       if (job.updated_at && new Date(job.updated_at) < sevenDaysAgo)
         acc.needsFollowUp += 1;
@@ -69,12 +80,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const stageParam = typeof searchParams.stage === "string" ? searchParams.stage : "";
   const selectedStages = stageParam ? stageParam.split(",").filter(Boolean) : [];
 
-  const sort: SortField = (
-    typeof searchParams.sort === "string" ? searchParams.sort : "updated"
-  ) as SortField;
-  const dir: "asc" | "desc" =
-    searchParams.dir === "asc" ? "asc" : searchParams.dir === "desc" ? "desc" : sort === "updated" ? "desc" : "asc";
-
   const filtered = (jobs || []).filter((job: any) => {
     if (typeParam === "contractor" && job.client_type !== "contractor") return false;
     if (typeParam === "homeowner" && job.client_type !== "homeowner") return false;
@@ -85,28 +90,18 @@ export default async function AdminPage({ searchParams }: PageProps) {
     return true;
   });
 
-  const sorted = [...filtered].sort((a: any, b: any) => {
-    let cmp = 0;
-    switch (sort) {
-      case "stage":
-        cmp = getStageOrderByTitle(a.stage) - getStageOrderByTitle(b.stage);
-        break;
-      case "contractor":
-        cmp = (contractorMap.get(a.contractor_id) || "").localeCompare(
-          contractorMap.get(b.contractor_id) || ""
-        );
-        break;
-      case "address":
-        cmp = (a.property_address || "").localeCompare(b.property_address || "");
-        break;
-      case "eta":
-        cmp = (a.permit_eta || "").localeCompare(b.permit_eta || "");
-        break;
-      default:
-        cmp = (a.updated_at || "").localeCompare(b.updated_at || "");
-    }
-    return dir === "asc" ? cmp : -cmp;
-  });
+  // Group into the same coarse stage buckets the contractor dashboard uses,
+  // so "split by stage" means the same thing on both sides. Anything with a
+  // stage that doesn't match a known title (legacy free text) lands in
+  // "Other" so nothing is ever silently dropped from the list.
+  const bucketed = CONTRACTOR_BUCKETS.map((bucket) => ({
+    ...bucket,
+    items: filtered.filter((j: any) =>
+      (bucket.stageTitles as readonly string[]).includes(j.stage)
+    ),
+  }));
+  const bucketedIds = new Set(bucketed.flatMap((b) => b.items.map((j: any) => j.id)));
+  const other = filtered.filter((j: any) => !bucketedIds.has(j.id));
 
   const contractorOptions = (contractors || []).map((c) => ({
     id: c.id,
@@ -167,8 +162,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <div>
             <h1 className="text-2xl font-bold text-[#156cdd] dark:text-white">All Jobs</h1>
             <p className="mt-1 text-slate-500">
-              {sorted.length} of {jobs?.length || 0}
-              {sorted.length !== (jobs?.length || 0) ? " shown" : " total"}
+              {filtered.length} of {jobs?.length || 0}
+              {filtered.length !== (jobs?.length || 0) ? " shown" : " total"}
             </p>
           </div>
           <Link
@@ -184,126 +179,132 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <JobsFilterBar contractors={contractorOptions} stages={stageOptions} />
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#090909]">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-100 bg-slate-50 text-xs font-medium uppercase tracking-wider text-slate-500 dark:border-slate-700 dark:bg-slate-800/50">
-              <tr>
-                <SortTh field="address" label="Address" sort={sort} dir={dir} searchParams={searchParams} />
-                <th className="px-5 py-3">Client</th>
-                <SortTh field="contractor" label="Contractor" sort={sort} dir={dir} searchParams={searchParams} />
-                <SortTh field="stage" label="Stage" sort={sort} dir={dir} searchParams={searchParams} />
-                <th className="px-5 py-3">Permit #</th>
-                <th className="px-5 py-3">Submitted</th>
-                <SortTh field="eta" label="ETA" sort={sort} dir={dir} searchParams={searchParams} />
-                <th className="px-5 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {sorted.map((job: any) => (
-                <tr key={job.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                  <td className="px-5 py-4">
-                    <Link
-                      href={`/admin/jobs/${job.id}`}
-                      className="font-medium text-[#156cdd] hover:underline dark:text-white"
-                    >
-                      {job.property_address}
-                    </Link>
-                    <p className="text-xs text-slate-500">{job.homeowner_name}</p>
-                  </td>
-                  <td className="px-5 py-4 capitalize text-slate-600 dark:text-slate-300">
-                    {job.client_type}
-                    <span className="mt-0.5 block text-xs text-slate-400">{job.brand}</span>
-                  </td>
-                  <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
-                    {contractorMap.get(job.contractor_id) || "—"}
-                  </td>
-                  <td className="px-5 py-4">
-                    <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
-                      {job.stage}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
-                    {job.permit_number || "Pending"}
-                  </td>
-                  <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
-                    {job.submitted_date
-                      ? format(new Date(job.submitted_date), "MMM d, yyyy")
-                      : "—"}
-                  </td>
-                  <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
-                    {job.permit_eta
-                      ? format(new Date(job.permit_eta), "MMM d, yyyy")
-                      : "—"}
-                  </td>
-                  <td className="px-5 py-4 text-right">
-                    <Link
-                      href={`/admin/jobs/${job.id}`}
-                      className="text-sm font-medium text-[#156cdd] hover:underline dark:text-[#9CE824]"
-                    >
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-              {sorted.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="px-5 py-12 text-center text-slate-500">
-                    {jobs && jobs.length > 0
-                      ? "No jobs match these filters."
-                      : "No jobs yet. Create your first one."}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="mt-6 space-y-6">
+          {bucketed.map(
+            (bucket) =>
+              bucket.items.length > 0 && (
+                <AdminStageSection
+                  key={bucket.key}
+                  title={bucket.label}
+                  items={bucket.items}
+                  contractorMap={contractorMap}
+                  pendingInspectionJobIds={pendingInspectionJobIds}
+                />
+              )
+          )}
+          {other.length > 0 && (
+            <AdminStageSection
+              title="Other"
+              items={other}
+              contractorMap={contractorMap}
+              pendingInspectionJobIds={pendingInspectionJobIds}
+              accent="amber"
+            />
+          )}
+          {filtered.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-700 dark:bg-[#090909]">
+              <p className="text-slate-500">
+                {jobs && jobs.length > 0
+                  ? "No jobs match these filters."
+                  : "No jobs yet. Create your first one."}
+              </p>
+            </div>
+          )}
         </div>
       </main>
     </div>
   );
 }
 
-function SortTh({
-  field,
-  label,
-  sort,
-  dir,
-  searchParams,
+function AdminStageSection({
+  title,
+  items,
+  contractorMap,
+  pendingInspectionJobIds,
+  accent = "blue",
 }: {
-  field: SortField;
-  label: string;
-  sort: SortField;
-  dir: "asc" | "desc";
-  searchParams: { [key: string]: string | string[] | undefined };
+  title: string;
+  items: any[];
+  contractorMap: Map<string, string>;
+  pendingInspectionJobIds: Set<string>;
+  accent?: "blue" | "amber";
 }) {
-  const active = sort === field;
-  const nextDir = active && dir === "asc" ? "desc" : "asc";
-
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(searchParams)) {
-    if (value === undefined || key === "sort" || key === "dir") continue;
-    if (Array.isArray(value)) value.forEach((v) => params.append(key, v));
-    else params.set(key, value);
-  }
-  params.set("sort", field);
-  params.set("dir", nextDir);
+  const accentPill =
+    accent === "amber"
+      ? "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300"
+      : "bg-[#156cdd]/10 text-[#156cdd] dark:bg-[#9CE824]/15 dark:text-[#9CE824]";
 
   return (
-    <th className="px-5 py-3">
-      <Link
-        href={`/admin?${params.toString()}`}
-        className="inline-flex items-center gap-1 hover:text-slate-700 dark:hover:text-slate-200"
-      >
-        {label}
-        {active ? (
-          dir === "asc" ? (
-            <ArrowUp className="h-3 w-3" />
-          ) : (
-            <ArrowDown className="h-3 w-3" />
-          )
-        ) : (
-          <ArrowUpDown className="h-3 w-3 opacity-40" />
-        )}
-      </Link>
-    </th>
+    <section className="rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#090909]">
+      <header className="flex items-center gap-3 border-b border-slate-100 px-5 py-3 dark:border-slate-800">
+        <span
+          className={
+            "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider " +
+            accentPill
+          }
+        >
+          {title}
+        </span>
+        <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          {items.length}
+        </span>
+      </header>
+      <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+        {items.map((job: any) => {
+          const needsInspection = pendingInspectionJobIds.has(job.id);
+          return (
+            <li key={job.id}>
+              <Link
+                href={`/admin/jobs/${job.id}`}
+                className={
+                  "flex flex-wrap items-center gap-4 px-5 py-4 transition hover:bg-slate-50 dark:hover:bg-slate-800/40" +
+                  (needsInspection ? " bg-amber-50/70 dark:bg-amber-950/20" : "")
+                }
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate text-sm font-semibold text-[#156cdd] dark:text-white">
+                      {job.property_address}
+                    </p>
+                    {needsInspection && (
+                      <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                        Inspection needed
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-0.5 truncate text-xs text-slate-500">
+                    {job.brand}
+                    {job.homeowner_name ? ` · ${job.homeowner_name}` : ""}
+                  </p>
+                </div>
+                <div className="hidden w-36 truncate text-xs text-slate-500 sm:block">
+                  {contractorMap.get(job.contractor_id) || "—"}
+                </div>
+                <div className="hidden w-28 text-xs text-slate-500 md:block">
+                  {job.permit_number || "Pending"}
+                </div>
+                <div className="w-32 text-right text-xs text-slate-500">
+                  {job.permit_eta ? (
+                    <>
+                      <span className="text-slate-400">ETA</span>{" "}
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                        {format(new Date(job.permit_eta), "MMM d, yyyy")}
+                      </span>
+                    </>
+                  ) : job.submitted_date ? (
+                    <>
+                      <span className="text-slate-400">Submitted</span>{" "}
+                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                        {format(new Date(job.submitted_date), "MMM d, yyyy")}
+                      </span>
+                    </>
+                  ) : null}
+                </div>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
