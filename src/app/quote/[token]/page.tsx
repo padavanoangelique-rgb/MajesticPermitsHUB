@@ -60,7 +60,7 @@ export default async function QuoteApprovalPage({ params }: PageProps) {
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-[#0A0F1C]">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-[#020202]">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           {job?.brand || "Majestic Permits"} · Quote for review
         </p>

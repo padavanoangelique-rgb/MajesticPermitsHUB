@@ -105,7 +105,7 @@ export default async function TrackPage({ params }: PageProps) {
       job.brand === "The Permit Closer" ? "The Permit Closer" : "Majestic Permits";
 
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
         <BrandHeader brand={brandName} />
 
         <main className="mx-auto max-w-3xl px-4 pb-20 pt-8 sm:px-6">
@@ -138,7 +138,7 @@ export default async function TrackPage({ params }: PageProps) {
           />
 
           {inspections && inspections.length > 0 && (
-            <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
+            <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
                 Inspections
               </h2>
@@ -170,7 +170,7 @@ export default async function TrackPage({ params }: PageProps) {
           )}
 
           {sharedDocs && sharedDocs.length > 0 && (
-            <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
+            <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
                 Documents
               </h2>
@@ -205,7 +205,7 @@ export default async function TrackPage({ params }: PageProps) {
 
 function InvalidLink() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-[#0A0F1C]">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-[#020202]">
       <div className="max-w-md text-center">
         <h1 className="text-3xl font-bold text-[#156cdd] dark:text-white">
           This link isn&apos;t valid
@@ -227,7 +227,7 @@ function InvalidLink() {
 
 function DisabledLink() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-[#0A0F1C]">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-[#020202]">
       <div className="max-w-md text-center">
         <h1 className="text-3xl font-bold text-[#156cdd] dark:text-white">
           Sharing has been paused

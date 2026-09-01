@@ -61,7 +61,7 @@ export function PermitHeader({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-3 dark:border-slate-700 dark:bg-[#111827]">
+    <div className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-3 dark:border-slate-700 dark:bg-[#090909]">
       <Cell label="Permit #" value={permitDisplay} />
       <Cell label="Submitted" value={submittedDisplay} />
       <Cell label="Permit ETA" value={etaDisplay} highlight />

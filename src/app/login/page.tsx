@@ -56,8 +56,8 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-[#0A0F1C]">
-      <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-[#111827]">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-[#020202]">
+      <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-[#090909]">
         <div className="mb-8 text-center">
           <Image
             src="/icons/icon-512.png"
@@ -91,7 +91,7 @@ function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#156cdd] focus:ring-2 focus:ring-[#156cdd]/20 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#156cdd] focus:ring-2 focus:ring-[#156cdd]/20 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
               placeholder="you@company.com"
             />
           </div>
@@ -110,7 +110,7 @@ function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#156cdd] focus:ring-2 focus:ring-[#156cdd]/20 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#156cdd] focus:ring-2 focus:ring-[#156cdd]/20 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
               placeholder="••••••••"
             />
           </div>
@@ -137,7 +137,7 @@ function LoginForm() {
           Need an account?{" "}
           <a
             href="mailto:hello@majesticpermits.com"
-            className="text-[#156cdd] underline dark:text-[#e2ba00]"
+            className="text-[#156cdd] underline dark:text-[#9CE824]"
           >
             Contact us
           </a>
@@ -149,7 +149,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-slate-50 dark:bg-[#020202]" />}>
       <LoginForm />
     </Suspense>
   );

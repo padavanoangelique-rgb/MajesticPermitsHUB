@@ -36,7 +36,7 @@ export function UpdateStageForm({
         <select
           value={stage}
           onChange={(e) => setStage(e.target.value)}
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#0A0F1C]"
+          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202]"
         >
           <option>Getting your project ready</option>
           <option>Submitted to the city</option>
@@ -50,7 +50,7 @@ export function UpdateStageForm({
         <select
           value={subStatus}
           onChange={(e) => setSubStatus(e.target.value)}
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#0A0F1C]"
+          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202]"
         >
           <option>Need to Submit</option>
           <option>In Review</option>

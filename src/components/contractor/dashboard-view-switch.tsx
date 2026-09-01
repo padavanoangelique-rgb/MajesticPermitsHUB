@@ -35,7 +35,7 @@ export function DashboardViewSwitch({
   ];
 
   return (
-    <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-[#111827]">
+    <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-[#090909]">
       {options.map((opt) => {
         const active = view === opt.value;
         return (

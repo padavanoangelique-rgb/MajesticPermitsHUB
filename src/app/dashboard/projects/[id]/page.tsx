@@ -79,8 +79,8 @@ export default async function ContractorProjectPage({ params }: PageProps) {
     currentIndex = 7;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F1C]">
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111827]">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
+      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#090909]">
         <div className="mx-auto flex h-16 max-w-3xl items-center px-4 sm:px-6">
           <Link href="/dashboard" className="text-sm text-slate-500 hover:text-[#156cdd]">
             ← All projects
@@ -237,7 +237,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#111827]">
+    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]">
       <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-500">
         {title}
       </h2>

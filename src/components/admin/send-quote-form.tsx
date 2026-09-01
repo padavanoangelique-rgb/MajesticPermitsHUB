@@ -112,7 +112,7 @@ export function SendQuoteForm({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="750.00"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
           />
         </div>
         <div className="sm:col-span-2">
@@ -123,7 +123,7 @@ export function SendQuoteForm({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Permit application + city fees"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
           />
         </div>
       </div>
@@ -140,7 +140,7 @@ export function SendQuoteForm({
             value={expiresInDays}
             onChange={(e) => setExpiresInDays(e.target.value)}
             placeholder="14"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#0A0F1C] dark:text-white"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
           />
         </div>
         <label className="mt-6 flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300 sm:col-span-2">
