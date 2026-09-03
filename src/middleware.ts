@@ -10,7 +10,6 @@ export async function middleware(request: NextRequest) {
   const isAdminApi = path.startsWith("/api/admin");
   const isContractorArea = path === "/dashboard" || path.startsWith("/dashboard/");
 
-  // Admin API routes hold the service-role key, so they must never be public
   if (isAdminApi) {
     if (!user) {
       return NextResponse.json({ error: "Not signed in" }, { status: 401 });
@@ -21,7 +20,6 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // Not signed in and trying to reach a protected area -> send to login
   if (!user && (isAdminArea || isContractorArea)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -29,7 +27,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Signed in but not an admin -> keep them out of the admin console
   if (user && isAdminArea && !isAdminEmail(user.email)) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
@@ -37,7 +34,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Already signed in and hitting /login -> send them where they belong
   if (user && path === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = isAdminEmail(user.email) ? "/admin" : "/dashboard";
@@ -50,10 +46,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Run on every page except static assets, images and the public
-     * homeowner tracking links (which are intentionally login-free).
-     */
-    "/((?!_next/static|_next/image|favicon.ico|icons|track|quote|api/cron|api/stripe|api/quote|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icons|track|quote|api/cron|api/stripe|api/quote|api/ingest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
