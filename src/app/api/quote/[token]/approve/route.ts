@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { sendAccountingEmail } from "@/lib/accounting-email";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Public quote-approval endpoint.
- * Authentication is by the quote's approval_token only.
- * Does NOT send any client-facing email.
- */
 export async function POST(
   req: Request,
   { params }: { params: { token: string } }
@@ -22,7 +18,7 @@ export async function POST(
     const { data: quote, error: readError } = await supabase
       .from("quotes")
       .select(
-        "id, job_id, status, approved_at, declined_at, expires_at, paid_at, bill_to"
+        "id, job_id, status, approved_at, declined_at, expires_at, paid_at, bill_to, amount, description"
       )
       .eq("approval_token", params.token)
       .maybeSingle();
@@ -76,9 +72,19 @@ export async function POST(
       );
     }
 
-    // Note: we intentionally do NOT auto-advance the job's stage on
-    // approval — the admin drives the stage timeline manually so the
-    // homeowner-facing narrative stays accurate.
+    const { data: job } = await supabase
+      .from("jobs")
+      .select("property_address")
+      .eq("id", quote.job_id)
+      .maybeSingle();
+
+    await sendAccountingEmail({
+      subject: `Quote accepted — ${job?.property_address || quote.job_id}`,
+      heading: "Quote accepted",
+      bodyHtml: `<p style="margin:0;color:#334155;font-size:15px;line-height:1.65;">
+        ${job?.property_address || "A job"} quote of $${Number(quote.amount || 0).toFixed(2)} was accepted${approvedByName ? ` by ${approvedByName}` : ""}.
+      </p>`,
+    });
 
     return NextResponse.json({ ok: true, status: "Accepted" });
   } catch (err: any) {
