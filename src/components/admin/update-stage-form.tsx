@@ -62,7 +62,7 @@ export function UpdateStageForm({
       <button
         onClick={handleUpdate}
         disabled={loading}
-        className="rounded-xl bg-[#e2ba00] px-4 py-2 text-sm font-semibold text-[#156cdd] hover:bg-[#E0C878] disabled:opacity-60 dark:bg-[#9CE824] dark:hover:bg-[#85c91c]"
+        className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60 dark:bg-[#b6ff2a] dark:text-black dark:hover:bg-[#d4ff6a]"
       >
         {loading ? "Saving..." : "Update stage"}
       </button>
