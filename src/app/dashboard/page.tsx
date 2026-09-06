@@ -24,7 +24,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   const contractor = await getContractorForUser(user);
 
-  // If no contractor record, show a friendly message
   if (!contractor) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-[#020202]">
@@ -49,7 +48,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const view: "list" | "pipeline" =
     searchParams.view === "pipeline" ? "pipeline" : "list";
 
-  // Get this contractor's jobs
   const { data: jobs } = await supabase
     .from("jobs")
     .select(
@@ -58,11 +56,15 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     .eq("contractor_id", contractor.id)
     .order("updated_at", { ascending: false });
 
+  const { data: pendingJobRequests } = await supabase
+    .from("job_requests")
+    .select("id, property_address, trade_type, status, created_at")
+    .eq("contractor_id", contractor.id)
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+
   const totalJobs = jobs?.length || 0;
 
-  // Group jobs into the coarse dashboard buckets. Anything with a stage
-  // that doesn't match a known title (legacy free text) lands in "Other"
-  // so nothing is ever silently dropped from the list.
   const bucketed = CONTRACTOR_BUCKETS.map((bucket) => ({
     ...bucket,
     items: (jobs || []).filter((j: any) =>
@@ -113,8 +115,32 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               {totalJobs} active project{totalJobs !== 1 ? "s" : ""}
             </p>
           </div>
-          <DashboardViewSwitch view={view} />
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard/new"
+              className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8]"
+            >
+              Request a job
+            </Link>
+            <DashboardViewSwitch view={view} />
+          </div>
         </div>
+
+        {(pendingJobRequests || []).length > 0 && (
+          <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 dark:border-amber-900/40 dark:bg-amber-950/20">
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+              Waiting on Majestic
+            </p>
+            <ul className="mt-2 space-y-1 text-sm text-amber-900 dark:text-amber-100">
+              {pendingJobRequests!.map((req: any) => (
+                <li key={req.id}>
+                  {req.property_address}
+                  {req.trade_type ? ` · ${req.trade_type}` : ""}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {totalJobs === 0 ? (
           <div className="mt-8 rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-700 dark:bg-[#090909]">
@@ -122,8 +148,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               No projects assigned yet
             </p>
             <p className="mt-2 text-sm text-slate-500">
-              As soon as Majestic Permits assigns a permit to your company, it
-              will appear here with live status and inspection updates.
+              Request a job and attach documents. After Majestic approves it, the
+              permit will show here with live status.
             </p>
           </div>
         ) : view === "pipeline" ? (
