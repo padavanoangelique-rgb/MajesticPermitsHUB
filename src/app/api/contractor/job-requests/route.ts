@@ -5,7 +5,8 @@ import { getContractorForUser } from "@/lib/contractor";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { sendAdminSms } from "@/lib/sms";
 import { ADMIN_EMAILS } from "@/lib/admin";
-import { FROM_EMAIL, SITE_URL, getResend } from "@/lib/email";
+import { FROM_EMAIL, getResend } from "@/lib/email";
+import { PENDING_REQUEST_SUB } from "@/lib/job-request";
 
 export const dynamic = "force-dynamic";
 
@@ -28,14 +29,20 @@ export async function GET() {
 
   const service = createServiceClient();
   const { data, error } = await service
-    .from("job_requests")
-    .select("id, property_address, trade_type, status, created_at, approved_job_id")
+    .from("jobs")
+    .select("id, property_address, trade_type, sub_status, created_at")
     .eq("contractor_id", contractor.id)
+    .eq("sub_status", PENDING_REQUEST_SUB)
     .order("created_at", { ascending: false })
     .limit(25);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ requests: data || [] });
+  return NextResponse.json({
+    requests: (data || []).map((row) => ({
+      ...row,
+      status: "pending",
+    })),
+  });
 }
 
 export async function POST(req: Request) {
@@ -73,10 +80,7 @@ export async function POST(req: Request) {
     }
     for (const file of files) {
       if (file.size > MAX_BYTES) {
-        return NextResponse.json(
-          { error: `${file.name} is over 8MB` },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: `${file.name} is over 8MB` }, { status: 400 });
       }
       if (!ALLOWED_EXT.test(file.name)) {
         return NextResponse.json(
@@ -87,9 +91,11 @@ export async function POST(req: Request) {
     }
 
     const service = createServiceClient();
-    const { data: requestRow, error: insertError } = await service
-      .from("job_requests")
+    const { data: job, error: insertError } = await service
+      .from("jobs")
       .insert({
+        client_type: "contractor",
+        brand: "Majestic Permits",
         contractor_id: contractor.id,
         property_address: propertyAddress,
         homeowner_name: homeownerName || null,
@@ -98,22 +104,26 @@ export async function POST(req: Request) {
         trade_type: tradeType || null,
         jurisdiction: jurisdiction || null,
         notes: notes || null,
-        status: "pending",
+        stage: "Getting your project ready",
+        sub_status: PENDING_REQUEST_SUB,
+        next_step: "Contractor submitted — waiting for Majestic to approve",
       })
       .select("id")
       .single();
 
-    if (insertError || !requestRow) {
+    if (insertError || !job) {
       return NextResponse.json(
         { error: insertError?.message || "Could not save request" },
         { status: 400 }
       );
     }
 
+    await service.from("homeowner_links").insert({ job_id: job.id });
+
     const uploaded: string[] = [];
     for (const file of files) {
       const safeName = file.name.replace(/[^\w.\-]+/g, "_");
-      const storagePath = `requests/${requestRow.id}/${Date.now()}_${safeName}`;
+      const storagePath = `${job.id}/intake/${Date.now()}_${safeName}`;
       const bytes = await file.arrayBuffer();
       const { error: upErr } = await service.storage
         .from(BUCKET)
@@ -125,26 +135,26 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: upErr.message }, { status: 400 });
       }
       uploaded.push(storagePath);
-      await service.from("job_request_files").insert({
-        request_id: requestRow.id,
+      await service.from("job_documents").insert({
+        job_id: job.id,
+        category: "intake",
+        label: file.name,
         storage_path: storagePath,
         file_name: file.name,
         mime_type: file.type || null,
         size_bytes: file.size,
+        visible_to_contractor: true,
+        visible_to_homeowner: false,
       });
     }
 
     const company = contractor.company_name || contractor.name || "Contractor";
     const notice = `${company} requested a new job at ${propertyAddress}${tradeType ? ` (${tradeType})` : ""}.`;
-    await notifyAdmin("job_request", notice, null);
+    await notifyAdmin("job_request", notice, job.id);
     await sendAdminSms(`New job request — ${notice}`);
 
     try {
       const resend = getResend();
-      const reviewUrl = `${SITE_URL.replace("majesticpermits.com", "hub.majesticpermits.com")}/admin/job-requests`;
-      const fileLine = files.length
-        ? `<p style="margin:12px 0 0;color:#334155;font-size:15px;">${files.length} document${files.length === 1 ? "" : "s"} attached.</p>`
-        : "";
       await resend.emails.send({
         from: FROM_EMAIL,
         to: ADMIN_EMAILS,
@@ -158,9 +168,9 @@ export async function POST(req: Request) {
             </p>
             ${homeownerName ? `<p style="margin:12px 0 0;color:#334155;font-size:15px;">Homeowner: ${homeownerName}${homeownerPhone ? ` · ${homeownerPhone}` : ""}</p>` : ""}
             ${notes ? `<p style="margin:12px 0 0;color:#334155;font-size:15px;">${notes}</p>` : ""}
-            ${fileLine}
+            ${files.length ? `<p style="margin:12px 0 0;color:#334155;font-size:15px;">${files.length} document${files.length === 1 ? "" : "s"} attached.</p>` : ""}
             <p style="margin:24px 0 0;">
-              <a href="${reviewUrl}" style="display:inline-block;background:#156cdd;color:#fff;text-decoration:none;font-weight:600;padding:12px 18px;border-radius:10px;">Review request</a>
+              <a href="https://hub.majesticpermits.com/admin/job-requests" style="display:inline-block;background:#156cdd;color:#fff;text-decoration:none;font-weight:600;padding:12px 18px;border-radius:10px;">Review request</a>
             </p>
           </div>
         </body></html>`,
@@ -169,7 +179,7 @@ export async function POST(req: Request) {
       console.error("job request email failed", err);
     }
 
-    return NextResponse.json({ ok: true, id: requestRow.id, files: uploaded.length });
+    return NextResponse.json({ ok: true, id: job.id, files: uploaded.length });
   } catch (err: any) {
     return NextResponse.json(
       { error: err?.message || "Request failed" },
