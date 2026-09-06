@@ -24,21 +24,27 @@ export function JurisdictionForm({
   const [noc, setNoc] = useState(initial.noc_status || "None");
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
   const [ok, setOk] = useState("");
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  function loadDirectory() {
     fetch("/api/admin/jurisdictions")
       .then((r) => r.json())
       .then((data) => setDirectory(data.jurisdictions || []))
       .catch(() => null);
+  }
+
+  useEffect(() => {
+    loadDirectory();
   }, []);
 
   useEffect(() => {
     const match = directory.find(
       (row) => row.name.toLowerCase() === jurisdiction.trim().toLowerCase()
     );
-    if (match?.email && !email) setEmail(match.email);
+    if (match?.email) setEmail(match.email);
     if (match?.portal && !url) setUrl(match.portal);
   }, [jurisdiction, directory]);
 
@@ -63,6 +69,32 @@ export function JurisdictionForm({
       setError(data.error || "Could not save");
     }
     setSaving(false);
+    return res.ok;
+  }
+
+  async function addContact() {
+    setAdding(true);
+    setOk("");
+    setError("");
+    const res = await fetch("/api/admin/jurisdictions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: jurisdiction,
+        email,
+        portal: url,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      setDirectory(data.jurisdictions || []);
+      setShowAdd(false);
+      setOk(`Saved ${jurisdiction} contact.`);
+      await save();
+    } else {
+      setError(data.error || "Could not add contact");
+    }
+    setAdding(false);
   }
 
   async function sendNoc() {
@@ -130,6 +162,11 @@ export function JurisdictionForm({
           />
         </div>
       </div>
+      {showAdd && (
+        <p className="text-xs text-slate-500">
+          This saves the city, email, and portal for every future job in that jurisdiction.
+        </p>
+      )}
       <div>
         <label className="mb-1 block text-xs font-medium text-slate-500">
           NOC status
@@ -144,9 +181,6 @@ export function JurisdictionForm({
           <option value="Recorded">Recorded</option>
           <option value="Submitted">Submitted</option>
         </select>
-        <p className="mt-1 text-xs text-slate-500">
-          Mark Recorded after the NOC is recorded, upload the file with NOC in the name, then Send NOC.
-        </p>
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <button
@@ -155,6 +189,14 @@ export function JurisdictionForm({
           className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
         >
           {saving ? "Saving..." : "Save"}
+        </button>
+        <button
+          type="button"
+          onClick={() => (showAdd ? addContact() : setShowAdd(true))}
+          disabled={adding || !jurisdiction || !email}
+          className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 disabled:opacity-60 dark:border-slate-600 dark:bg-[#111] dark:text-white"
+        >
+          {adding ? "Adding..." : showAdd ? "Save contact" : "Add contact"}
         </button>
         <button
           onClick={sendNoc}
