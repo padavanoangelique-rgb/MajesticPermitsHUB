@@ -2,22 +2,11 @@ import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 import Stripe from "stripe";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getResend, FROM_EMAIL, SITE_URL, quoteEmail } from "@/lib/email";
+import { getResend, SITE_URL, quoteEmail } from "@/lib/email";
+import { FROM_ACCOUNTING, MAILBOX } from "@/lib/mailboxes";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Create a quote for a job.
- *
- * - bill_to = "homeowner" (default): generates a Stripe Checkout link
- *   and (optionally) emails the homeowner + assigned contractor.
- * - bill_to = "contractor": no Stripe Checkout session is generated.
- *   The contractor receives an approval link that returns them to the
- *   contractor portal where they can accept or decline.
- *
- * Every quote also gets its own approval_token so the recipient can
- * approve or decline it from a signed link, without needing to log in.
- */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -93,7 +82,6 @@ export async function POST(req: Request) {
 
     const approvalUrl = `${SITE_URL}/quote/${approvalToken}`;
 
-    // Stripe Checkout is only wired up for homeowner-billed quotes today.
     let payUrl: string | null = null;
     if (bill_to === "homeowner") {
       const stripeKey = process.env.STRIPE_SECRET_KEY;
@@ -143,8 +131,6 @@ export async function POST(req: Request) {
     let emailError: string | null = null;
 
     if (send_email) {
-      // Homeowner quotes go to the homeowner (+ CC contractor if any).
-      // Contractor quotes go to the contractor only.
       const recipients = new Set<string>();
 
       if (bill_to === "homeowner") {
@@ -157,11 +143,7 @@ export async function POST(req: Request) {
           .select("email")
           .eq("id", job.contractor_id)
           .maybeSingle();
-        if (contractor?.email && bill_to === "contractor") {
-          recipients.add(contractor.email);
-        } else if (contractor?.email && bill_to === "homeowner") {
-          recipients.add(contractor.email);
-        }
+        if (contractor?.email) recipients.add(contractor.email);
       }
 
       const linkForEmail = payUrl || approvalUrl;
@@ -176,8 +158,10 @@ export async function POST(req: Request) {
         });
 
         const { error: sendError } = await getResend().emails.send({
-          from: `Majestic Permits <${FROM_EMAIL}>`,
+          from: FROM_ACCOUNTING,
           to: Array.from(recipients),
+          bcc: [MAILBOX.accounting, MAILBOX.owner],
+          replyTo: MAILBOX.accounting,
           subject,
           html,
         });
