@@ -3,20 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getContractorForUser } from "@/lib/contractor";
 import { PERMIT_STAGES } from "@/lib/stages";
+import { textClientStatusChange } from "@/lib/job-status-sms";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Contractor-scoped stage bump.
- *
- * Only:
- *   - the signed-in user's own contractor record can update
- *   - a job whose contractor_id matches that record
- *   - to a stage.title from the canonical PERMIT_STAGES list
- *
- * We use the service-role client after the ownership check so RLS on jobs
- * (which today only lets admins update) doesn't block the write.
- */
 export async function PATCH(
   req: Request,
   { params }: { params: { id: string } }
@@ -42,11 +32,10 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid stage" }, { status: 400 });
     }
 
-    // Confirm this contractor owns the job before we touch it
     const service = createServiceClient();
     const { data: job, error: lookupError } = await service
       .from("jobs")
-      .select("id, contractor_id")
+      .select("id, contractor_id, stage")
       .eq("id", params.id)
       .maybeSingle();
 
@@ -64,6 +53,12 @@ export async function PATCH(
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    if (stage !== job.stage) {
+      await textClientStatusChange({ jobId: params.id, stage }).catch((err) =>
+        console.error("status sms failed", err)
+      );
     }
 
     return NextResponse.json({ ok: true });

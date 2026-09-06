@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isAdminEmail } from "@/lib/admin";
+import { textClientStatusChange } from "@/lib/job-status-sms";
 
 export const dynamic = "force-dynamic";
 
-/** Only these columns may be written from the admin UI. */
 const ALLOWED_FIELDS = [
   "property_address",
   "homeowner_name",
@@ -34,7 +34,6 @@ function sanitize(body: Record<string, any>) {
   for (const key of ALLOWED_FIELDS) {
     if (!(key in body)) continue;
     let value = body[key];
-    // Empty strings should clear the column, not fail a uuid/date cast
     if (value === "") value = null;
     patch[key] = value;
   }
@@ -57,6 +56,11 @@ export async function PATCH(
     }
 
     const supabase = createServiceClient();
+    const { data: before } = await supabase
+      .from("jobs")
+      .select("stage, sub_status")
+      .eq("id", params.id)
+      .maybeSingle();
 
     const { error } = await supabase
       .from("jobs")
@@ -65,6 +69,18 @@ export async function PATCH(
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    const stageChanged =
+      typeof patch.stage === "string" && patch.stage !== before?.stage;
+    const subChanged =
+      "sub_status" in patch && patch.sub_status !== before?.sub_status;
+    if (stageChanged || subChanged) {
+      await textClientStatusChange({
+        jobId: params.id,
+        stage: patch.stage ?? before?.stage,
+        subStatus: patch.sub_status ?? before?.sub_status,
+      }).catch((err) => console.error("status sms failed", err));
     }
 
     return NextResponse.json({ ok: true });
@@ -76,27 +92,11 @@ export async function PATCH(
   }
 }
 
-/**
- * Permanently deletes a job and everything hanging off it.
- *
- * job_documents, job_inspections, job_fees, time_entries, quotes,
- * homeowner_links, and inspection_requests all reference jobs(id) with
- * ON DELETE CASCADE, so those rows are cleaned up automatically.
- *
- * mph_stage_history and mph_email_queue are informational tables without
- * a foreign-key constraint, so we clean those up explicitly first.
- *
- * Storage: uploaded document files in the 'job-documents' bucket are also
- * removed, since without their rows there would be no way to reach them.
- */
 export async function DELETE(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    // Defense-in-depth admin check. Middleware already blocks non-admins from
-    // /api/admin/*, but delete is destructive enough to re-verify here so a
-    // future middleware/matcher change can't silently open it up.
     const auth = createClient();
     const {
       data: { user },
@@ -110,7 +110,6 @@ export async function DELETE(
 
     const supabase = createServiceClient();
 
-    // Verify the job actually exists first so the caller gets a clean 404
     const { data: job, error: lookupError } = await supabase
       .from("jobs")
       .select("id")
@@ -124,7 +123,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
 
-    // Remove any uploaded document blobs before we lose the paths
     const { data: docs } = await supabase
       .from("job_documents")
       .select("storage_path")
@@ -135,15 +133,12 @@ export async function DELETE(
       .filter(Boolean);
 
     if (paths.length > 0) {
-      // Best-effort — don't block deletion if storage cleanup fails
       await supabase.storage.from("job-documents").remove(paths);
     }
 
-    // Clean up tables without a cascading foreign key
     await supabase.from("mph_stage_history").delete().eq("job_id", params.id);
     await supabase.from("mph_email_queue").delete().eq("job_id", params.id);
 
-    // Everything else cascades from jobs(id)
     const { error } = await supabase.from("jobs").delete().eq("id", params.id);
 
     if (error) {
