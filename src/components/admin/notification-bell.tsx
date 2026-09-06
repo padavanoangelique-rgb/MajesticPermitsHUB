@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Bell } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -14,6 +15,13 @@ interface Notification {
 }
 
 const POLL_MS = 30000;
+
+function hrefFor(n: Notification) {
+  if (n.type === "job_request") return "/admin/job-requests";
+  if (n.job_id) return `/admin/jobs/${n.job_id}`;
+  if (n.type?.includes("inspection")) return "/admin/inspections";
+  return "/admin";
+}
 
 export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -29,7 +37,7 @@ export function NotificationBell() {
       setNotifications(data.notifications || []);
       setUnread(data.unread || 0);
     } catch {
-      // silently ignore — notifications are a convenience, not critical
+      // silently ignore
     }
   }
 
@@ -95,14 +103,16 @@ export function NotificationBell() {
               <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                 {notifications.map((n) => (
                   <li key={n.id} className="px-4 py-3">
-                    <p className="text-sm text-slate-700 dark:text-slate-200">
-                      {n.message}
-                    </p>
-                    <p className="mt-0.5 text-xs text-slate-400">
-                      {formatDistanceToNow(new Date(n.created_at), {
-                        addSuffix: true,
-                      })}
-                    </p>
+                    <Link href={hrefFor(n)} className="block" onClick={() => setOpen(false)}>
+                      <p className="text-sm text-slate-700 dark:text-slate-200">
+                        {n.message}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-400">
+                        {formatDistanceToNow(new Date(n.created_at), {
+                          addSuffix: true,
+                        })}
+                      </p>
+                    </Link>
                   </li>
                 ))}
               </ul>
