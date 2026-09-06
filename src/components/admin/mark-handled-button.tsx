@@ -20,7 +20,11 @@ export function MarkHandledButton({
     await fetch(`/api/admin/inspection-requests/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status, handled_at: new Date().toISOString() }),
+      body: JSON.stringify({
+        status,
+        handled_at: new Date().toISOString(),
+        notify_contractor: true,
+      }),
     });
     router.refresh();
     setLoading(false);
