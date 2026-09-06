@@ -20,12 +20,14 @@ export async function textClientStatusChange(opts: {
   const detail = sub && sub !== stage ? ` (${sub})` : "";
   const body = `Majestic Permits — ${job.property_address} is now: ${stage}${detail}.`;
 
-  const phones = new Set<string>();
+  const phones: string[] = [];
   const primary = await getJobContactPhone(job);
-  if (primary) phones.add(primary);
-  if (job.homeowner_phone) phones.add(job.homeowner_phone);
+  if (primary) phones.push(primary);
+  if (job.homeowner_phone && job.homeowner_phone !== primary) {
+    phones.push(job.homeowner_phone);
+  }
 
-  for (const phone of phones) {
-    await sendSms(phone, body);
+  for (let i = 0; i < phones.length; i += 1) {
+    await sendSms(phones[i], body);
   }
 }
