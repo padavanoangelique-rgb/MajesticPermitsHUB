@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/auth-guard";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { JobRequestActions } from "@/components/admin/job-request-actions";
+import { DECLINED_REQUEST_SUB, PENDING_REQUEST_SUB } from "@/lib/job-request";
 
 export const dynamic = "force-dynamic";
 
@@ -11,11 +12,12 @@ export default async function AdminJobRequestsPage() {
   await requireAdmin();
   const supabase = createServiceClient();
 
-  const { data: requests } = await supabase
-    .from("job_requests")
+  const { data: jobs } = await supabase
+    .from("jobs")
     .select(
-      "id, property_address, homeowner_name, homeowner_email, homeowner_phone, trade_type, jurisdiction, notes, status, decline_reason, approved_job_id, created_at, contractor_id"
+      "id, property_address, homeowner_name, homeowner_email, homeowner_phone, trade_type, jurisdiction, notes, sub_status, created_at, contractor_id"
     )
+    .in("sub_status", [PENDING_REQUEST_SUB, DECLINED_REQUEST_SUB, "Need to Submit"])
     .order("created_at", { ascending: false });
 
   const { data: contractors } = await supabase
@@ -28,22 +30,27 @@ export default async function AdminJobRequestsPage() {
     ])
   );
 
-  const { data: files } = await supabase
-    .from("job_request_files")
-    .select("id, request_id, storage_path, file_name");
+  const pending = (jobs || []).filter((j) => j.sub_status === PENDING_REQUEST_SUB);
+  const others = (jobs || []).filter((j) => j.sub_status !== PENDING_REQUEST_SUB);
 
-  const filesByRequest = new Map<string, Array<{ name: string; url: string }>>();
+  const pendingIds = pending.map((j) => j.id);
+  const { data: files } =
+    pendingIds.length > 0
+      ? await supabase
+          .from("job_documents")
+          .select("job_id, file_name, storage_path")
+          .in("job_id", pendingIds)
+      : { data: [] as any[] };
+
+  const filesByJob = new Map<string, Array<{ name: string; url: string }>>();
   for (const file of files || []) {
     const { data } = await supabase.storage
       .from("job-documents")
       .createSignedUrl(file.storage_path, 60 * 60);
-    const list = filesByRequest.get(file.request_id) || [];
+    const list = filesByJob.get(file.job_id) || [];
     list.push({ name: file.file_name, url: data?.signedUrl || "" });
-    filesByRequest.set(file.request_id, list);
+    filesByJob.set(file.job_id, list);
   }
-
-  const pending = (requests || []).filter((r) => r.status === "pending");
-  const others = (requests || []).filter((r) => r.status !== "pending");
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
@@ -66,7 +73,7 @@ export default async function AdminJobRequestsPage() {
           Contractor job requests
         </h1>
         <p className="mt-1 text-slate-500">
-          {pending.length} waiting. Approve to add the job and attach the documents.
+          {pending.length} waiting. Approve to add the job to the contractor dashboard.
         </p>
 
         <div className="mt-8 space-y-4">
@@ -77,7 +84,7 @@ export default async function AdminJobRequestsPage() {
           )}
           {pending.map((req) => {
             const contractor = contractorMap.get(req.contractor_id);
-            const docs = filesByRequest.get(req.id) || [];
+            const docs = filesByJob.get(req.id) || [];
             return (
               <div
                 key={req.id}
@@ -144,15 +151,11 @@ export default async function AdminJobRequestsPage() {
                 >
                   <span className="font-medium">{req.property_address}</span>
                   <span className="mx-2 text-slate-400">·</span>
-                  <span className="capitalize text-slate-500">{req.status}</span>
-                  {req.approved_job_id && (
-                    <>
-                      <span className="mx-2 text-slate-400">·</span>
-                      <Link href={`/admin/jobs/${req.approved_job_id}`} className="text-[#156cdd] underline">
-                        Open job
-                      </Link>
-                    </>
-                  )}
+                  <span className="capitalize text-slate-500">{req.sub_status}</span>
+                  <span className="mx-2 text-slate-400">·</span>
+                  <Link href={`/admin/jobs/${req.id}`} className="text-[#156cdd] underline">
+                    Open job
+                  </Link>
                 </div>
               ))}
             </div>
