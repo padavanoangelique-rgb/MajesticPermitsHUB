@@ -218,6 +218,7 @@ async function handleWrite(
       await notifyAdmin("inspection_needed", notice, jobId);
       await sendAdminSms(`Inspection cancelled — ${notice}`);
       await sendAdminRequestEmail({
+        kind: "inspection",
         subject: `Inspection cancelled — ${job.property_address}`,
         heading: "Inspection request cancelled",
         bodyHtml: `<p style="margin:0;color:#334155;font-size:15px;line-height:1.65;">${notice}</p>`,
@@ -270,6 +271,7 @@ async function handleWrite(
     await notifyAdmin("inspection_needed", noticeMessage, jobId);
     await sendAdminSms(`Inspection ${verb} — ${noticeMessage}`);
     await sendAdminRequestEmail({
+      kind: "inspection",
       subject: `Inspection ${verb} — ${job.property_address}`,
       heading: action === "edit" ? "Inspection request updated" : "New inspection request",
       bodyHtml: `<p style="margin:0;color:#334155;font-size:15px;line-height:1.65;">${noticeMessage}</p>`,
