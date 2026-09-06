@@ -3,27 +3,10 @@
 @tailwind utilities;
 
 /*
- * Design tokens — lifted from permitaio.com to unify both apps under one
- * visual system. Light mode: white surface, near-black text, permitaio
- * primary blue #156cdd. Dark mode: near-black surface, off-white text,
- * permitaio chartreuse #9ce824 primary with a true-gold secondary accent.
- *
- * All values are in HSL (H S% L%) form because tailwind.config.ts wraps
- * them in `hsl(var(--token))`. Hex references (for humans):
- *   #ffffff  → 0 0% 100%
- *   #0a0a0a  → 0 0% 4%
- *   #585858  → 0 0% 35%
- *   #f2f2f2  → 0 0% 95%
- *   #dedede  → 0 0% 87%
- *   #156cdd  → 215 74% 47%
- *   #1157b8  → 214 82% 39% (hover)
- *   #020202  → 0 0% 1%
- *   #090909  → 0 0% 3.5%
- *   #f8f8f8  → 0 0% 97%
- *   #8f8f8f  → 0 0% 56%
- *   #9ce824  → 84 82% 53%
- *   #e2ba00  → 49 100% 44%   (dark-mode gold secondary accent)
- *   #161616  → 0 0% 9%
+ * Majestic Permits unified design system.
+ * Light  = white + blue (#156cdd)
+ * Dark   = black + lime (#b6ff2a)
+ * No navy. No gold.
  */
 @layer base {
   :root {
@@ -50,25 +33,25 @@
   }
 
   .dark {
-    --background: 0 0% 1%;
-    --foreground: 0 0% 97%;
-    --card: 0 0% 3.5%;
-    --card-foreground: 0 0% 97%;
-    --popover: 0 0% 3.5%;
-    --popover-foreground: 0 0% 97%;
-    --primary: 84 82% 53%;
-    --primary-foreground: 84 60% 8%;
+    --background: 0 0% 2%;
+    --foreground: 60 20% 95%;
+    --card: 0 0% 7%;
+    --card-foreground: 60 20% 95%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 60 20% 95%;
+    --primary: 84 100% 58%;
+    --primary-foreground: 0 0% 4%;
     --secondary: 0 0% 9%;
-    --secondary-foreground: 0 0% 97%;
+    --secondary-foreground: 60 20% 95%;
     --muted: 0 0% 9%;
-    --muted-foreground: 0 0% 56%;
-    --accent: 49 100% 44%;
+    --muted-foreground: 90 6% 60%;
+    --accent: 84 100% 70%;
     --accent-foreground: 0 0% 4%;
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 15%;
-    --input: 0 0% 20%;
-    --ring: 84 82% 53%;
+    --border: 84 40% 18%;
+    --input: 0 0% 16%;
+    --ring: 84 100% 58%;
   }
 }
 
@@ -76,13 +59,6 @@
   * {
     @apply border-border;
   }
-  /*
-   * Bump the root font size ~6% from the 16px browser default. Because
-   * Tailwind's text-*, spacing, and rounded utilities are rem-based, this
-   * lifts every text and gap size across the whole app in one place without
-   * touching individual components. 17px is comfortable on desktop and
-   * still fine on mobile.
-   */
   html {
     font-size: 17px;
   }
@@ -91,7 +67,6 @@
   }
 }
 
-/* Print styles for homeowner tracker */
 @media print {
   .no-print {
     display: none !important;
