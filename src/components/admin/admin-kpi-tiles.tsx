@@ -1,20 +1,6 @@
 import Link from "next/link";
 import { AlertCircle, CheckCircle2, ClipboardCheck, Search } from "lucide-react";
 
-/**
- * Four at-a-glance counts for the admin home page.
- *
- * Definitions (locked in with product):
- *   In review        = jobs.stage === "Under review"
- *   Approved         = jobs.stage === "Approved — ready to build"
- *   Needs inspection = at least one job_inspections row with status "not_scheduled"
- *   Needs follow-up  = updated_at is 7+ days old
- *
- * Each tile is a link to the admin table pre-filtered where possible, so
- * clicking a number drills into the underlying rows. "Needs inspection" and
- * "Needs follow-up" don't have a table filter yet so they scroll to the top
- * of the list.
- */
 export function AdminKpiTiles({
   inReview,
   approved,
@@ -32,8 +18,8 @@ export function AdminKpiTiles({
       value: inReview,
       href: "/admin?stage=Under+review",
       Icon: Search,
-      accent: "text-blue-600 dark:text-blue-400",
-      ring: "bg-blue-50 dark:bg-blue-950/40",
+      accent: "text-[#156cdd] dark:text-[#b6ff2a]",
+      ring: "bg-[#156cdd]/10 dark:bg-[#b6ff2a]/15",
     },
     {
       label: "Approved",
@@ -50,7 +36,7 @@ export function AdminKpiTiles({
       value: needsInspection,
       href: "/admin",
       Icon: ClipboardCheck,
-      accent: "text-[#e2ba00] dark:text-[#9CE824]",
+      accent: "text-[#156cdd] dark:text-[#b6ff2a]",
       ring: "bg-amber-50 dark:bg-amber-950/40",
     },
     {
@@ -78,7 +64,7 @@ export function AdminKpiTiles({
             <p className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {label}
             </p>
-            <p className="mt-0.5 text-2xl font-bold text-[#156cdd] dark:text-white">
+            <p className="mt-0.5 text-2xl font-bold text-[#156cdd] dark:text-[#b6ff2a]">
               {value}
             </p>
           </div>
