@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import type { InspectionDateOption } from "@/lib/next-inspection-day";
+import { InspectionDateCalendar } from "@/components/contractor/inspection-date-calendar";
+import { formatPhone, isValidUsPhone } from "@/lib/onsite-contact";
 
 const STATUS_LABEL: Record<string, string> = {
   not_required: "Not required",
@@ -19,17 +21,15 @@ const STATUS_LABEL: Record<string, string> = {
   closed: "Closed",
 };
 
-// Statuses that mean the slot is already active/finalized — clicking the row
-// shouldn't reopen the request flow for them (admin has already scheduled or
-// there's a result on record).
-const LOCKED_STATUSES = new Set([
-  "requested",
+const FINAL_STATUSES = new Set([
   "scheduled",
   "passed",
   "partial_pass",
   "reinspection_scheduled",
   "closed",
 ]);
+
+const EDITABLE_STATUSES = new Set(["requested", "reinspection_requested"]);
 
 interface InspectionRowProps {
   jobId: string;
@@ -45,6 +45,15 @@ interface InspectionRowProps {
   };
   dateOptions: InspectionDateOption[];
   permitClosed: boolean;
+  onsiteContact?: string | null;
+}
+
+function labelDate(value: string | null | undefined) {
+  if (!value) return "";
+  const key = value.slice(0, 10);
+  const [y, m, d] = key.split("-").map(Number);
+  if (!y || !m || !d) return key;
+  return format(new Date(y, m - 1, d), "MMM d, yyyy");
 }
 
 export function InspectionRow({
@@ -52,57 +61,83 @@ export function InspectionRow({
   inspection: i,
   dateOptions,
   permitClosed,
+  onsiteContact,
 }: InspectionRowProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(dateOptions[0]?.value ?? "");
+  const [selectedDate, setSelectedDate] = useState(
+    i.requested_date?.slice(0, 10) || dateOptions[0]?.value || ""
+  );
+  const [phone, setPhone] = useState(onsiteContact || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [localStatus, setLocalStatus] = useState(i.status);
   const [localRequestedDate, setLocalRequestedDate] = useState<string | null>(
     i.requested_date ?? null
   );
+  const [localPhone, setLocalPhone] = useState(onsiteContact || "");
 
-  const canRequest = !permitClosed && !LOCKED_STATUSES.has(localStatus);
+  const canManage =
+    !permitClosed && !FINAL_STATUSES.has(localStatus) && localStatus !== "closed";
+  const isPendingRequest = EDITABLE_STATUSES.has(localStatus);
+  const canOpen = canManage;
 
-  async function submit() {
+  async function submit(action: "request" | "edit" | "cancel") {
+    if (action !== "cancel" && !selectedDate) {
+      setError("Pick an inspection date.");
+      return;
+    }
+    if (action !== "cancel" && phone.trim() && !isValidUsPhone(phone)) {
+      setError("Enter a 10-digit on-site contact number.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(
-        `/api/contractor/inspections/${i.slot}/request`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ job_id: jobId, requested_date: selectedDate }),
-        }
-      );
+      const method = action === "cancel" ? "DELETE" : action === "edit" ? "PATCH" : "POST";
+      const res = await fetch(`/api/contractor/inspections/${i.slot}/request`, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          job_id: jobId,
+          requested_date: selectedDate,
+          onsite_contact: phone.trim(),
+        }),
+      });
 
-      if (res.ok) {
-        const j = await res.json();
-        setLocalStatus("requested");
-        setLocalRequestedDate(j.requested_date ?? selectedDate);
-        setOpen(false);
-        // Refresh server components so admin-side / other rows also update
-        router.refresh();
-      } else {
-        const j = await res.json().catch(() => ({}));
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
         setError(j?.error || `Request failed (${res.status})`);
+        setLoading(false);
+        return;
       }
+
+      if (action === "cancel") {
+        setLocalStatus("not_requested");
+        setLocalRequestedDate(null);
+        setLocalPhone("");
+        setPhone("");
+      } else {
+        setLocalStatus(localStatus === "failed" ? "reinspection_requested" : "requested");
+        setLocalRequestedDate(j.requested_date ?? selectedDate);
+        setLocalPhone(j.onsite_contact || phone);
+      }
+      setOpen(false);
+      router.refresh();
     } catch (err: any) {
       setError(err?.message || "Network error");
     }
     setLoading(false);
   }
 
-  // Line 2 under the title: schedule / result / requested state
   let subline: string;
-  if (localStatus === "requested" && localRequestedDate) {
-    subline = `Requested for ${format(new Date(localRequestedDate), "MMM d, yyyy")}`;
+  if (EDITABLE_STATUSES.has(localStatus) && localRequestedDate) {
+    subline = `Requested for ${labelDate(localRequestedDate)}`;
   } else if (i.scheduled_date) {
-    subline = `Scheduled ${format(new Date(i.scheduled_date), "MMM d, yyyy")}`;
+    subline = `Scheduled ${labelDate(i.scheduled_date)}`;
   } else if (i.result_date) {
-    subline = `Result ${format(new Date(i.result_date), "MMM d, yyyy")}`;
+    subline = `Result ${labelDate(i.result_date)}`;
   } else {
     subline = "Not scheduled";
   }
@@ -112,14 +147,14 @@ export function InspectionRow({
       <div
         className={
           "flex items-center justify-between gap-3 px-1" +
-          (canRequest ? " cursor-pointer" : "")
+          (canOpen ? " cursor-pointer" : "")
         }
-        onClick={canRequest ? () => setOpen((o) => !o) : undefined}
-        role={canRequest ? "button" : undefined}
-        tabIndex={canRequest ? 0 : undefined}
-        aria-expanded={canRequest ? open : undefined}
+        onClick={canOpen ? () => setOpen((o) => !o) : undefined}
+        role={canOpen ? "button" : undefined}
+        tabIndex={canOpen ? 0 : undefined}
+        aria-expanded={canOpen ? open : undefined}
         onKeyDown={
-          canRequest
+          canOpen
             ? (e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
@@ -135,63 +170,105 @@ export function InspectionRow({
             {i.inspection_type ? ` · ${i.inspection_type}` : ""}
           </p>
           <p className="text-xs text-slate-500">{subline}</p>
-          {canRequest && !open && (
+          {localPhone && (
+            <p className="mt-0.5 text-xs text-slate-500">
+              On-site {formatPhone(localPhone)}
+            </p>
+          )}
+          {canOpen && !open && (
             <p className="mt-0.5 text-xs text-slate-400">
-              Click to choose a date and request
+              {isPendingRequest
+                ? "Click to edit, cancel, or change the date"
+                : "Click to pick a date and request"}
             </p>
           )}
         </div>
         <span
           className={
-            localStatus === "requested"
+            EDITABLE_STATUSES.has(localStatus)
               ? "rounded-full bg-[#156cdd]/10 px-2.5 py-1 text-xs font-semibold text-[#156cdd] dark:bg-[#9CE824]/15 dark:text-[#9CE824]"
               : "rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200"
           }
         >
-          {loading ? "Sending..." : STATUS_LABEL[localStatus] ?? localStatus}
+          {loading ? "Saving..." : STATUS_LABEL[localStatus] ?? localStatus}
         </span>
       </div>
 
-      {canRequest && open && (
+      {canOpen && open && (
         <div
           className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/40"
           onClick={(e) => e.stopPropagation()}
         >
           <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-            Inspection date
+            Requested date
           </label>
-          <select
+          <InspectionDateCalendar
+            dateOptions={dateOptions}
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            onChange={setSelectedDate}
+            disabled={loading}
+          />
+
+          <label className="mb-1.5 mt-4 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+            On-site contact number
+          </label>
+          <input
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="(954) 555-1212"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
             disabled={loading}
             className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
-          >
-            {dateOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          />
           <p className="mt-1.5 text-[11px] text-slate-400">
-            Earliest date reflects the noon cutoff — requests made after
-            12:00pm push to the day after next, and weekends are skipped.
+            Who the inspector should call on site.
           </p>
-          <div className="mt-3 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={submit}
-              disabled={loading || !selectedDate}
-              className="rounded-lg bg-[#156cdd] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
-            >
-              {loading ? "Sending..." : "Request inspection"}
-            </button>
+
+          {error && (
+            <p className="mt-2 rounded-lg bg-red-50 px-2 py-1 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-300">
+              {error}
+            </p>
+          )}
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {isPendingRequest ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => submit("edit")}
+                  disabled={loading || !selectedDate}
+                  className="rounded-lg bg-[#156cdd] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
+                >
+                  {loading ? "Saving..." : "Save changes"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => submit("cancel")}
+                  disabled={loading}
+                  className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60 dark:border-red-900 dark:text-red-300"
+                >
+                  Cancel request
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => submit("request")}
+                disabled={loading || !selectedDate}
+                className="rounded-lg bg-[#156cdd] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
+              >
+                {loading ? "Sending..." : "Request inspection"}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setOpen(false)}
               disabled={loading}
               className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
             >
-              Cancel
+              Close
             </button>
           </div>
         </div>
@@ -200,11 +277,6 @@ export function InspectionRow({
       {i.correction_notes && (
         <p className="mt-1 px-1 text-xs text-slate-500">
           Notes: {i.correction_notes}
-        </p>
-      )}
-      {error && (
-        <p className="mt-1 rounded-lg bg-red-50 px-2 py-1 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-300">
-          {error}
         </p>
       )}
     </li>
