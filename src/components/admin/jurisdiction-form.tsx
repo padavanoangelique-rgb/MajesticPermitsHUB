@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
+type DirectoryRow = { name: string; email: string; portal?: string };
 
 export function JurisdictionForm({
   jobId,
@@ -17,14 +19,32 @@ export function JurisdictionForm({
   const router = useRouter();
   const [jurisdiction, setJurisdiction] = useState(initial.jurisdiction || "");
   const [url, setUrl] = useState(initial.building_dept_url || "");
+  const [email, setEmail] = useState("");
+  const [directory, setDirectory] = useState<DirectoryRow[]>([]);
   const [noc, setNoc] = useState(initial.noc_status || "None");
   const [saving, setSaving] = useState(false);
-  const [ok, setOk] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [ok, setOk] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/admin/jurisdictions")
+      .then((r) => r.json())
+      .then((data) => setDirectory(data.jurisdictions || []))
+      .catch(() => null);
+  }, []);
+
+  useEffect(() => {
+    const match = directory.find(
+      (row) => row.name.toLowerCase() === jurisdiction.trim().toLowerCase()
+    );
+    if (match?.email && !email) setEmail(match.email);
+    if (match?.portal && !url) setUrl(match.portal);
+  }, [jurisdiction, directory]);
 
   async function save() {
     setSaving(true);
-    setOk(false);
+    setOk("");
     setError("");
     const res = await fetch(`/api/admin/jobs/${jobId}`, {
       method: "PATCH",
@@ -36,13 +56,34 @@ export function JurisdictionForm({
       }),
     });
     if (res.ok) {
-      setOk(true);
+      setOk("Saved.");
       router.refresh();
     } else {
       const data = await res.json().catch(() => ({}));
       setError(data.error || "Could not save");
     }
     setSaving(false);
+  }
+
+  async function sendNoc() {
+    setSending(true);
+    setOk("");
+    setError("");
+    await save();
+    const res = await fetch(`/api/admin/jobs/${jobId}/send-noc`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      setNoc("Submitted");
+      setOk(`NOC emailed to ${data.to}`);
+      router.refresh();
+    } else {
+      setError(data.error || "Could not send NOC");
+    }
+    setSending(false);
   }
 
   return (
@@ -53,21 +94,38 @@ export function JurisdictionForm({
             Jurisdiction
           </label>
           <input
+            list="jurisdiction-list"
             value={jurisdiction}
             onChange={(e) => setJurisdiction(e.target.value)}
-            placeholder="City of Hialeah"
+            placeholder="Village of Wellington"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+          />
+          <datalist id="jurisdiction-list">
+            {directory.map((row) => (
+              <option key={row.name} value={row.name} />
+            ))}
+          </datalist>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">
+            Building dept. email
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="permits@city.gov"
             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
           />
         </div>
-        <div>
+        <div className="sm:col-span-2">
           <label className="mb-1 block text-xs font-medium text-slate-500">
             Building dept. portal URL
           </label>
           <input
-            type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://hialeahfl.gov/permits"
+            placeholder="https://wellingtonfl.gov/permits"
             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
           />
         </div>
@@ -83,20 +141,27 @@ export function JurisdictionForm({
         >
           <option value="None">None</option>
           <option value="Pending">Pending</option>
-          <option value="Submitted">Submitted</option>
           <option value="Recorded">Recorded</option>
+          <option value="Submitted">Submitted</option>
         </select>
         <p className="mt-1 text-xs text-slate-500">
-          Pending and Submitted NOCs surface in the weekly admin report.
+          Mark Recorded after the NOC is recorded, upload the file with NOC in the name, then Send NOC.
         </p>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={save}
           disabled={saving}
           className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
         >
           {saving ? "Saving..." : "Save"}
+        </button>
+        <button
+          onClick={sendNoc}
+          disabled={sending || !email}
+          className="rounded-xl bg-[#e2ba00] px-4 py-2 text-sm font-semibold text-[#156cdd] hover:bg-[#c9a227] disabled:opacity-60"
+        >
+          {sending ? "Sending..." : "Send NOC"}
         </button>
         {url && (
           <a
@@ -108,7 +173,7 @@ export function JurisdictionForm({
             Open portal ↗
           </a>
         )}
-        {ok && <span className="text-xs text-green-600">Saved.</span>}
+        {ok && <span className="text-xs text-green-600">{ok}</span>}
         {error && <span className="text-xs text-red-600">{error}</span>}
       </div>
     </div>
