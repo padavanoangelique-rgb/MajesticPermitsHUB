@@ -43,21 +43,9 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        navy: {
-          DEFAULT: "#0B1F3F",
-          hover: "#152C56",
-          50: "#F0F4F8",
-          100: "#D9E2EC",
-          900: "#0B1F3F",
-        },
-        gold: {
-          DEFAULT: "#C9A24B",
-          light: "#E0C878",
-          dark: "#A68535",
-        },
         surface: {
           light: "#F7F8FA",
-          dark: "#111827",
+          dark: "#111111",
         },
       },
       borderRadius: {
@@ -71,8 +59,8 @@ const config: Config = {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
       boxShadow: {
-        soft: "0 4px 20px -2px rgba(11, 31, 63, 0.08)",
-        "soft-lg": "0 10px 40px -4px rgba(11, 31, 63, 0.12)",
+        soft: "0 4px 20px -2px rgba(21, 108, 221, 0.08)",
+        "soft-lg": "0 10px 40px -4px rgba(21, 108, 221, 0.12)",
       },
     },
   },
