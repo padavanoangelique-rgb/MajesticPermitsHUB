@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/service";
+import { sendAdminSms } from "@/lib/sms";
 
 export async function notifyAdmin(
   type: string,
@@ -18,4 +19,8 @@ export async function notifyAdmin(
   } catch (err) {
     console.error("notifyAdmin: insert failed", err);
   }
+
+  await sendAdminSms(message).catch((err) => {
+    console.error("notifyAdmin: sms failed", err);
+  });
 }
