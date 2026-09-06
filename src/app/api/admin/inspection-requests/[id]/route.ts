@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { FROM_EMAIL, SITE_URL, getResend } from "@/lib/email";
+import { SITE_URL, getResend } from "@/lib/email";
+import { FROM_INSPECTIONS, MAILBOX } from "@/lib/mailboxes";
+import { sendSms } from "@/lib/sms";
 
 export const dynamic = "force-dynamic";
+
+const RESULT_STATUSES = new Set(["Passed", "Failed", "Partial"]);
 
 export async function PATCH(
   req: Request,
@@ -19,7 +23,8 @@ export async function PATCH(
         : undefined;
     const contractorNote =
       typeof body.contractor_note === "string" ? body.contractor_note.trim() : "";
-    const notifyContractor = Boolean(body.notify_contractor);
+    const notifyContractor =
+      Boolean(body.notify_contractor) || Boolean(status && RESULT_STATUSES.has(status));
 
     const supabase = createServiceClient();
 
@@ -39,9 +44,10 @@ export async function PATCH(
     }
 
     let emailed = false;
+    let texted = false;
     let emailError = "";
 
-    if (notifyContractor && status === "Scheduled") {
+    if (notifyContractor && status) {
       const { data: request } = await supabase
         .from("inspection_requests")
         .select(
@@ -67,31 +73,45 @@ export async function PATCH(
       if (contractorId) {
         const { data: contractor } = await supabase
           .from("contractors")
-          .select("email, name, company_name")
+          .select("email, name, company_name, phone")
           .eq("id", contractorId)
           .maybeSingle();
 
+        const address = job?.property_address || "Inspection";
+        const kind = request?.inspection_type || "Inspection";
+        const dateLabel = (preferredDate || request?.preferred_date || "")
+          .toString()
+          .slice(0, 10);
+        const resultLine = RESULT_STATUSES.has(status)
+          ? `${kind} result: ${status}`
+          : status === "Scheduled"
+            ? `${kind}${dateLabel ? ` is set for ${dateLabel}` : " has been scheduled"}`
+            : `${kind} is now ${status}`;
+        const smsBody = `Majestic Permits — ${address}: ${resultLine}.`;
+
+        if (contractor?.phone) {
+          await sendSms(contractor.phone, smsBody);
+          texted = true;
+        }
+
         if (contractor?.email) {
           try {
-            const resend = getResend();
-            const dateLabel = (preferredDate || request?.preferred_date || "")
-              .toString()
-              .slice(0, 10);
-            const heading = "Inspection scheduled";
+            const heading = RESULT_STATUSES.has(status)
+              ? `Inspection ${status.toLowerCase()}`
+              : "Inspection scheduled";
             const noteHtml = contractorNote
               ? `<p style="margin:16px 0 0;font-size:15px;line-height:1.65;color:#334155;">${contractorNote}</p>`
               : "";
-            await resend.emails.send({
-              from: FROM_EMAIL,
+            await getResend().emails.send({
+              from: FROM_INSPECTIONS,
               to: contractor.email,
-              subject: `${job?.property_address || "Inspection"} — scheduled`,
+              replyTo: MAILBOX.inspections,
+              subject: `${address} — ${heading}`,
               html: `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;padding:24px;">
                 <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #dedede;border-radius:16px;padding:28px;">
                   <p style="margin:0 0 6px;color:#156cdd;font-weight:700;">Majestic Permits</p>
                   <h1 style="margin:0 0 12px;color:#156cdd;font-size:22px;">${heading}</h1>
-                  <p style="margin:0;color:#334155;font-size:15px;line-height:1.65;">
-                    ${job?.property_address || "Your job"}: ${request?.inspection_type || "Inspection"}${dateLabel ? ` is set for <strong>${dateLabel}</strong>` : " has been scheduled"}.
-                  </p>
+                  <p style="margin:0;color:#334155;font-size:15px;line-height:1.65;">${address}: ${resultLine}.</p>
                   ${noteHtml}
                   <p style="margin:24px 0 0;">
                     <a href="${SITE_URL}/dashboard" style="display:inline-block;background:#156cdd;color:#fff;text-decoration:none;font-weight:600;padding:12px 18px;border-radius:10px;">Open your portal</a>
@@ -111,7 +131,7 @@ export async function PATCH(
       }
     }
 
-    return NextResponse.json({ ok: true, emailed, email_error: emailError });
+    return NextResponse.json({ ok: true, emailed, texted, email_error: emailError });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
