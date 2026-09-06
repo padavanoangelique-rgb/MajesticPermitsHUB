@@ -153,11 +153,17 @@ export async function POST(req: Request) {
     await notifyAdmin("job_request", notice, job.id);
     await sendAdminSms(`New job request — ${notice}`);
 
+    let emailed = false;
+    let emailError: string | null = null;
     try {
-      const resend = getResend();
-      await resend.emails.send({
-        from: FROM_EMAIL,
-        to: ADMIN_EMAILS,
+      const recipients = Array.from(
+        new Set(
+          [...ADMIN_EMAILS, "angelique@majesticpermits.com"].map((e) => e.toLowerCase())
+        )
+      );
+      const { error: sendError } = await getResend().emails.send({
+        from: `Majestic Permits <${FROM_EMAIL}>`,
+        to: recipients,
         subject: `New job request — ${propertyAddress}`,
         html: `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;padding:24px;">
           <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #dedede;border-radius:16px;padding:28px;">
@@ -175,11 +181,24 @@ export async function POST(req: Request) {
           </div>
         </body></html>`,
       });
-    } catch (err) {
+      if (sendError) {
+        emailError = sendError.message;
+        console.error("job request email failed", sendError);
+      } else {
+        emailed = true;
+      }
+    } catch (err: any) {
+      emailError = err?.message || "email send failed";
       console.error("job request email failed", err);
     }
 
-    return NextResponse.json({ ok: true, id: job.id, files: uploaded.length });
+    return NextResponse.json({
+      ok: true,
+      id: job.id,
+      files: uploaded.length,
+      emailed,
+      email_error: emailError,
+    });
   } catch (err: any) {
     return NextResponse.json(
       { error: err?.message || "Request failed" },
