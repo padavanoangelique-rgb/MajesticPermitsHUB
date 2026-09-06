@@ -22,11 +22,13 @@ export function Logo({
       />
       {showWordmark && (
         <span className="flex flex-col leading-tight">
-          <span className="text-base font-bold tracking-tight text-[#156cdd] dark:text-white">
+          <span className="text-base font-bold tracking-tight text-[#156cdd] dark:text-[#b6ff2a]">
             Majestic Permits
           </span>
           {subtitle && (
-            <span className="text-xs font-medium text-[#e2ba00] dark:text-[#9CE824]">{subtitle}</span>
+            <span className="text-xs font-medium text-[#156cdd] dark:text-[#d4ff6a]">
+              {subtitle}
+            </span>
           )}
         </span>
       )}
