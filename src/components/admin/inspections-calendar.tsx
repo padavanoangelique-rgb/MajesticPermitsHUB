@@ -13,6 +13,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
+import { parseOnsiteFromNotes } from "@/lib/onsite-contact";
 
 export type InspectionRequestRow = {
   id: string;
@@ -103,6 +104,8 @@ export function InspectionsCalendar({ requests }: { requests: InspectionRequestR
     setBusy(false);
   }
 
+  const selectedOnsite = selected ? parseOnsiteFromNotes(selected.notes).phone : "";
+
   return (
     <div className="mt-8">
       <div className="mb-4 flex items-center justify-between">
@@ -183,6 +186,14 @@ export function InspectionsCalendar({ requests }: { requests: InspectionRequestR
                 {selected.inspection_type} · {selected.contractor_name || selected.requested_by}
                 {selected.homeowner_name ? ` · ${selected.homeowner_name}` : ""}
               </p>
+              {selectedOnsite && (
+                <p className="mt-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  On-site contact:{" "}
+                  <a href={`tel:${selectedOnsite.replace(/\D/g, "")}`} className="text-[#156cdd] underline">
+                    {selectedOnsite}
+                  </a>
+                </p>
+              )}
             </div>
             <button type="button" onClick={() => setSelected(null)} className="text-sm text-slate-400">
               Close

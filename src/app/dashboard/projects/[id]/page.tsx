@@ -11,6 +11,7 @@ import { InspectionRow } from "@/components/contractor/inspection-row";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
 import { upcomingInspectionDates } from "@/lib/next-inspection-day";
+import { parseOnsiteFromNotes } from "@/lib/onsite-contact";
 
 interface PageProps {
   params: { id: string };
@@ -38,8 +39,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
   const permitClosed = job.stage === "Permit closed — all done";
   const dateOptions = upcomingInspectionDates(10);
 
-  // Contractor-visible inspections, docs, quotes/invoices
-  const [{ data: inspections }, { data: docs }, { data: quotes }] =
+  const [{ data: inspections }, { data: docs }, { data: quotes }, { data: pendingReqs }] =
     await Promise.all([
       service
         .from("job_inspections")
@@ -60,7 +60,20 @@ export default async function ContractorProjectPage({ params }: PageProps) {
         .eq("job_id", job.id)
         .in("bill_to", ["contractor", null as any])
         .order("created_at", { ascending: false }),
+      service
+        .from("inspection_requests")
+        .select("inspection_type, notes, preferred_date, status")
+        .eq("job_id", job.id)
+        .eq("status", "Pending"),
     ]);
+
+  const phoneByType = new Map<string, string>();
+  for (const req of pendingReqs || []) {
+    const parsed = parseOnsiteFromNotes(req.notes);
+    if (req.inspection_type && parsed.phone) {
+      phoneByType.set(req.inspection_type, parsed.phone);
+    }
+  }
 
   const stageText = (job.stage || "").toLowerCase();
   let currentIndex = 2;
@@ -126,13 +139,18 @@ export default async function ContractorProjectPage({ params }: PageProps) {
             </p>
           ) : (
             <ul className="divide-y divide-slate-100 dark:divide-slate-700">
-              {(inspections || []).map((i: any) => (
+              {(inspections || []).map((insp: any) => (
                 <InspectionRow
-                  key={i.id}
+                  key={insp.id}
                   jobId={job.id}
-                  inspection={i}
+                  inspection={insp}
                   dateOptions={dateOptions}
                   permitClosed={permitClosed}
+                  onsiteContact={
+                    phoneByType.get(insp.inspection_type || `Inspection ${insp.slot}`) ||
+                    phoneByType.get(`Inspection ${insp.slot}`) ||
+                    ""
+                  }
                 />
               ))}
             </ul>
@@ -253,4 +271,3 @@ function categoryLabel(cat: string) {
   };
   return map[cat] ?? cat;
 }
-
