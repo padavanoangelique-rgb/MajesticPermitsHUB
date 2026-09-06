@@ -29,10 +29,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
     )
     .order("updated_at", { ascending: false });
 
-  // KPI: which jobs have an inspection that's been requested but not yet
-  // scheduled. ("not_scheduled" isn't a real job_inspections status — the
-  // check constraint only allows not_required/not_requested/requested/
-  // scheduled/etc — so this always matched zero rows before.)
   const { data: openInspections } = await supabase
     .from("job_inspections")
     .select("job_id")
@@ -41,8 +37,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
     (openInspections || []).map((r: any) => r.job_id)
   );
 
-  // Jobs with a pending inspection request — highlighted in the list below
-  // so a request never gets buried once it's off the Inspections tab.
   const { data: pendingRequests } = await supabase
     .from("inspection_requests")
     .select("job_id")
@@ -92,10 +86,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
     return true;
   });
 
-  // Group into the same coarse stage buckets the contractor dashboard uses,
-  // so "split by stage" means the same thing on both sides. Anything with a
-  // stage that doesn't match a known title (legacy free text) lands in
-  // "Other" so nothing is ever silently dropped from the list.
   const bucketed = CONTRACTOR_BUCKETS.map((bucket) => ({
     ...bucket,
     items: filtered.filter((j: any) =>
@@ -114,7 +104,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
-      {/* Header */}
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#090909]">
         <div className="mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
           <Logo subtitle="Admin" />
@@ -125,6 +114,12 @@ export default async function AdminPage({ searchParams }: PageProps) {
               className="text-sm font-medium text-slate-600 hover:text-[#156cdd] dark:text-slate-300"
             >
               Inspections
+            </Link>
+            <Link
+              href="/admin/job-requests"
+              className="text-sm font-medium text-slate-600 hover:text-[#156cdd] dark:text-slate-300"
+            >
+              Job requests
             </Link>
             <a
               href="/api/admin/report"
