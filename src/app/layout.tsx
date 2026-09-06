@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import { ThemeSync } from "@/components/layout/theme-sync";
 import "./globals.css";
 
 const inter = Inter({
@@ -56,6 +57,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <ThemeSync />
           {children}
         </ThemeProvider>
       </body>
