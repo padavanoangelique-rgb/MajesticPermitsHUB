@@ -214,7 +214,8 @@ async function handleWrite(
         .from("inspection_requests")
         .update({ status: "Cancelled", handled_at: new Date().toISOString() })
         .eq("job_id", jobId)
-        .eq("status", "Pending");
+        .eq("status", "Pending")
+        .eq("inspection_type", inspectionLabel);
 
       const notice = `${job.property_address}: ${inspectionLabel} request cancelled (${company}).`;
       await notifyAdmin("inspection_needed", notice, jobId);
