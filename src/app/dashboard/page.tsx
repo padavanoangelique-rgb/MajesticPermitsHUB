@@ -11,6 +11,7 @@ import {
 } from "@/components/shared/pipeline-board";
 import { CONTRACTOR_BUCKETS } from "@/lib/dashboard-buckets";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { DECLINED_REQUEST_SUB, PENDING_REQUEST_SUB } from "@/lib/job-request";
 
 export const dynamic = "force-dynamic";
 
@@ -48,31 +49,32 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const view: "list" | "pipeline" =
     searchParams.view === "pipeline" ? "pipeline" : "list";
 
-  const { data: jobs } = await supabase
+  const { data: allJobs } = await supabase
     .from("jobs")
     .select(
-      "id, property_address, stage, sub_status, permit_number, permit_eta, submitted_date, updated_at"
+      "id, property_address, stage, sub_status, permit_number, permit_eta, submitted_date, updated_at, trade_type"
     )
     .eq("contractor_id", contractor.id)
     .order("updated_at", { ascending: false });
 
-  const { data: pendingJobRequests } = await supabase
-    .from("job_requests")
-    .select("id, property_address, trade_type, status, created_at")
-    .eq("contractor_id", contractor.id)
-    .eq("status", "pending")
-    .order("created_at", { ascending: false });
+  const pendingJobRequests = (allJobs || []).filter(
+    (j: any) => j.sub_status === PENDING_REQUEST_SUB
+  );
+  const jobs = (allJobs || []).filter(
+    (j: any) =>
+      j.sub_status !== PENDING_REQUEST_SUB && j.sub_status !== DECLINED_REQUEST_SUB
+  );
 
-  const totalJobs = jobs?.length || 0;
+  const totalJobs = jobs.length;
 
   const bucketed = CONTRACTOR_BUCKETS.map((bucket) => ({
     ...bucket,
-    items: (jobs || []).filter((j: any) =>
+    items: jobs.filter((j: any) =>
       (bucket.stageTitles as readonly string[]).includes(j.stage)
     ),
   }));
   const bucketedIds = new Set(bucketed.flatMap((b) => b.items.map((j: any) => j.id)));
-  const other = (jobs || []).filter((j: any) => !bucketedIds.has(j.id));
+  const other = jobs.filter((j: any) => !bucketedIds.has(j.id));
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
@@ -126,13 +128,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           </div>
         </div>
 
-        {(pendingJobRequests || []).length > 0 && (
+        {pendingJobRequests.length > 0 && (
           <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 dark:border-amber-900/40 dark:bg-amber-950/20">
             <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
               Waiting on Majestic
             </p>
             <ul className="mt-2 space-y-1 text-sm text-amber-900 dark:text-amber-100">
-              {pendingJobRequests!.map((req: any) => (
+              {pendingJobRequests.map((req: any) => (
                 <li key={req.id}>
                   {req.property_address}
                   {req.trade_type ? ` · ${req.trade_type}` : ""}
@@ -155,7 +157,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         ) : view === "pipeline" ? (
           <div className="mt-8">
             <PipelineBoard
-              jobs={(jobs || []).map<PipelineJob>((j: any) => ({
+              jobs={jobs.map<PipelineJob>((j: any) => ({
                 id: j.id,
                 property_address: j.property_address,
                 stage: j.stage,
