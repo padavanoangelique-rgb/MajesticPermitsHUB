@@ -5,6 +5,7 @@ import { getContractorForUser } from "@/lib/contractor";
 import { nextInspectionDate, isValidInspectionDate } from "@/lib/next-inspection-day";
 import { sendAdminSms } from "@/lib/sms";
 import { notifyAdmin } from "@/lib/admin-notify";
+import { sendAdminRequestEmail } from "@/lib/admin-email";
 import {
   buildRequestNotes,
   formatPhone,
@@ -130,10 +131,6 @@ async function upsertPendingRequest(
   });
 }
 
-/**
- * Contractor-side inspection request for a specific slot.
- * POST create, PATCH edit date/phone, DELETE cancel while still pending.
- */
 export async function POST(
   req: Request,
   { params }: { params: { slot: string } }
@@ -220,6 +217,13 @@ async function handleWrite(
       const notice = `${job.property_address}: ${inspectionLabel} request cancelled (${company}).`;
       await notifyAdmin("inspection_needed", notice, jobId);
       await sendAdminSms(`Inspection cancelled — ${notice}`);
+      await sendAdminRequestEmail({
+        subject: `Inspection cancelled — ${job.property_address}`,
+        heading: "Inspection request cancelled",
+        bodyHtml: `<p style="margin:0;color:#334155;font-size:15px;line-height:1.65;">${notice}</p>`,
+        actionUrl: "https://hub.majesticpermits.com/admin/inspections",
+        actionLabel: "Open inspections",
+      }).catch(() => null);
 
       return NextResponse.json({ ok: true, slot, status: "not_requested" });
     }
@@ -265,6 +269,13 @@ async function handleWrite(
     const noticeMessage = `${job.property_address}: ${inspectionLabel} ${verb} for ${requestedDate}${contactBit} (${company}).`;
     await notifyAdmin("inspection_needed", noticeMessage, jobId);
     await sendAdminSms(`Inspection ${verb} — ${noticeMessage}`);
+    await sendAdminRequestEmail({
+      subject: `Inspection ${verb} — ${job.property_address}`,
+      heading: action === "edit" ? "Inspection request updated" : "New inspection request",
+      bodyHtml: `<p style="margin:0;color:#334155;font-size:15px;line-height:1.65;">${noticeMessage}</p>`,
+      actionUrl: "https://hub.majesticpermits.com/admin/inspections",
+      actionLabel: "Open inspections",
+    }).catch(() => null);
 
     return NextResponse.json({
       ok: true,
