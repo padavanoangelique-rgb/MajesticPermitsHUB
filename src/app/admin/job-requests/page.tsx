@@ -155,7 +155,7 @@ export default async function AdminJobRequestsPage() {
                   )}
                 </div>
               ))}
-            </ul>
+            </div>
           </div>
         )}
       </main>
