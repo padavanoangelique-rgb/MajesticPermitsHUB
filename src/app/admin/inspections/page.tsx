@@ -70,7 +70,8 @@ export default async function InspectionsPage() {
   });
 
   const pending = rows.filter((r) => r.status === "Pending");
-  const others = rows.filter((r) => r.status !== "Pending");
+  const scheduled = rows.filter((r) => r.status === "Scheduled");
+  const done = rows.filter((r) => r.status !== "Pending" && r.status !== "Scheduled");
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
@@ -93,7 +94,7 @@ export default async function InspectionsPage() {
           Inspection calendar
         </h1>
         <p className="mt-1 text-slate-500">
-          {pending.length} pending · click a request to mark scheduled and send a note back
+          {pending.length} pending · {scheduled.length} scheduled · results stay here until you record pass/fail
         </p>
 
         <InspectionsCalendar requests={rows} />
@@ -107,31 +108,22 @@ export default async function InspectionsPage() {
               <p className="text-slate-500">No pending requests</p>
             </div>
           )}
-
           {pending.map((req) => (
-            <div
-              key={req.id}
-              className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]"
-            >
+            <div key={req.id} className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="font-semibold text-[#156cdd] dark:text-[#b6ff2a]">
                     {req.property_address || "Unknown address"}
                   </p>
                   <p className="mt-1 text-sm text-slate-500">
-                    {req.homeowner_name} · {req.contractor_name || req.requested_by} ·{" "}
-                    {format(new Date(req.created_at), "MMM d, yyyy h:mm a")}
+                    {req.homeowner_name} · {req.contractor_name || req.requested_by}
                   </p>
                   <p className="mt-3">
-                    <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                    <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
                       {req.inspection_type}
                     </span>
                   </p>
-                  {req.notes && (
-                    <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
-                      {req.notes}
-                    </p>
-                  )}
+                  {req.notes && <p className="mt-3 text-sm text-slate-600">{req.notes}</p>}
                 </div>
                 <div className="flex gap-2">
                   <MarkHandledButton id={req.id} status="Scheduled" label="Mark Scheduled" />
@@ -142,15 +134,44 @@ export default async function InspectionsPage() {
           ))}
         </div>
 
-        {others.length > 0 && (
+        <h2 className="mt-12 text-lg font-semibold text-[#156cdd] dark:text-[#b6ff2a]">
+          Scheduled — waiting on result
+        </h2>
+        <div className="mt-4 space-y-4">
+          {scheduled.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-[#090909]">
+              <p className="text-slate-500">Nothing on the calendar waiting for a result</p>
+            </div>
+          )}
+          {scheduled.map((req) => (
+            <div key={req.id} className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="font-semibold text-[#156cdd] dark:text-[#b6ff2a]">
+                    {req.property_address || "Unknown address"}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {req.inspection_type}
+                    {req.preferred_date ? ` · ${req.preferred_date}` : ""}
+                    {" · "}{req.contractor_name || req.requested_by}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <MarkHandledButton id={req.id} status="Passed" label="Passed" />
+                  <MarkHandledButton id={req.id} status="Partial" label="Partial" />
+                  <MarkHandledButton id={req.id} status="Failed" label="Failed" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {done.length > 0 && (
           <div className="mt-12">
-            <h2 className="text-lg font-semibold text-slate-500">Previous</h2>
+            <h2 className="text-lg font-semibold text-slate-500">Results</h2>
             <div className="mt-4 space-y-3">
-              {others.map((req) => (
-                <div
-                  key={req.id}
-                  className="rounded-xl border border-slate-100 bg-white/60 px-5 py-4 text-sm dark:border-slate-800 dark:bg-[#090909]/60"
-                >
+              {done.map((req) => (
+                <div key={req.id} className="rounded-xl border border-slate-100 bg-white/60 px-5 py-4 text-sm dark:border-slate-800 dark:bg-[#090909]/60">
                   <span className="font-medium">{req.property_address}</span>
                   <span className="mx-2 text-slate-400">·</span>
                   <span>{req.inspection_type}</span>
