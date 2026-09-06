@@ -4,8 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getContractorForUser } from "@/lib/contractor";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { sendAdminSms } from "@/lib/sms";
-import { ADMIN_EMAILS } from "@/lib/admin";
-import { FROM_EMAIL, getResend } from "@/lib/email";
+import { sendAdminRequestEmail } from "@/lib/admin-email";
 import { PENDING_REQUEST_SUB } from "@/lib/job-request";
 
 export const dynamic = "force-dynamic";
@@ -153,51 +152,26 @@ export async function POST(req: Request) {
     await notifyAdmin("job_request", notice, job.id);
     await sendAdminSms(`New job request — ${notice}`);
 
-    let emailed = false;
-    let emailError: string | null = null;
-    try {
-      const recipients = Array.from(
-        new Set(
-          [...ADMIN_EMAILS, "angelique@majesticpermits.com"].map((e) => e.toLowerCase())
-        )
-      );
-      const { error: sendError } = await getResend().emails.send({
-        from: `Majestic Permits <${FROM_EMAIL}>`,
-        to: recipients,
-        subject: `New job request — ${propertyAddress}`,
-        html: `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;padding:24px;">
-          <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #dedede;border-radius:16px;padding:28px;">
-            <p style="margin:0 0 6px;color:#156cdd;font-weight:700;">Majestic Permits</p>
-            <h1 style="margin:0 0 12px;color:#156cdd;font-size:22px;">New contractor job request</h1>
-            <p style="margin:0;color:#334155;font-size:15px;line-height:1.65;">
-              <strong>${company}</strong> submitted ${propertyAddress}${tradeType ? ` · ${tradeType}` : ""}.
-            </p>
-            ${homeownerName ? `<p style="margin:12px 0 0;color:#334155;font-size:15px;">Homeowner: ${homeownerName}${homeownerPhone ? ` · ${homeownerPhone}` : ""}</p>` : ""}
-            ${notes ? `<p style="margin:12px 0 0;color:#334155;font-size:15px;">${notes}</p>` : ""}
-            ${files.length ? `<p style="margin:12px 0 0;color:#334155;font-size:15px;">${files.length} document${files.length === 1 ? "" : "s"} attached.</p>` : ""}
-            <p style="margin:24px 0 0;">
-              <a href="https://hub.majesticpermits.com/admin/job-requests" style="display:inline-block;background:#156cdd;color:#fff;text-decoration:none;font-weight:600;padding:12px 18px;border-radius:10px;">Review request</a>
-            </p>
-          </div>
-        </body></html>`,
-      });
-      if (sendError) {
-        emailError = sendError.message;
-        console.error("job request email failed", sendError);
-      } else {
-        emailed = true;
-      }
-    } catch (err: any) {
-      emailError = err?.message || "email send failed";
-      console.error("job request email failed", err);
-    }
+    const emailResult = await sendAdminRequestEmail({
+      kind: "request",
+      subject: `New job request — ${propertyAddress}`,
+      heading: "New contractor job request",
+      bodyHtml: `<p style="margin:0;color:#334155;font-size:15px;line-height:1.65;">
+        <strong>${company}</strong> submitted ${propertyAddress}${tradeType ? ` · ${tradeType}` : ""}.
+      </p>
+      ${homeownerName ? `<p style="margin:12px 0 0;color:#334155;font-size:15px;">Homeowner: ${homeownerName}${homeownerPhone ? ` · ${homeownerPhone}` : ""}</p>` : ""}
+      ${notes ? `<p style="margin:12px 0 0;color:#334155;font-size:15px;">${notes}</p>` : ""}
+      ${files.length ? `<p style="margin:12px 0 0;color:#334155;font-size:15px;">${files.length} document${files.length === 1 ? "" : "s"} attached.</p>` : ""}`,
+      actionUrl: "https://hub.majesticpermits.com/admin/job-requests",
+      actionLabel: "Review request",
+    }).catch((err: any) => ({ ok: false, error: err?.message || "email failed" }));
 
     return NextResponse.json({
       ok: true,
       id: job.id,
       files: uploaded.length,
-      emailed,
-      email_error: emailError,
+      emailed: Boolean(emailResult?.ok),
+      email_error: emailResult?.error || null,
     });
   } catch (err: any) {
     return NextResponse.json(
