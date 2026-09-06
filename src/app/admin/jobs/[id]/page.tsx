@@ -95,7 +95,7 @@ export default async function JobDetailPage({ params }: PageProps) {
       </header>
 
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-        <h1 className="text-2xl font-bold text-[#156cdd] dark:text-white">
+        <h1 className="text-2xl font-bold text-[#156cdd] dark:text-[#b6ff2a]">
           {job.property_address}
         </h1>
         <p className="mt-1 text-slate-500">
@@ -111,11 +111,11 @@ export default async function JobDetailPage({ params }: PageProps) {
         </div>
 
         <Section title="Current status">
-          <p className="text-lg font-medium text-[#156cdd] dark:text-white">
+          <p className="text-lg font-medium text-[#156cdd] dark:text-[#b6ff2a]">
             {job.stage} · {job.sub_status}
           </p>
           {job.permit_eta && (
-            <p className="mt-1 text-sm text-[#e2ba00] dark:text-[#9CE824]">
+            <p className="mt-1 text-sm text-[#156cdd] dark:text-[#b6ff2a]">
               ETA: {format(new Date(job.permit_eta), "MMMM d, yyyy")}
             </p>
           )}
@@ -176,7 +176,7 @@ export default async function JobDetailPage({ params }: PageProps) {
               {(quotes || []).map((q: any) => (
                 <li key={q.id} className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
+                    <p className="text-sm font-semibold text-[#156cdd] dark:text-[#b6ff2a]">
                       ${Number(q.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                       <span className="ml-2 text-xs font-normal text-slate-500">
                         {q.bill_to === "contractor" ? "Contractor" : "Homeowner"}
@@ -202,7 +202,7 @@ export default async function JobDetailPage({ params }: PageProps) {
                       {q.paid_at
                         ? "Paid"
                         : q.approved_at
-                        ? `Approved${q.approved_by_name ? " \u00b7 " + q.approved_by_name : ""}`
+                        ? `Approved${q.approved_by_name ? " · " + q.approved_by_name : ""}`
                         : q.declined_at
                         ? "Declined"
                         : q.expires_at && new Date(q.expires_at) < new Date()
