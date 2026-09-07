@@ -77,8 +77,12 @@ export async function POST(
       ccContractor = contractor?.email || "";
     }
 
-    const cc = [MAILBOX.owner];
-    if (ccContractor && ccContractor.includes("@") && ccContractor.toLowerCase() !== to.toLowerCase()) {
+    const cc: string[] = [MAILBOX.owner];
+    if (
+      ccContractor &&
+      ccContractor.includes("@") &&
+      ccContractor.toLowerCase() !== to.toLowerCase()
+    ) {
       cc.push(ccContractor);
     }
 
