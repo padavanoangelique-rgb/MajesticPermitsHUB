@@ -10,6 +10,7 @@ import {
   format,
   isSameDay,
   isSameMonth,
+  parseISO,
   startOfMonth,
   startOfWeek,
 } from "date-fns";
@@ -30,9 +31,22 @@ export type InspectionRequestRow = {
   job_id: string | null;
 };
 
-function dateKey(value: string | null, fallback: string) {
-  const raw = value || fallback;
-  return raw.slice(0, 10);
+export function dateKey(value: string | null, fallback?: string) {
+  const raw = (value || fallback || "").trim();
+  if (!raw) return format(new Date(), "yyyy-MM-dd");
+  const iso = raw.match(/(\d{4}-\d{2}-\d{2})/);
+  if (iso) return iso[1];
+  const us = raw.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (us) {
+    return `${us[3]}-${us[1].padStart(2, "0")}-${us[2].padStart(2, "0")}`;
+  }
+  const parsed = Date.parse(raw);
+  if (!Number.isNaN(parsed)) return format(new Date(parsed), "yyyy-MM-dd");
+  try {
+    return format(parseISO(raw), "yyyy-MM-dd");
+  } catch {
+    return format(new Date(), "yyyy-MM-dd");
+  }
 }
 
 export function InspectionsCalendar({ requests }: { requests: InspectionRequestRow[] }) {
@@ -159,9 +173,9 @@ export function InspectionsCalendar({ requests }: { requests: InspectionRequestR
                     onClick={() => open(req)}
                     className={
                       "block w-full truncate rounded-md px-1.5 py-1 text-left text-[11px] font-medium " +
-                      (req.status === "Pending"
+                      (String(req.status).toLowerCase() === "pending" || String(req.status).toLowerCase() === "requested"
                         ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
-                        : req.status === "Scheduled"
+                        : String(req.status).toLowerCase() === "scheduled"
                         ? "bg-[#156cdd]/10 text-[#156cdd] dark:bg-[#b6ff2a]/15 dark:text-[#b6ff2a]"
                         : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300")
                     }
@@ -200,62 +214,66 @@ export function InspectionsCalendar({ requests }: { requests: InspectionRequestR
             </button>
           </div>
 
-          <label className="mt-4 flex items-center gap-2 text-sm font-medium">
-            <input
-              type="checkbox"
-              checked={selected.status === "Scheduled"}
-              disabled={busy || selected.status === "Scheduled"}
-              onChange={(e) => markScheduled(e.target.checked)}
-            />
-            Scheduled
-          </label>
-
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Scheduled date
+          {selected.id.startsWith("slot-") ? (
+            <p className="mt-4 text-sm text-slate-500">
+              This request is on the job inspection slot. Open the job to mark the result after you schedule it.
+            </p>
+          ) : (
+            <>
+              <label className="mt-4 flex items-center gap-2 text-sm font-medium">
+                <input
+                  type="checkbox"
+                  checked={String(selected.status).toLowerCase() === "scheduled"}
+                  disabled={busy || String(selected.status).toLowerCase() === "scheduled"}
+                  onChange={(e) => markScheduled(e.target.checked)}
+                />
+                Scheduled
               </label>
-              <input
-                type="date"
-                value={scheduledDate}
-                onChange={(e) => setScheduledDate(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202]"
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Scheduled date
+                  </label>
+                  <input
+                    type="date"
+                    value={scheduledDate}
+                    onChange={(e) => setScheduledDate(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202]"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Contractor email
+                  </label>
+                  <p className="rounded-xl border border-slate-100 px-3 py-2 text-sm text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                    {selected.contractor_email || "No contractor email on file"}
+                  </p>
+                </div>
+              </div>
+              <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Note back to contractor
+              </label>
+              <textarea
+                rows={3}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202]"
               />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Contractor email
+              <label className="mt-3 flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />
+                Email this note when I mark it scheduled
               </label>
-              <p className="rounded-xl border border-slate-100 px-3 py-2 text-sm text-slate-600 dark:border-slate-700 dark:text-slate-300">
-                {selected.contractor_email || "No contractor email on file"}
-              </p>
-            </div>
-          </div>
-
-          <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Note back to contractor
-          </label>
-          <textarea
-            rows={3}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202]"
-          />
-
-          <label className="mt-3 flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />
-            Email this note when I mark it scheduled
-          </label>
-
-          {selected.status !== "Scheduled" && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => markScheduled(true)}
-              className="mt-4 rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60 dark:bg-[#b6ff2a] dark:text-black"
-            >
-              {busy ? "Saving…" : "Mark scheduled + send note"}
-            </button>
+              {String(selected.status).toLowerCase() !== "scheduled" && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => markScheduled(true)}
+                  className="mt-4 rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60 dark:bg-[#b6ff2a] dark:text-black"
+                >
+                  {busy ? "Saving…" : "Mark scheduled + send note"}
+                </button>
+              )}
+            </>
           )}
           {message && <p className="mt-3 text-sm text-slate-500">{message}</p>}
         </div>
