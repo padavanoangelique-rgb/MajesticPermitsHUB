@@ -4,7 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getContractorForUser } from "@/lib/contractor";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { sendAdminRequestEmail } from "@/lib/admin-email";
-import { closeJobIfFinalPassed } from "@/lib/close-on-final";
+import { closeJobIfFinalPassed, isFinalInspection } from "@/lib/close-on-final";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const inspectionId = String(body.inspection_id || "").trim();
     const status = String(body.result || "").trim();
     const notes = String(body.notes || "").trim();
-    const treatAsFinal = Boolean(body.final);
+    const treatAsFinal = Boolean(body.final) || false;
 
     if (!inspectionId) {
       return NextResponse.json({ error: "Missing inspection" }, { status: 400 });
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
     const closed = await closeJobIfFinalPassed({
       jobId: job.id,
       inspection: { ...inspection, status },
-      treatAsFinal: treatAsFinal || status === "passed",
+      treatAsFinal: treatAsFinal || isFinalInspection(inspection),
     });
 
     const message = closed.closed
