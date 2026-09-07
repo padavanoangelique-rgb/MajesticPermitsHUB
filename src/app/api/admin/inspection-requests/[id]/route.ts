@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 const RESULT_STATUSES = new Set(["Passed", "Failed", "Partial"]);
 
-async function notifyContractor(args: {
+async function sendContractorNotice(args: {
   contractorId: string | null;
   address: string;
   kind: string;
@@ -94,7 +94,7 @@ export async function PATCH(
         : undefined;
     const contractorNote =
       typeof body.contractor_note === "string" ? body.contractor_note.trim() : "";
-    const notifyContractor =
+    const shouldNotify =
       Boolean(body.notify_contractor) || Boolean(status && RESULT_STATUSES.has(status));
 
     const supabase = createServiceClient();
@@ -231,13 +231,13 @@ export async function PATCH(
     let emailed = false;
     let texted = false;
     let emailError = "";
-    if (notifyContractor && status) {
+    if (shouldNotify && status) {
       const note =
         contractorNote ||
         (status === "Scheduled"
           ? `Your ${kind} for ${address} is scheduled${dateLabel ? ` for ${dateLabel}` : ""}.`
           : "");
-      const result = await notifyContractor({
+      const result = await sendContractorNotice({
         contractorId,
         address,
         kind,
