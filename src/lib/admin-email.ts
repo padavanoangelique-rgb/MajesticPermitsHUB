@@ -5,6 +5,8 @@ import {
   MAILBOX,
 } from "@/lib/mailboxes";
 
+const OWNER_GMAIL = "padavano.angelique@gmail.com";
+
 export async function sendAdminRequestEmail(opts: {
   kind: "request" | "inspection";
   subject: string;
@@ -17,7 +19,9 @@ export async function sendAdminRequestEmail(opts: {
     opts.kind === "inspection" ? MAILBOX.inspections : MAILBOX.requests;
   const from =
     opts.kind === "inspection" ? FROM_INSPECTIONS : FROM_REQUESTS;
-  const recipients = Array.from(new Set([inbox, MAILBOX.owner]));
+  const recipients = Array.from(
+    new Set([inbox, MAILBOX.owner, OWNER_GMAIL])
+  );
 
   const action = opts.actionUrl
     ? `<p style="margin:24px 0 0;"><a href="${opts.actionUrl}" style="display:inline-block;background:#156cdd;color:#fff;text-decoration:none;font-weight:600;padding:12px 18px;border-radius:10px;">${opts.actionLabel || "Open in Hub"}</a></p>`
