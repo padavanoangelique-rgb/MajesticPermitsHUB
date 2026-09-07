@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import type { InspectionDateOption } from "@/lib/next-inspection-day";
 import { InspectionDateCalendar } from "@/components/contractor/inspection-date-calendar";
+import { ContractorResultForm } from "@/components/contractor/contractor-result-form";
 import { formatPhone, isValidUsPhone } from "@/lib/onsite-contact";
+import { isFinalInspection } from "@/lib/close-on-final";
 
 const STATUS_LABEL: Record<string, string> = {
   not_required: "Not required",
@@ -30,6 +32,7 @@ const FINAL_STATUSES = new Set([
 ]);
 
 const EDITABLE_STATUSES = new Set(["requested", "reinspection_requested"]);
+const REPORTABLE = new Set(["scheduled", "reinspection_scheduled"]);
 
 interface InspectionRowProps {
   jobId: string;
@@ -81,6 +84,7 @@ export function InspectionRow({
     !permitClosed && !FINAL_STATUSES.has(localStatus) && localStatus !== "closed";
   const isPendingRequest = EDITABLE_STATUSES.has(localStatus);
   const canOpen = canManage;
+  const canReport = !permitClosed && REPORTABLE.has(localStatus);
 
   async function submit(action: "request" | "edit" | "cancel") {
     if (action !== "cancel" && !selectedDate) {
@@ -271,6 +275,15 @@ export function InspectionRow({
               Close
             </button>
           </div>
+        </div>
+      )}
+
+      {canReport && (
+        <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/40">
+          <ContractorResultForm
+            inspectionId={i.id}
+            isFinal={isFinalInspection(i)}
+          />
         </div>
       )}
 
