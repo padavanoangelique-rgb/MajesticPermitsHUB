@@ -8,6 +8,11 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function jobRel(jobs: any) {
+  if (!jobs) return null;
+  return Array.isArray(jobs) ? jobs[0] : jobs;
+}
+
 export default async function InspectionsPage({
   searchParams,
 }: {
@@ -38,6 +43,24 @@ export default async function InspectionsPage({
     `)
     .order("created_at", { ascending: false });
 
+  const { data: slots } = await supabase
+    .from("job_inspections")
+    .select(`
+      id,
+      inspection_type,
+      status,
+      requested_date,
+      scheduled_date,
+      created_at,
+      jobs (
+        id,
+        property_address,
+        homeowner_name,
+        contractor_id
+      )
+    `)
+    .in("status", ["requested", "reinspection_requested", "scheduled", "reinspection_scheduled"]);
+
   const { data: contractors } = await supabase
     .from("contractors")
     .select("id, name, company_name, email");
@@ -53,7 +76,8 @@ export default async function InspectionsPage({
   );
 
   const rows: InspectionRequestRow[] = (requests || []).map((r: any) => {
-    const contractorId = r.requested_by_contractor_id || r.jobs?.contractor_id;
+    const job = jobRel(r.jobs);
+    const contractorId = r.requested_by_contractor_id || job?.contractor_id;
     const contractor = contractorId ? contractorMap.get(contractorId) : null;
     return {
       id: r.id,
@@ -65,15 +89,47 @@ export default async function InspectionsPage({
       created_at: r.created_at,
       contractor_email: contractor?.email || null,
       contractor_name: contractor?.name || null,
-      property_address: r.jobs?.property_address || null,
-      homeowner_name: r.jobs?.homeowner_name || null,
-      job_id: r.jobs?.id || null,
+      property_address: job?.property_address || null,
+      homeowner_name: job?.homeowner_name || null,
+      job_id: job?.id || null,
     };
   });
 
-  const pending = rows.filter((r) => r.status === "Pending");
-  const scheduled = rows.filter((r) => r.status === "Scheduled");
-  const done = rows.filter((r) => r.status !== "Pending" && r.status !== "Scheduled");
+  const seen = new Set(
+    rows.map((r) => `${r.job_id || ""}|${(r.inspection_type || "").toLowerCase()}|${r.preferred_date || ""}`)
+  );
+
+  for (const slot of slots || []) {
+    const job = jobRel((slot as any).jobs);
+    const key = `${job?.id || ""}|${String((slot as any).inspection_type || "").toLowerCase()}|${(slot as any).requested_date || (slot as any).scheduled_date || ""}`;
+    if (seen.has(key)) continue;
+    const contractor = job?.contractor_id ? contractorMap.get(job.contractor_id) : null;
+    const status = String((slot as any).status || "");
+    rows.push({
+      id: `slot-${(slot as any).id}`,
+      inspection_type: (slot as any).inspection_type,
+      notes: null,
+      status: status.includes("scheduled") ? "Scheduled" : "Pending",
+      requested_by: "contractor",
+      preferred_date: (slot as any).scheduled_date || (slot as any).requested_date || null,
+      created_at: (slot as any).created_at || new Date().toISOString(),
+      contractor_email: contractor?.email || null,
+      contractor_name: contractor?.name || null,
+      property_address: job?.property_address || null,
+      homeowner_name: job?.homeowner_name || null,
+      job_id: job?.id || null,
+    });
+  }
+
+  const pending = rows.filter((r) => {
+    const s = String(r.status || "").toLowerCase();
+    return s === "pending" || s === "requested" || s === "reinspection_requested";
+  });
+  const scheduled = rows.filter((r) => {
+    const s = String(r.status || "").toLowerCase();
+    return s === "scheduled" || s === "reinspection_scheduled";
+  });
+  const done = rows.filter((r) => !pending.includes(r) && !scheduled.includes(r));
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
@@ -105,6 +161,7 @@ export default async function InspectionsPage({
                   </p>
                   <p className="mt-1 text-sm text-slate-500">
                     {req.homeowner_name} · {req.contractor_name || req.requested_by}
+                    {req.preferred_date ? ` · ${String(req.preferred_date).slice(0, 10)}` : ""}
                   </p>
                   <p className="mt-3">
                     <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
@@ -113,10 +170,12 @@ export default async function InspectionsPage({
                   </p>
                   {req.notes && <p className="mt-3 text-sm text-slate-600">{req.notes}</p>}
                 </div>
-                <div className="flex gap-2">
-                  <MarkHandledButton id={req.id} status="Scheduled" label="Mark Scheduled" />
-                  <MarkHandledButton id={req.id} status="Dismissed" label="Dismiss" />
-                </div>
+                {!req.id.startsWith("slot-") && (
+                  <div className="flex gap-2">
+                    <MarkHandledButton id={req.id} status="Scheduled" label="Mark Scheduled" />
+                    <MarkHandledButton id={req.id} status="Dismissed" label="Dismiss" />
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -144,11 +203,13 @@ export default async function InspectionsPage({
                     {" · "}{req.contractor_name || req.requested_by}
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <MarkHandledButton id={req.id} status="Passed" label="Passed" />
-                  <MarkHandledButton id={req.id} status="Partial" label="Partial" />
-                  <MarkHandledButton id={req.id} status="Failed" label="Failed" />
-                </div>
+                {!req.id.startsWith("slot-") && (
+                  <div className="flex flex-wrap gap-2">
+                    <MarkHandledButton id={req.id} status="Passed" label="Passed" />
+                    <MarkHandledButton id={req.id} status="Partial" label="Partial" />
+                    <MarkHandledButton id={req.id} status="Failed" label="Failed" />
+                  </div>
+                )}
               </div>
             </div>
           ))}
