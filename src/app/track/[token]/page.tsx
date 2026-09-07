@@ -6,6 +6,7 @@ import { ContactCard } from "@/components/homeowner/contact-card";
 import { BrandHeader } from "@/components/homeowner/brand-header";
 import { RequestInspection } from "@/components/homeowner/request-inspection";
 import { PermitHeader } from "@/components/shared/permit-header";
+import { publicTrackBrand, isPermitCloserJob } from "@/lib/public-brand";
 import { format } from "date-fns";
 
 interface PageProps {
@@ -50,20 +51,16 @@ export default async function TrackPage({ params }: PageProps) {
       return <DisabledLink />;
     }
 
-    // Homeowner-safe column list only.
-    // Do NOT select notes, internal_notes, or contract_value — those can
-    // contain fees, contractor billing detail, or internal wording.
     const { data: job, error: jobError } = await supabase
       .from("jobs")
       .select(
-        "id, brand, property_address, homeowner_name, trade_type, permit_number, jurisdiction, stage, sub_status, next_step, homeowner_note, submitted_date, approved_date, permit_eta, building_dept_url"
+        "id, brand, client_type, contractor_id, property_address, homeowner_name, trade_type, permit_number, jurisdiction, stage, sub_status, next_step, homeowner_note, submitted_date, approved_date, permit_eta, building_dept_url"
       )
       .eq("id", link.job_id)
       .single();
 
     if (jobError || !job) return <InvalidLink />;
 
-    // Update view metadata (fire and forget)
     supabase
       .from("homeowner_links")
       .update({
@@ -73,7 +70,14 @@ export default async function TrackPage({ params }: PageProps) {
       .eq("token", token)
       .then(() => {});
 
-    // Homeowner-visible inspections and documents
+    const { data: contractor } = job.contractor_id
+      ? await supabase
+          .from("contractors")
+          .select("company_name, name, email, phone")
+          .eq("id", job.contractor_id)
+          .maybeSingle()
+      : { data: null };
+
     const { data: inspections } = await supabase
       .from("job_inspections")
       .select("slot, inspection_type, status, scheduled_date, result_date")
@@ -101,8 +105,8 @@ export default async function TrackPage({ params }: PageProps) {
       currentIndex = 7;
 
     const currentStage = PERMIT_STAGES[currentIndex];
-    const brandName =
-      job.brand === "The Permit Closer" ? "The Permit Closer" : "Majestic Permits";
+    const brandName = publicTrackBrand(job, contractor);
+    const closer = isPermitCloserJob(job);
 
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
@@ -192,7 +196,11 @@ export default async function TrackPage({ params }: PageProps) {
           <RequestInspection jobId={job.id} token={token} />
 
           <div className="mt-16">
-            <ContactCard brand={brandName} />
+            <ContactCard
+              brand={brandName}
+              email={closer ? "hello@majesticpermits.com" : contractor?.email}
+              phone={closer ? "+15618883805" : contractor?.phone}
+            />
           </div>
         </main>
       </div>
@@ -208,7 +216,7 @@ function InvalidLink() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-[#020202]">
       <div className="max-w-md text-center">
         <h1 className="text-3xl font-bold text-[#156cdd] dark:text-white">
-          This link isn&apos;t valid
+          This link isn't valid
         </h1>
         <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
           The tracking link you used may have expired or been typed incorrectly.
