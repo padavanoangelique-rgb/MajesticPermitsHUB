@@ -7,7 +7,7 @@ import type { InspectionDateOption } from "@/lib/next-inspection-day";
 import { InspectionDateCalendar } from "@/components/contractor/inspection-date-calendar";
 import { ContractorResultForm } from "@/components/contractor/contractor-result-form";
 import { formatPhone, isValidUsPhone } from "@/lib/onsite-contact";
-import { isFinalInspection } from "@/lib/close-on-final";
+import { isFinalInspection } from "@/lib/inspection-final";
 
 const STATUS_LABEL: Record<string, string> = {
   not_required: "Not required",
