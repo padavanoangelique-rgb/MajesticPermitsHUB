@@ -20,12 +20,14 @@ export function SendQuoteForm({
   );
   const [expiresInDays, setExpiresInDays] = useState<string>("14");
   const [sendEmail, setSendEmail] = useState(true);
+  const [receipts, setReceipts] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [payUrl, setPayUrl] = useState<string | null>(null);
   const [approvalUrl, setApprovalUrl] = useState<string | null>(null);
   const [emailed, setEmailed] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [attached, setAttached] = useState<string[]>([]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,19 +36,21 @@ export function SendQuoteForm({
     setEmailError("");
     setPayUrl(null);
     setApprovalUrl(null);
+    setAttached([]);
 
     try {
+      const form = new FormData();
+      form.set("job_id", jobId);
+      form.set("amount", amount);
+      form.set("description", description);
+      form.set("bill_to", billTo);
+      form.set("expires_in_days", expiresInDays);
+      form.set("send_email", sendEmail ? "true" : "false");
+      receipts.slice(0, 5).forEach((file) => form.append("receipts", file));
+
       const res = await fetch("/api/admin/quotes", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          job_id: jobId,
-          amount: Number(amount),
-          description: description || null,
-          bill_to: billTo,
-          expires_in_days: expiresInDays ? Number(expiresInDays) : null,
-          send_email: sendEmail,
-        }),
+        body: form,
       });
 
       const data = await res.json();
@@ -56,8 +60,10 @@ export function SendQuoteForm({
       setApprovalUrl(data.approval_url || null);
       setEmailed(Boolean(data.emailed));
       setEmailError(data.emailed ? "" : data.email_error || "");
+      setAttached(data.receipts || []);
       setAmount("");
       setDescription("");
+      setReceipts([]);
       router.refresh();
     } catch (err: any) {
       setError(err.message || "Something went wrong");
@@ -78,11 +84,6 @@ export function SendQuoteForm({
               ? "bg-[#156cdd] text-white"
               : "bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-40 dark:bg-slate-700 dark:text-slate-200"
           }`}
-          title={
-            hasContractor
-              ? "Bill the assigned contractor"
-              : "Assign a contractor to this job first"
-          }
         >
           Bill contractor
         </button>
@@ -112,7 +113,7 @@ export function SendQuoteForm({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="750.00"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202] dark:text-white"
           />
         </div>
         <div className="sm:col-span-2">
@@ -123,9 +124,27 @@ export function SendQuoteForm({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Permit application + city fees"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202] dark:text-white"
           />
         </div>
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-xs font-medium text-slate-500">
+          Permit receipts (attached to the invoice email)
+        </label>
+        <input
+          type="file"
+          multiple
+          accept=".pdf,.png,.jpg,.jpeg,.webp"
+          onChange={(e) => setReceipts(Array.from(e.target.files || []).slice(0, 5))}
+          className="block w-full text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-[#156cdd] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white"
+        />
+        {receipts.length > 0 && (
+          <p className="mt-1 text-xs text-slate-500">
+            {receipts.map((f) => f.name).join(", ")}
+          </p>
+        )}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -139,8 +158,7 @@ export function SendQuoteForm({
             max="180"
             value={expiresInDays}
             onChange={(e) => setExpiresInDays(e.target.value)}
-            placeholder="14"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202] dark:text-white"
           />
         </div>
         <label className="mt-6 flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300 sm:col-span-2">
@@ -150,70 +168,43 @@ export function SendQuoteForm({
             onChange={(e) => setSendEmail(e.target.checked)}
             className="h-4 w-4 rounded border-slate-300"
           />
-          Email the quote link now
+          Email the quote / invoice now
         </label>
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
+        className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
       >
         {loading
-          ? "Creating quote..."
+          ? "Creating…"
           : sendEmail
-          ? `Create quote + email ${billTo}`
+          ? `Create + email ${billTo}`
           : "Create quote (no email)"}
       </button>
 
       {error && (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
-          {error}
-        </p>
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
       )}
 
       {(payUrl || approvalUrl) && (
-        <div className="space-y-2 rounded-xl bg-green-50 px-3 py-2 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-300">
+        <div className="space-y-2 rounded-xl bg-green-50 px-3 py-2 text-sm text-green-800">
           <p className="font-medium">
-            Quote created
-            {sendEmail && emailed ? " and emailed" : ""}.
+            Quote created{sendEmail && emailed ? " and emailed" : ""}.
           </p>
-          {sendEmail && !emailed && (
-            <p className="text-xs text-amber-700 dark:text-amber-400">
-              The email could not be sent
-              {emailError ? ` (${emailError})` : ""} — copy the link(s) below and
-              send them manually.
-            </p>
+          {attached.length > 0 && (
+            <p className="text-xs">Receipts on the email: {attached.join(", ")}</p>
           )}
           {approvalUrl && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
-                Approval link
-              </p>
-              <a
-                href={approvalUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="block break-all underline"
-              >
-                {approvalUrl}
-              </a>
-            </div>
+            <a href={approvalUrl} target="_blank" rel="noreferrer" className="block break-all underline">
+              Preview what they see: {approvalUrl}
+            </a>
           )}
           {payUrl && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
-                Payment link
-              </p>
-              <a
-                href={payUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="block break-all underline"
-              >
-                {payUrl}
-              </a>
-            </div>
+            <a href={payUrl} target="_blank" rel="noreferrer" className="block break-all underline">
+              {payUrl}
+            </a>
           )}
         </div>
       )}
