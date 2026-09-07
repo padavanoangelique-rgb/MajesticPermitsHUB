@@ -8,11 +8,6 @@ import {
 
 export const dynamic = "force-dynamic";
 
-function jobRel(jobs: any) {
-  if (!jobs) return null;
-  return Array.isArray(jobs) ? jobs[0] : jobs;
-}
-
 export default async function InspectionsPage({
   searchParams,
 }: {
@@ -20,46 +15,31 @@ export default async function InspectionsPage({
 }) {
   await requireAdmin();
   const embed = searchParams?.embed === "1";
-
   const supabase = createServiceClient();
 
   const { data: requests } = await supabase
     .from("inspection_requests")
-    .select(`
-      id,
-      inspection_type,
-      notes,
-      status,
-      requested_by,
-      requested_by_contractor_id,
-      preferred_date,
-      created_at,
-      jobs (
-        id,
-        property_address,
-        homeowner_name,
-        contractor_id
-      )
-    `)
+    .select(
+      "id, job_id, inspection_type, notes, status, requested_by, requested_by_contractor_id, preferred_date, created_at"
+    )
     .order("created_at", { ascending: false });
 
   const { data: slots } = await supabase
     .from("job_inspections")
-    .select(`
-      id,
-      inspection_type,
-      status,
-      requested_date,
-      scheduled_date,
-      created_at,
-      jobs (
-        id,
-        property_address,
-        homeowner_name,
-        contractor_id
-      )
-    `)
-    .in("status", ["requested", "reinspection_requested", "scheduled", "reinspection_scheduled"]);
+    .select("id, job_id, inspection_type, status, requested_date, scheduled_date")
+    .in("status", [
+      "requested",
+      "reinspection_requested",
+      "scheduled",
+      "reinspection_scheduled",
+    ]);
+
+  const { data: notices } = await supabase
+    .from("admin_notifications")
+    .select("id, job_id, type, message, created_at")
+    .eq("type", "inspection_needed")
+    .order("created_at", { ascending: false })
+    .limit(50);
 
   const { data: contractors } = await supabase
     .from("contractors")
@@ -75,11 +55,29 @@ export default async function InspectionsPage({
     ])
   );
 
-  const rows: InspectionRequestRow[] = (requests || []).map((r: any) => {
-    const job = jobRel(r.jobs);
+  const jobIds = new Set<string>();
+  for (const r of requests || []) if (r.job_id) jobIds.add(r.job_id);
+  for (const s of slots || []) if ((s as any).job_id) jobIds.add((s as any).job_id);
+  for (const n of notices || []) if (n.job_id) jobIds.add(n.job_id);
+
+  const { data: jobs } = jobIds.size
+    ? await supabase
+        .from("jobs")
+        .select("id, property_address, homeowner_name, contractor_id")
+        .in("id", Array.from(jobIds))
+    : { data: [] as any[] };
+
+  const jobMap = new Map((jobs || []).map((j: any) => [j.id, j]));
+
+  const rows: InspectionRequestRow[] = [];
+  const seen = new Set<string>();
+
+  for (const r of requests || []) {
+    const job = r.job_id ? jobMap.get(r.job_id) : null;
     const contractorId = r.requested_by_contractor_id || job?.contractor_id;
     const contractor = contractorId ? contractorMap.get(contractorId) : null;
-    return {
+    seen.add(`${r.job_id || ""}|${String(r.inspection_type || "").toLowerCase()}`);
+    rows.push({
       id: r.id,
       inspection_type: r.inspection_type,
       notes: r.notes,
@@ -91,43 +89,63 @@ export default async function InspectionsPage({
       contractor_name: contractor?.name || null,
       property_address: job?.property_address || null,
       homeowner_name: job?.homeowner_name || null,
-      job_id: job?.id || null,
-    };
-  });
-
-  const seen = new Set(
-    rows.map((r) => `${r.job_id || ""}|${(r.inspection_type || "").toLowerCase()}|${r.preferred_date || ""}`)
-  );
+      job_id: r.job_id || job?.id || null,
+    });
+  }
 
   for (const slot of slots || []) {
-    const job = jobRel((slot as any).jobs);
-    const key = `${job?.id || ""}|${String((slot as any).inspection_type || "").toLowerCase()}|${(slot as any).requested_date || (slot as any).scheduled_date || ""}`;
+    const s = slot as any;
+    const key = `${s.job_id || ""}|${String(s.inspection_type || "").toLowerCase()}`;
     if (seen.has(key)) continue;
+    seen.add(key);
+    const job = s.job_id ? jobMap.get(s.job_id) : null;
     const contractor = job?.contractor_id ? contractorMap.get(job.contractor_id) : null;
-    const status = String((slot as any).status || "");
+    const status = String(s.status || "");
     rows.push({
-      id: `slot-${(slot as any).id}`,
-      inspection_type: (slot as any).inspection_type,
+      id: `slot-${s.id}`,
+      inspection_type: s.inspection_type,
       notes: null,
       status: status.includes("scheduled") ? "Scheduled" : "Pending",
       requested_by: "contractor",
-      preferred_date: (slot as any).scheduled_date || (slot as any).requested_date || null,
-      created_at: (slot as any).created_at || new Date().toISOString(),
+      preferred_date: s.scheduled_date || s.requested_date || null,
+      created_at: new Date().toISOString(),
       contractor_email: contractor?.email || null,
       contractor_name: contractor?.name || null,
       property_address: job?.property_address || null,
       homeowner_name: job?.homeowner_name || null,
-      job_id: job?.id || null,
+      job_id: s.job_id || null,
+    });
+  }
+
+  for (const n of notices || []) {
+    if (!n.job_id) continue;
+    const already = rows.some((r) => r.job_id === n.job_id);
+    if (already) continue;
+    const job = jobMap.get(n.job_id);
+    const contractor = job?.contractor_id ? contractorMap.get(job.contractor_id) : null;
+    rows.push({
+      id: `notice-${n.id}`,
+      inspection_type: "Inspection request",
+      notes: n.message,
+      status: "Pending",
+      requested_by: "contractor",
+      preferred_date: String(n.created_at || "").slice(0, 10),
+      created_at: n.created_at,
+      contractor_email: contractor?.email || null,
+      contractor_name: contractor?.name || null,
+      property_address: job?.property_address || n.message,
+      homeowner_name: job?.homeowner_name || null,
+      job_id: n.job_id,
     });
   }
 
   const pending = rows.filter((r) => {
     const s = String(r.status || "").toLowerCase();
-    return s === "pending" || s === "requested" || s === "reinspection_requested";
+    return ["pending", "requested", "reinspection_requested"].includes(s);
   });
   const scheduled = rows.filter((r) => {
     const s = String(r.status || "").toLowerCase();
-    return s === "scheduled" || s === "reinspection_scheduled";
+    return ["scheduled", "reinspection_scheduled"].includes(s);
   });
   const done = rows.filter((r) => !pending.includes(r) && !scheduled.includes(r));
 
@@ -170,7 +188,7 @@ export default async function InspectionsPage({
                   </p>
                   {req.notes && <p className="mt-3 text-sm text-slate-600">{req.notes}</p>}
                 </div>
-                {!req.id.startsWith("slot-") && (
+                {!String(req.id).startsWith("slot-") && !String(req.id).startsWith("notice-") && (
                   <div className="flex gap-2">
                     <MarkHandledButton id={req.id} status="Scheduled" label="Mark Scheduled" />
                     <MarkHandledButton id={req.id} status="Dismissed" label="Dismiss" />
@@ -203,7 +221,7 @@ export default async function InspectionsPage({
                     {" · "}{req.contractor_name || req.requested_by}
                   </p>
                 </div>
-                {!req.id.startsWith("slot-") && (
+                {!String(req.id).startsWith("slot-") && !String(req.id).startsWith("notice-") && (
                   <div className="flex flex-wrap gap-2">
                     <MarkHandledButton id={req.id} status="Passed" label="Passed" />
                     <MarkHandledButton id={req.id} status="Partial" label="Partial" />
