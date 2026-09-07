@@ -15,11 +15,13 @@ export async function POST(
   try {
     const body = await req.json().catch(() => ({}));
     const overrideEmail = String(body.email || "").trim();
+    const documentId = String(body.documentId || "").trim();
+    const contractorEmail = String(body.contractorEmail || "").trim();
     const supabase = createServiceClient();
 
     const { data: job, error } = await supabase
       .from("jobs")
-      .select("id, property_address, jurisdiction, permit_number, noc_status, notes")
+      .select("id, property_address, jurisdiction, permit_number, contractor_id")
       .eq("id", params.id)
       .maybeSingle();
     if (error || !job) {
@@ -30,7 +32,7 @@ export async function POST(
     const to = overrideEmail || directory?.email || "";
     if (!to || !to.includes("@")) {
       return NextResponse.json(
-        { error: "Save a building department email for this jurisdiction first." },
+        { error: "Pick a building department contact first." },
         { status: 400 }
       );
     }
@@ -41,14 +43,16 @@ export async function POST(
       .eq("job_id", job.id)
       .order("created_at", { ascending: false });
 
-    const nocDoc = (docs || []).find((d) => {
-      const blob = `${d.file_name || ""} ${d.label || ""} ${d.category || ""}`.toLowerCase();
-      return blob.includes("noc") || blob.includes("notice of commencement");
-    });
+    const nocDoc =
+      (docs || []).find((d) => d.id === documentId) ||
+      (docs || []).find((d) => {
+        const blob = `${d.file_name || ""} ${d.label || ""} ${d.category || ""}`.toLowerCase();
+        return blob.includes("noc") || blob.includes("notice of commencement");
+      });
 
     if (!nocDoc) {
       return NextResponse.json(
-        { error: "Upload the recorded NOC on this job first (filename or label should include NOC)." },
+        { error: "Choose or upload the NOC on this job first." },
         { status: 400 }
       );
     }
@@ -63,20 +67,37 @@ export async function POST(
       );
     }
 
-    const bytes = Buffer.from(await file.arrayBuffer());
-    const subject = `NOC — ${job.property_address}${job.permit_number ? ` — ${job.permit_number}` : ""}`;
+    let ccContractor = contractorEmail;
+    if (!ccContractor && job.contractor_id) {
+      const { data: contractor } = await supabase
+        .from("contractors")
+        .select("email")
+        .eq("id", job.contractor_id)
+        .maybeSingle();
+      ccContractor = contractor?.email || "";
+    }
+
+    const cc = [MAILBOX.owner];
+    if (ccContractor && ccContractor.includes("@") && ccContractor.toLowerCase() !== to.toLowerCase()) {
+      cc.push(ccContractor);
+    }
+
+    const permit = job.permit_number || "(permit number pending)";
+    const subject = `NOC for permit Number ${permit} — ${job.property_address}`;
     const { error: sendError } = await getResend().emails.send({
       from: FROM_REQUESTS,
       to: [to],
-      cc: [MAILBOX.owner],
+      cc,
       replyTo: MAILBOX.requests,
       subject,
-      html: `<p>Please find the recorded Notice of Commencement for <strong>${job.property_address}</strong>${job.permit_number ? ` (permit ${job.permit_number})` : ""}.</p>
-        <p>Submitted by Majestic Permits.<br/>${MAILBOX.requests}</p>`,
+      html: `<p>Please see attached NOC for permit Number <strong>${permit}</strong>.</p>
+        <p>${job.property_address}</p>
+        <p>Submitted by Majestic Permits<br/>${MAILBOX.requests}</p>`,
+      text: `Please see attached NOC for permit Number ${permit}.\n\n${job.property_address}\n\nSubmitted by Majestic Permits\n${MAILBOX.requests}`,
       attachments: [
         {
           filename: nocDoc.file_name || "NOC.pdf",
-          content: bytes,
+          content: Buffer.from(await file.arrayBuffer()),
         },
       ],
     });
@@ -90,7 +111,12 @@ export async function POST(
       .update({ noc_status: "Submitted" })
       .eq("id", job.id);
 
-    return NextResponse.json({ ok: true, to, file: nocDoc.file_name });
+    return NextResponse.json({
+      ok: true,
+      to,
+      cc,
+      file: nocDoc.file_name,
+    });
   } catch (err: any) {
     return NextResponse.json(
       { error: err?.message || "Send failed" },
