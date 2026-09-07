@@ -82,7 +82,7 @@ export function InspectionsCalendar({ requests }: { requests: InspectionRequestR
       `Your ${req.inspection_type || "inspection"} for ${req.property_address || "the job"} is scheduled.`
     );
     setScheduledDate(dateKey(req.preferred_date, req.created_at));
-    setNotify(Boolean(req.contractor_email));
+    setNotify(true);
     setMessage("");
   }
 
@@ -107,8 +107,10 @@ export function InspectionsCalendar({ requests }: { requests: InspectionRequestR
       setMessage(
         data.emailed
           ? "Marked scheduled and emailed the contractor."
+          : data.texted
+          ? "Marked scheduled and texted the contractor."
           : data.email_error
-          ? `Marked scheduled. Email did not send (${data.email_error}).`
+          ? `Marked scheduled. Notify failed (${data.email_error}).`
           : "Marked scheduled."
       );
       router.refresh();
@@ -214,66 +216,58 @@ export function InspectionsCalendar({ requests }: { requests: InspectionRequestR
             </button>
           </div>
 
-          {selected.id.startsWith("slot-") ? (
-            <p className="mt-4 text-sm text-slate-500">
-              This request is on the job inspection slot. Open the job to mark the result after you schedule it.
-            </p>
-          ) : (
-            <>
-              <label className="mt-4 flex items-center gap-2 text-sm font-medium">
-                <input
-                  type="checkbox"
-                  checked={String(selected.status).toLowerCase() === "scheduled"}
-                  disabled={busy || String(selected.status).toLowerCase() === "scheduled"}
-                  onChange={(e) => markScheduled(e.target.checked)}
-                />
-                Scheduled
+          <label className="mt-4 flex items-center gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              checked={String(selected.status).toLowerCase() === "scheduled"}
+              disabled={busy || String(selected.status).toLowerCase() === "scheduled"}
+              onChange={(e) => markScheduled(e.target.checked)}
+            />
+            Scheduled
+          </label>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Scheduled date
               </label>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Scheduled date
-                  </label>
-                  <input
-                    type="date"
-                    value={scheduledDate}
-                    onChange={(e) => setScheduledDate(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202]"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Contractor email
-                  </label>
-                  <p className="rounded-xl border border-slate-100 px-3 py-2 text-sm text-slate-600 dark:border-slate-700 dark:text-slate-300">
-                    {selected.contractor_email || "No contractor email on file"}
-                  </p>
-                </div>
-              </div>
-              <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Note back to contractor
-              </label>
-              <textarea
-                rows={3}
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202]"
+              <input
+                type="date"
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202]"
               />
-              <label className="mt-3 flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />
-                Email this note when I mark it scheduled
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Contractor email
               </label>
-              {String(selected.status).toLowerCase() !== "scheduled" && (
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => markScheduled(true)}
-                  className="mt-4 rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60 dark:bg-[#b6ff2a] dark:text-black"
-                >
-                  {busy ? "Saving…" : "Mark scheduled + send note"}
-                </button>
-              )}
-            </>
+              <p className="rounded-xl border border-slate-100 px-3 py-2 text-sm text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                {selected.contractor_email || "No contractor email on file"}
+              </p>
+            </div>
+          </div>
+          <label className="mt-4 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Note back to contractor
+          </label>
+          <textarea
+            rows={3}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202]"
+          />
+          <label className="mt-3 flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />
+            Email / text this note when I mark it scheduled
+          </label>
+          {String(selected.status).toLowerCase() !== "scheduled" && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => markScheduled(true)}
+              className="mt-4 rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60 dark:bg-[#b6ff2a] dark:text-black"
+            >
+              {busy ? "Saving…" : "Schedule + notify contractor"}
+            </button>
           )}
           {message && <p className="mt-3 text-sm text-slate-500">{message}</p>}
         </div>
