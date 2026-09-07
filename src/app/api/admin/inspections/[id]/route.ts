@@ -3,10 +3,10 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { sendSms } from "@/lib/sms";
 import { getJobContactPhone } from "@/lib/job-contact";
 import { notifyAdmin } from "@/lib/admin-notify";
+import { closeJobIfFinalPassed } from "@/lib/close-on-final";
 
 export const dynamic = "force-dynamic";
 
-/** Fixed columns writable through the admin inspection form. */
 const ALLOWED = [
   "inspection_type",
   "status",
@@ -34,8 +34,6 @@ const VALID_STATUS = new Set([
   "closed",
 ]);
 
-// Statuses that mean "you're on the calendar" — these are what trigger the
-// client-facing "inspection scheduled" text, not every status change.
 const SCHEDULED_STATUSES = new Set(["scheduled", "reinspection_scheduled"]);
 
 function sanitize(body: Record<string, any>) {
@@ -53,7 +51,6 @@ function sanitize(body: Record<string, any>) {
   return patch;
 }
 
-/** id here is the inspection row id (each job has three). */
 export async function PATCH(
   req: Request,
   { params }: { params: { id: string } }
@@ -74,7 +71,6 @@ export async function PATCH(
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-    // Text the contractor/homeowner when the inspection just got scheduled.
     if ("status" in patch && updated && SCHEDULED_STATUSES.has(updated.status)) {
       const { data: job } = await supabase
         .from("jobs")
@@ -100,6 +96,29 @@ export async function PATCH(
             phone,
             `Majestic Permits — ${job.property_address}: ${what} is scheduled${when}.`
           );
+        }
+      }
+    }
+
+    if (updated && updated.status === "passed") {
+      const closed = await closeJobIfFinalPassed({
+        jobId: updated.job_id,
+        inspection: updated,
+      });
+      if (closed.closed) {
+        const { data: job } = await supabase
+          .from("jobs")
+          .select("property_address, client_type, contractor_id, homeowner_phone")
+          .eq("id", updated.job_id)
+          .maybeSingle();
+        if (job) {
+          const phone = await getJobContactPhone(job);
+          if (phone) {
+            await sendSms(
+              phone,
+              `Majestic Permits — ${job.property_address}: final inspection passed. Permit is closed.`
+            );
+          }
         }
       }
     }
