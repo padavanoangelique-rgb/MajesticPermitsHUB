@@ -4,22 +4,13 @@ import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
-import { DashboardViewSwitch } from "@/components/contractor/dashboard-view-switch";
-import {
-  PipelineBoard,
-  type PipelineJob,
-} from "@/components/shared/pipeline-board";
 import { CONTRACTOR_BUCKETS } from "@/lib/dashboard-buckets";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { DECLINED_REQUEST_SUB, PENDING_REQUEST_SUB } from "@/lib/job-request";
 
 export const dynamic = "force-dynamic";
 
-interface PageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
-}
-
-export default async function DashboardPage({ searchParams }: PageProps) {
+export default async function DashboardPage() {
   const user = await requireUser("/dashboard");
   const supabase = createClient();
 
@@ -37,17 +28,12 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             Please contact Majestic Permits so we can connect your account.
           </p>
           <form action="/auth/signout" method="post" className="mt-8">
-            <button className="text-sm text-slate-500 underline">
-              Sign out
-            </button>
+            <button className="text-sm text-slate-500 underline">Sign out</button>
           </form>
         </div>
       </div>
     );
   }
-
-  const view: "list" | "pipeline" =
-    searchParams.view === "pipeline" ? "pipeline" : "list";
 
   const { data: allJobs } = await supabase
     .from("jobs")
@@ -97,6 +83,12 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard/inspections"
+              className="text-sm font-medium text-slate-600 hover:text-[#156cdd] dark:text-slate-300"
+            >
+              Inspections
+            </Link>
             <ThemeToggle />
             <form action="/auth/signout" method="post">
               <button className="text-sm text-slate-500 hover:text-[#156cdd]">
@@ -117,15 +109,12 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               {totalJobs} active project{totalJobs !== 1 ? "s" : ""}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard/new"
-              className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8]"
-            >
-              Request a job
-            </Link>
-            <DashboardViewSwitch view={view} />
-          </div>
+          <Link
+            href="/dashboard/new"
+            className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8]"
+          >
+            Request a job
+          </Link>
         </div>
 
         {pendingJobRequests.length > 0 && (
@@ -153,23 +142,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               Request a job and attach documents. After Majestic approves it, the
               permit will show here with live status.
             </p>
-          </div>
-        ) : view === "pipeline" ? (
-          <div className="mt-8">
-            <PipelineBoard
-              jobs={jobs.map<PipelineJob>((j: any) => ({
-                id: j.id,
-                property_address: j.property_address,
-                stage: j.stage,
-                sub_status: j.sub_status,
-                permit_number: j.permit_number,
-                permit_eta: j.permit_eta,
-                updated_at: j.updated_at,
-              }))}
-              jobHrefPrefix="/dashboard/projects"
-              updateHrefTemplate="/api/contractor/jobs/{id}/stage"
-              canDrag={true}
-            />
           </div>
         ) : (
           <div className="mt-8 space-y-6">
@@ -234,9 +206,7 @@ function StageSection({
                   {job.property_address}
                 </p>
                 {job.sub_status && (
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    {job.sub_status}
-                  </p>
+                  <p className="mt-0.5 text-xs text-slate-500">{job.sub_status}</p>
                 )}
               </div>
               <div className="hidden text-xs text-slate-500 sm:block">
