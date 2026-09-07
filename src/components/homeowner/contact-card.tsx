@@ -1,6 +1,18 @@
 import { Mail, Phone, MessageSquare } from "lucide-react";
 
-export function ContactCard({ brand }: { brand: string }) {
+export function ContactCard({
+  brand,
+  email,
+  phone,
+}: {
+  brand: string;
+  email?: string | null;
+  phone?: string | null;
+}) {
+  const mail = email || "hello@majesticpermits.com";
+  const tel = phone || "+15618883805";
+  const telHref = tel.startsWith("+") ? tel : `+1${tel.replace(/\D/g, "").slice(-10)}`;
+
   return (
     <div className="rounded-3xl border border-[#0B1F3A] bg-[#0B1F3A] p-8 text-white sm:p-10">
       <h2 className="text-2xl font-bold tracking-tight text-white">Questions?</h2>
@@ -11,24 +23,23 @@ export function ContactCard({ brand }: { brand: string }) {
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <a
-          href="mailto:hello@majesticpermits.com"
+          href={`mailto:${mail}`}
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3.5 text-sm font-semibold text-[#0B1F3A] transition hover:bg-slate-100"
         >
           <Mail className="h-4 w-4" />
           Email us
         </a>
         <a
-          href="tel:+15615550100"
+          href={`tel:${telHref}`}
           className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/40 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
         >
           <Phone className="h-4 w-4" />
           Call
         </a>
         <a
-          href="sms:+15615550100"
+          href={`sms:${telHref}`}
           className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/40 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
         >
-          <Phone className="h-4 w-4 hidden" />
           <MessageSquare className="h-4 w-4" />
           Text
         </a>
