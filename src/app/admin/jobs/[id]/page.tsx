@@ -48,8 +48,10 @@ export default async function JobDetailPage({ params }: PageProps) {
 
   const { data: contractors } = await supabase
     .from("contractors")
-    .select("id, name, company_name")
+    .select("id, name, company_name, email")
     .order("company_name", { ascending: true });
+
+  const assignedContractor = (contractors || []).find((c) => c.id === job.contractor_id);
 
   const { data: quotes } = await supabase
     .from("quotes")
@@ -131,6 +133,9 @@ export default async function JobDetailPage({ params }: PageProps) {
         <Section title="Jurisdiction & NOC">
           <JurisdictionForm
             jobId={job.id}
+            permitNumber={job.permit_number ?? null}
+            contractorEmail={assignedContractor?.email ?? null}
+            documents={documents || []}
             initial={{
               jurisdiction: job.jurisdiction ?? null,
               building_dept_url: job.building_dept_url ?? null,
