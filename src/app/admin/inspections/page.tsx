@@ -1,8 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
-import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-guard";
 import { MarkHandledButton } from "@/components/admin/mark-handled-button";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
 import {
   InspectionsCalendar,
   type InspectionRequestRow,
@@ -10,8 +8,13 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function InspectionsPage() {
+export default async function InspectionsPage({
+  searchParams,
+}: {
+  searchParams: { embed?: string };
+}) {
   await requireAdmin();
+  const embed = searchParams?.embed === "1";
 
   const supabase = createServiceClient();
 
@@ -74,26 +77,12 @@ export default async function InspectionsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#090909]">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-sm text-slate-500 hover:text-[#156cdd]">
-              ← Jobs
-            </Link>
-            <p className="text-sm font-semibold text-[#156cdd] dark:text-[#b6ff2a]">
-              Inspection Requests
-            </p>
-          </div>
-          <ThemeToggle />
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <main className={embed ? "px-4 py-6 sm:px-6" : "mx-auto max-w-6xl px-4 py-10 sm:px-6"}>
         <h1 className="text-2xl font-bold text-[#156cdd] dark:text-[#b6ff2a]">
           Inspection calendar
         </h1>
         <p className="mt-1 text-slate-500">
-          {pending.length} pending · {scheduled.length} scheduled · results stay here until you record pass/fail
+          {pending.length} pending · {scheduled.length} scheduled · record pass/fail to close
         </p>
 
         <InspectionsCalendar requests={rows} />
