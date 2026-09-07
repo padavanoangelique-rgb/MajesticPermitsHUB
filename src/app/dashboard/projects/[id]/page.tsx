@@ -8,10 +8,13 @@ import { StageStepper } from "@/components/homeowner/stage-stepper";
 import { PermitHeader } from "@/components/shared/permit-header";
 import { DocDownload } from "@/components/contractor/doc-download";
 import { InspectionRow } from "@/components/contractor/inspection-row";
+import { JobDocUpload } from "@/components/contractor/job-doc-upload";
+import { HomeownerSharePanel } from "@/components/contractor/homeowner-share-panel";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
 import { upcomingInspectionDates } from "@/lib/next-inspection-day";
 import { parseOnsiteFromNotes } from "@/lib/onsite-contact";
+import { publicTrackBrand } from "@/lib/public-brand";
 
 interface PageProps {
   params: { id: string };
@@ -38,8 +41,9 @@ export default async function ContractorProjectPage({ params }: PageProps) {
 
   const permitClosed = job.stage === "Permit closed — all done";
   const dateOptions = upcomingInspectionDates(10);
+  const brandName = publicTrackBrand(job, contractor);
 
-  const [{ data: inspections }, { data: docs }, { data: quotes }, { data: pendingReqs }] =
+  const [{ data: inspections }, { data: docs }, { data: quotes }, { data: pendingReqs }, { data: link }] =
     await Promise.all([
       service
         .from("job_inspections")
@@ -65,6 +69,11 @@ export default async function ContractorProjectPage({ params }: PageProps) {
         .select("inspection_type, notes, preferred_date, status")
         .eq("job_id", job.id)
         .eq("status", "Pending"),
+      service
+        .from("homeowner_links")
+        .select("token, enabled")
+        .eq("job_id", job.id)
+        .maybeSingle(),
     ]);
 
   const phoneByType = new Map<string, string>();
@@ -86,6 +95,10 @@ export default async function ContractorProjectPage({ params }: PageProps) {
   else if (stageText.includes("final")) currentIndex = 6;
   else if (stageText.includes("close") || stageText.includes("complete") || stageText.includes("done"))
     currentIndex = 7;
+
+  const trackUrl = link?.token
+    ? `https://hub.majesticpermits.com/track/${link.token}`
+    : "";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
@@ -178,6 +191,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
               ))}
             </ul>
           )}
+          {!permitClosed && <JobDocUpload jobId={job.id} />}
         </Section>
 
         <Section title="Invoices & payments">
@@ -228,7 +242,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
                           href={`/quote/${q.approval_token}`}
                           className="text-[11px] font-semibold text-[#156cdd] underline hover:opacity-80 dark:text-white"
                         >
-                          Review &amp; approve
+                          Review & approve
                         </a>
                       )}
                   </div>
@@ -236,6 +250,14 @@ export default async function ContractorProjectPage({ params }: PageProps) {
               ))}
             </ul>
           )}
+        </Section>
+
+        <Section title="Homeowner status link">
+          <HomeownerSharePanel
+            jobId={job.id}
+            url={trackUrl}
+            brandName={brandName}
+          />
         </Section>
       </main>
     </div>
@@ -268,6 +290,7 @@ function categoryLabel(cat: string) {
     inspections: "Inspections",
     closeout: "Closeout",
     other: "Other",
+    contractor: "Contractor upload",
   };
   return map[cat] ?? cat;
 }
