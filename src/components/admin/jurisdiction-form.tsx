@@ -127,8 +127,8 @@ export function JurisdictionForm({
   }
 
   async function sendNoc() {
-    if (!email) {
-      setError("Pick a building department contact first.");
+    if (!email || !email.includes("@")) {
+      setError("Enter or pick a building department email first.");
       return;
     }
     if (!docId) {
@@ -197,14 +197,14 @@ export function JurisdictionForm({
           Send to contact
         </label>
         <select
-          value={email}
+          value={contacts.some((row) => row.email === email) ? email : ""}
           onChange={(e) => {
             const next = e.target.value;
             setEmail(next);
             const match = contacts.find((row) => row.email === next);
             if (match) setJurisdiction(match.name);
           }}
-          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+          className="mb-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
         >
           <option value="">Select a saved contact…</option>
           {contacts.map((row) => (
@@ -213,6 +213,13 @@ export function JurisdictionForm({
             </option>
           ))}
         </select>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="or type permits@city.gov"
+          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+        />
       </div>
 
       {showAdd && (
@@ -306,7 +313,7 @@ export function JurisdictionForm({
         <button
           type="button"
           onClick={sendNoc}
-          disabled={sending || !email || !docId}
+          disabled={sending || !email.includes("@") || !docId}
           className="rounded-xl bg-[#e2ba00] px-4 py-2 text-sm font-semibold text-[#0B1F3A] hover:bg-[#c9a227] disabled:opacity-60"
         >
           {sending ? "Sending..." : "Send NOC"}
