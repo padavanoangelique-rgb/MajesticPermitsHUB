@@ -188,12 +188,14 @@ export default async function InspectionsPage({
                   </p>
                   {req.notes && <p className="mt-3 text-sm text-slate-600">{req.notes}</p>}
                 </div>
-                {!String(req.id).startsWith("slot-") && !String(req.id).startsWith("notice-") && (
-                  <div className="flex gap-2">
-                    <MarkHandledButton id={req.id} status="Scheduled" label="Mark Scheduled" />
-                    <MarkHandledButton id={req.id} status="Dismissed" label="Dismiss" />
-                  </div>
-                )}
+                <div className="flex gap-2">
+                  <MarkHandledButton
+                    id={req.id}
+                    status="Scheduled"
+                    label="Schedule + notify"
+                    preferredDate={req.preferred_date}
+                  />
+                </div>
               </div>
             </div>
           ))}
@@ -221,13 +223,11 @@ export default async function InspectionsPage({
                     {" · "}{req.contractor_name || req.requested_by}
                   </p>
                 </div>
-                {!String(req.id).startsWith("slot-") && !String(req.id).startsWith("notice-") && (
-                  <div className="flex flex-wrap gap-2">
-                    <MarkHandledButton id={req.id} status="Passed" label="Passed" />
-                    <MarkHandledButton id={req.id} status="Partial" label="Partial" />
-                    <MarkHandledButton id={req.id} status="Failed" label="Failed" />
-                  </div>
-                )}
+                <div className="flex flex-wrap gap-2">
+                  <MarkHandledButton id={req.id} status="Passed" label="Passed" preferredDate={req.preferred_date} />
+                  <MarkHandledButton id={req.id} status="Partial" label="Partial" preferredDate={req.preferred_date} />
+                  <MarkHandledButton id={req.id} status="Failed" label="Failed" preferredDate={req.preferred_date} />
+                </div>
               </div>
             </div>
           ))}
