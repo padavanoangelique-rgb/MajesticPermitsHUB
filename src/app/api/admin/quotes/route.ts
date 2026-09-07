@@ -7,9 +7,43 @@ import { FROM_ACCOUNTING, MAILBOX } from "@/lib/mailboxes";
 
 export const dynamic = "force-dynamic";
 
+const BUCKET = "job-documents";
+
+type Receipt = { filename: string; content: string; jobPath?: string };
+
+async function parseBody(req: Request) {
+  const type = req.headers.get("content-type") || "";
+  if (type.includes("multipart/form-data")) {
+    const form = await req.formData();
+    const receipts: Receipt[] = [];
+    const files = form
+      .getAll("receipts")
+      .filter((item): item is File => item instanceof File && item.size > 0);
+    for (const file of files.slice(0, 5)) {
+      const bytes = Buffer.from(await file.arrayBuffer());
+      receipts.push({
+        filename: file.name.replace(/[^\w.\-]+/g, "_"),
+        content: bytes.toString("base64"),
+      });
+    }
+    return {
+      job_id: String(form.get("job_id") || ""),
+      amount: Number(form.get("amount") || 0),
+      description: String(form.get("description") || "") || null,
+      bill_to: String(form.get("bill_to") || "homeowner"),
+      expires_in_days: form.get("expires_in_days")
+        ? Number(form.get("expires_in_days"))
+        : null,
+      send_email: String(form.get("send_email") || "true") !== "false",
+      receipts,
+    };
+  }
+  const body = await req.json().catch(() => ({}));
+  return { ...body, receipts: [] as Receipt[] };
+}
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
     const {
       job_id,
       amount,
@@ -17,7 +51,8 @@ export async function POST(req: Request) {
       bill_to = "homeowner",
       expires_in_days = null,
       send_email = true,
-    } = body || {};
+      receipts = [],
+    } = await parseBody(req);
 
     if (!job_id || !amount || Number(amount) <= 0) {
       return NextResponse.json(
@@ -80,24 +115,39 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: quoteError.message }, { status: 400 });
     }
 
-    const approvalUrl = `${SITE_URL}/quote/${approvalToken}`;
+    const storedReceipts: string[] = [];
+    for (const receipt of receipts as Receipt[]) {
+      const storagePath = `${job.id}/receipts/${Date.now()}_${receipt.filename}`;
+      const { error: upErr } = await supabase.storage
+        .from(BUCKET)
+        .upload(storagePath, Buffer.from(receipt.content, "base64"), {
+          contentType: "application/octet-stream",
+          upsert: false,
+        });
+      if (!upErr) {
+        await supabase.from("job_documents").insert({
+          job_id: job.id,
+          category: "closeout",
+          label: `Permit receipt — ${receipt.filename}`,
+          storage_path: storagePath,
+          file_name: receipt.filename,
+          visible_to_contractor: true,
+          visible_to_homeowner: true,
+        });
+        storedReceipts.push(receipt.filename);
+      }
+    }
+
+    const approvalUrl = `https://hub.majesticpermits.com/quote/${approvalToken}`;
 
     let payUrl: string | null = null;
-    if (bill_to === "homeowner") {
-      const stripeKey = process.env.STRIPE_SECRET_KEY;
-      if (!stripeKey) {
-        return NextResponse.json(
-          { error: "STRIPE_SECRET_KEY is not configured in Vercel" },
-          { status: 500 }
-        );
-      }
-
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (bill_to === "homeowner" && stripeKey) {
       const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" });
-
       const session = await stripe.checkout.sessions.create({
         mode: "payment",
-        success_url: `${SITE_URL}/?paid=1`,
-        cancel_url: `${SITE_URL}/?paid=0`,
+        success_url: `https://hub.majesticpermits.com/quote/${approvalToken}?paid=1`,
+        cancel_url: `https://hub.majesticpermits.com/quote/${approvalToken}?paid=0`,
         customer_email: job.homeowner_email || undefined,
         line_items: [
           {
@@ -118,9 +168,7 @@ export async function POST(req: Request) {
           property_address: job.property_address,
         },
       });
-
       payUrl = session.url || null;
-
       await supabase
         .from("quotes")
         .update({ stripe_payment_intent_id: session.id })
@@ -132,11 +180,9 @@ export async function POST(req: Request) {
 
     if (send_email) {
       const recipients = new Set<string>();
-
-      if (bill_to === "homeowner") {
-        if (job.homeowner_email) recipients.add(job.homeowner_email);
+      if (bill_to === "homeowner" && job.homeowner_email) {
+        recipients.add(job.homeowner_email);
       }
-
       if (job.contractor_id) {
         const { data: contractor } = await supabase
           .from("contractors")
@@ -147,13 +193,20 @@ export async function POST(req: Request) {
       }
 
       const linkForEmail = payUrl || approvalUrl;
-
       if (recipients.size > 0 && process.env.RESEND_API_KEY && linkForEmail) {
+        const receiptNote =
+          storedReceipts.length > 0
+            ? `<p style="margin:16px 0 0;font-size:14px;color:#334155;">Permit receipts attached: ${storedReceipts.join(", ")}</p>`
+            : "";
         const { subject, html } = quoteEmail({
           brand: job.brand || "Majestic Permits",
           propertyAddress: job.property_address,
           amount: Number(amount),
-          description,
+          description: description
+            ? `${description}${storedReceipts.length ? " (receipts attached)" : ""}`
+            : storedReceipts.length
+              ? "Permit services — receipts attached"
+              : null,
           payUrl: linkForEmail,
         });
 
@@ -163,7 +216,14 @@ export async function POST(req: Request) {
           bcc: [MAILBOX.accounting, MAILBOX.owner],
           replyTo: MAILBOX.accounting,
           subject,
-          html,
+          html: html.replace(
+            "</td>",
+            `${receiptNote}</td>`
+          ),
+          attachments: (receipts as Receipt[]).map((r) => ({
+            filename: r.filename,
+            content: r.content,
+          })),
         });
 
         if (sendError) emailError = sendError.message;
@@ -184,6 +244,7 @@ export async function POST(req: Request) {
       pay_url: payUrl,
       emailed,
       email_error: emailError,
+      receipts: storedReceipts,
     });
   } catch (err: any) {
     return NextResponse.json(
