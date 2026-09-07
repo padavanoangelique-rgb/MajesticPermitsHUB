@@ -12,6 +12,7 @@ import { InspectionSlotForm } from "@/components/admin/inspection-slot-form";
 import { JobDocuments } from "@/components/admin/job-documents";
 import { HomeownerShareControls } from "@/components/admin/homeowner-share-controls";
 import { DeleteJobButton } from "@/components/admin/delete-job-button";
+import { NeedMoreInfoForm } from "@/components/admin/need-more-info-form";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { SITE_URL } from "@/lib/email";
 
@@ -128,6 +129,16 @@ export default async function JobDetailPage({ params }: PageProps) {
               currentSubStatus={job.sub_status}
             />
           </div>
+        </Section>
+
+        <Section title="Need more information">
+          <NeedMoreInfoForm
+            jobId={job.id}
+            contractorEmail={assignedContractor?.email ?? null}
+            contractorName={
+              assignedContractor?.company_name || assignedContractor?.name || null
+            }
+          />
         </Section>
 
         <Section title="Jurisdiction & NOC">
