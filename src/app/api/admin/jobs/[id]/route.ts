@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { isAdminEmail } from "@/lib/admin";
@@ -38,6 +39,10 @@ function sanitize(body: Record<string, any>) {
     patch[key] = value;
   }
   return patch;
+}
+
+function isDeskSession() {
+  return cookies().get("mp_desk")?.value === "1";
 }
 
 export async function PATCH(
@@ -97,15 +102,18 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = createClient();
-    const {
-      data: { user },
-    } = await auth.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Not signed in" }, { status: 401 });
-    }
-    if (!isAdminEmail(user.email)) {
-      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+    const desk = isDeskSession();
+    if (!desk) {
+      const auth = createClient();
+      const {
+        data: { user },
+      } = await auth.auth.getUser();
+      if (!user) {
+        return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+      }
+      if (!isAdminEmail(user.email)) {
+        return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+      }
     }
 
     const supabase = createServiceClient();
