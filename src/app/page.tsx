@@ -9,7 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { LeadForm } from "@/components/public/lead-form";
+import { InquiryForm } from "@/components/public/lead-form";
 import { PUBLIC_AREAS } from "@/lib/public-areas";
 import { PUBLIC_FAQS } from "@/lib/public-faq";
 import { PUBLIC_POSTS } from "@/lib/public-posts";
@@ -114,7 +114,7 @@ export default function LandingPage() {
           <Link href="/permit-closer" className="hover:text-foreground">Permit Closer</Link>
           <Link href="/blog" className="hover:text-foreground">Blog</Link>
           <Link href="/faq" className="hover:text-foreground">FAQ</Link>
-          <a href="#work" className="hover:text-foreground">Work</a>
+          <Link href="/contact" className="hover:text-foreground">Contact</Link>
         </nav>
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle />
@@ -158,12 +158,12 @@ export default function LandingPage() {
               </a>
             </p>
           </div>
-          <div>
-            <h2 className="text-lg font-semibold">Start your project</h2>
+          <div id="info">
+            <h2 className="text-lg font-semibold">Request more info</h2>
             <p className="mb-3 mt-1 text-sm text-muted-foreground">
-              A new person is saved as a lead. If we already have your email or phone, this opens a job on that account. We do not open a second one.
+              Name, email, and company. New customers are onboarded first. A new permit is requested inside the hub after that, not from this page.
             </p>
-            <LeadForm compact />
+            <InquiryForm intent="more-info" />
           </div>
         </section>
 
@@ -225,10 +225,10 @@ export default function LandingPage() {
               </ol>
             </div>
             <a
-              href="#start"
+              href="#info"
               className="mt-4 flex min-h-12 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary"
             >
-              Start your project
+              Request more info
             </a>
           </div>
         </section>
@@ -295,19 +295,30 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8">
-            <p className="text-xs font-semibold uppercase tracking-wide text-accent">Attached to Majestic</p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight">The Permit Closer</h2>
-            <p className="mt-3 max-w-2xl text-muted-foreground">
-              Majestic Permits runs a new window, door, roof, or renovation permit from the package through inspection. The Permit Closer is the homeowner side of a permit that is already open, expired, or stuck. Same desk. Same private status page. No second login.
-            </p>
-            <Link
-              href="/permit-closer"
-              className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground"
-            >
-              Expired or stuck permit
-            </Link>
+        <section id="expired" className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+          <div className="grid items-start gap-8 lg:grid-cols-2">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-accent">Expired permits</p>
+              <h2 className="mt-2 text-3xl font-bold tracking-tight">An expired permit is still an open file.</h2>
+              <p className="mt-3 text-muted-foreground">
+                The city can still show the permit as open after the work stopped, the contractor left, or the final inspection never happened. A letter from The Permit Closer means we already pulled that address from the lead list. This page is where you answer it.
+              </p>
+              <p className="mt-3 text-muted-foreground">
+                The free permit report tells you what the department still shows. It is not a new permit. New permits are requested by clients inside the hub, after we onboard the company.
+              </p>
+              <p className="mt-4 text-sm">
+                <Link href="/permit-closer" className="font-semibold text-accent">How The Permit Closer works</Link>
+                <span className="mx-2 text-muted-foreground">·</span>
+                <Link href="/contact" className="font-semibold text-accent">Contact me</Link>
+              </p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold">Free permit report</h3>
+              <p className="mb-3 mt-1 text-sm text-muted-foreground">
+                Your email and the address on the letter. We reply with the report.
+              </p>
+              <InquiryForm intent="permit-report" />
+            </div>
           </div>
         </section>
 
@@ -401,6 +412,7 @@ export default function LandingPage() {
             <Link href="/permit-closer" className="hover:text-foreground">Permit Closer</Link>
             <Link href="/blog" className="hover:text-foreground">Blog</Link>
             <Link href="/faq" className="hover:text-foreground">FAQ</Link>
+            <Link href="/contact" className="hover:text-foreground">Contact</Link>
             <a href={`mailto:${PUBLIC_HELLO}`} className="hover:text-foreground">{PUBLIC_HELLO}</a>
             <a href={`tel:${PUBLIC_PHONE_TEL}`} className="hover:text-foreground">{PUBLIC_PHONE_DISPLAY}</a>
           </p>

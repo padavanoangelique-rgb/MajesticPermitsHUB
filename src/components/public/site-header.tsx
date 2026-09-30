@@ -8,7 +8,8 @@ const LINKS = [
   { href: "/blog", label: "Blog" },
   { href: "/faq", label: "FAQ" },
   { href: "/#work", label: "Work" },
-  { href: "/#start", label: "Start a project" },
+  { href: "/#info", label: "Request info" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function SiteHeader() {

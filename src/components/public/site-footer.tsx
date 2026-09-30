@@ -37,8 +37,11 @@ export function SiteFooter() {
           <Link href="/#work" className="text-foreground hover:text-primary">
             Work
           </Link>
-          <Link href="/#start" className="font-semibold text-primary">
-            Start a project
+          <Link href="/contact" className="text-foreground hover:text-primary">
+            Contact
+          </Link>
+          <Link href="/#info" className="font-semibold text-primary">
+            Request more info
           </Link>
         </nav>
 
