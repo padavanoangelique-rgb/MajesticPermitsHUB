@@ -26,7 +26,7 @@ function escapeHtml(value: string) {
 }
 
 const INTENT_LABEL = {
-  "more-info": "Request more info",
+  "more-info": "Contractor registration",
   "permit-report": "Free permit report",
   contact: "Contact me",
 } as const;

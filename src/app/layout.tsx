@@ -19,11 +19,11 @@ function siteUrl() {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: {
-    default: "Permit expediting in Miami-Dade, Broward, and Palm Beach",
+    default: "Outsourced permitting team in Miami-Dade, Broward, and Palm Beach",
     template: "%s | Majestic Permits",
   },
   description:
-    "Permit expediting for windows, doors, roofing, and renovations in Miami-Dade, Broward, and Palm Beach. We prepare the package, file it, and track it through inspection.",
+    "Majestic is the permitting team on the job. Oversight, updates, inspections, and tracking for windows, doors, roofing, and renovations. Register your company.",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -34,9 +34,9 @@ export const metadata: Metadata = {
     apple: "/icons/apple-touch-icon.png",
   },
   openGraph: {
-    title: "Permit expediting in Miami-Dade, Broward, and Palm Beach",
+    title: "Outsourced permitting team in Miami-Dade, Broward, and Palm Beach",
     description:
-      "Permit expediting for windows, doors, roofing, and renovations in Miami-Dade, Broward, and Palm Beach.",
+      "Complete oversight, contractor updates, customer updates, inspections, and tracking. Register your company.",
     siteName: "Majestic Permits",
     type: "website",
     images: ["/icons/icon-512.png"],

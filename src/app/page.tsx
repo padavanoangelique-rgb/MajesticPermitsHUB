@@ -17,10 +17,10 @@ import { PUBLIC_HELLO, PUBLIC_PHONE_DISPLAY, PUBLIC_PHONE_TEL } from "@/lib/mail
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Majestic Permits | Expediting in Miami-Dade, Broward, and Palm Beach",
+    absolute: "Majestic Permits | The outsourced permitting team",
   },
   description:
-    "Permit expediting for windows, doors, roofing, renovations, and expired-permit close-outs. Contractors get a portal. Homeowners get a private link. The Permit Closer handles stuck permits.",
+    "Majestic is the permitting team on your jobs. Complete oversight, contractor updates, customer updates, inspections, and tracking in Miami-Dade, Broward, and Palm Beach. Register your company. New permits are requested inside the hub.",
   alternates: { canonical: "https://majesticpermits.com" },
 };
 
@@ -88,7 +88,7 @@ export default function LandingPage() {
     email: PUBLIC_HELLO,
     areaServed: ["Miami-Dade County", "Broward County", "Palm Beach County"],
     description:
-      "Permit expediting for windows, doors, roofing, renovations, and expired permits in South Florida.",
+      "Outsourced permitting team for windows, doors, roofing, and renovations in South Florida. Oversight, updates, inspections, and tracking.",
   };
 
   return (
@@ -131,21 +131,21 @@ export default function LandingPage() {
         <section id="start" className="mx-auto grid max-w-6xl items-start gap-8 px-4 pb-8 pt-6 sm:px-6 lg:grid-cols-2 lg:pt-12">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-              Permits. Handled. South Florida.
+              In-house staff. Outsourced.
             </p>
             <h1 className="mt-4 max-w-xl text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
-              File a <span className="text-majestic">complete</span> permit package.
+              Your <span className="text-majestic">permitting team</span>, without the payroll.
             </h1>
             <div className="mt-5 h-1 w-16 rounded-full bg-primary" />
             <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Windows, doors, roofing, renovations, and expired-permit close-outs
-              in Miami-Dade, Broward, and Palm Beach. We build the package, file
-              it, and keep the status in plain English.
+              We sit on the job the way a permit coordinator would. Complete oversight,
+              updates to you, updates to your customer, inspections, and tracking.
+              Windows, doors, roofing, and renovations in Miami-Dade, Broward, and Palm Beach.
             </p>
             <p className="mt-4 flex items-start gap-3 text-sm leading-relaxed text-foreground">
               <BadgeCheck className="mt-0.5 h-6 w-6 shrink-0 text-accent" />
               <span>
-                City-specific filing. One private tracking link. No password for homeowners.
+                You skip the salary and the hours your office spends chasing a city portal.
               </span>
             </p>
             <p className="mt-6 text-sm text-muted-foreground">
@@ -159,9 +159,9 @@ export default function LandingPage() {
             </p>
           </div>
           <div id="info">
-            <h2 className="text-lg font-semibold">Request more info</h2>
+            <h2 className="text-lg font-semibold">Register your company</h2>
             <p className="mb-3 mt-1 text-sm text-muted-foreground">
-              Name, email, and company. New customers are onboarded first. A new permit is requested inside the hub after that, not from this page.
+              Name, email, and company. We onboard you as a client. After that, your crew requests permits inside the hub. This page does not open a permit.
             </p>
             <InquiryForm intent="more-info" />
           </div>
@@ -228,7 +228,7 @@ export default function LandingPage() {
               href="#info"
               className="mt-4 flex min-h-12 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary"
             >
-              Request more info
+              Register your company
             </a>
           </div>
         </section>
@@ -236,10 +236,10 @@ export default function LandingPage() {
         <section className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
           <div className="grid gap-px overflow-hidden rounded-3xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
             {[
-              [Clock3, "One desk", "You are not chasing three portals and an association at once."],
-              [ShieldCheck, "City checklists", "Weston is not Miami. We use the packet that city published."],
-              [Link2, "Plain status", "Homeowners get one private link. No login."],
-              [FileCheck, "Close-outs too", "Stuck and expired permits are a real job, not a side note."],
+              [Clock3, "Oversight", "One desk on the package, the city comments, and the close-out."],
+              [ShieldCheck, "Updates", "You see the stage and the next step. Your office is not the tracker."],
+              [Link2, "Customer updates", "We write the homeowner status so they are not calling you."],
+              [FileCheck, "Inspections", "Scheduled, resulted, and written back on the job."],
             ].map(([Icon, title, body]) => {
               const ItemIcon = Icon as typeof Clock3;
               return (
@@ -256,15 +256,15 @@ export default function LandingPage() {
         </section>
 
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="text-3xl font-bold tracking-tight">Two ways to follow the job</h2>
+          <h2 className="text-3xl font-bold tracking-tight">The team on the job</h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Contractors sign in. Homeowners do not. Same permit, two pages, so nobody is digging through email to see where it stands.
+            Register the company once. We run the permits. You get the oversight, the updates, and the tracking without adding staff.
           </p>
           <div className="mt-8 grid gap-4 lg:grid-cols-2">
             <div className="rounded-3xl border border-border bg-card p-6">
-              <h3 className="text-xl font-semibold">Contractor portal</h3>
+              <h3 className="text-xl font-semibold">Your login</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                After you are a client, Client Login opens your jobs. A quote can be approved from the link we send. A weekly note lists what is still open.
+                After registration, Client Login is the desk. Every job, the inspection dates, and the customer link live there. A weekly note lists what is still open.
               </p>
               <ul className="mt-5 space-y-4">
                 {CONTRACTOR_HUB.map(([title, body]) => (
@@ -279,9 +279,9 @@ export default function LandingPage() {
               </Link>
             </div>
             <div className="rounded-3xl border border-border bg-card p-6">
-              <h3 className="text-xl font-semibold">Customer link</h3>
+              <h3 className="text-xl font-semibold">Updates for your customer</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                The homeowner page is the one we text or email. It is not a second product and it is not a password they will forget.
+                We send the homeowner a private page in plain English. They do not get your login, and they do not have to call the office for a status.
               </p>
               <ul className="mt-5 space-y-4">
                 {CUSTOMER_HUB.map(([title, body]) => (
