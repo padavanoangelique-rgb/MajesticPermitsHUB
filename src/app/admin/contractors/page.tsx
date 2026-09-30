@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminLinks } from "@/components/admin/admin-links";
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/auth-guard";
 
@@ -26,8 +27,8 @@ export default async function AdminContractorsPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
-      <Link href="/admin" className="text-sm text-muted-foreground">← All jobs</Link>
-      <h1 className="mt-4 text-2xl font-bold">Contractor files</h1>
+      <AdminLinks current="/admin/contractors" />
+      <h1 className="mt-6 text-2xl font-bold">Contractor files</h1>
       <p className="mt-2 text-sm text-muted-foreground">License and insurance the contractor saved, mapped to their jobs.</p>
       <ul className="mt-6 grid gap-3">
         {(contractors || []).map((contractor: any) => {

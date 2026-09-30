@@ -2,7 +2,7 @@ import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { ToolNav } from "@/components/contractor/tool-nav";
+import { ToolPage } from "@/components/contractor/tool-nav";
 import { MeasurePad } from "@/components/contractor/measure-pad";
 
 export const dynamic = "force-dynamic";
@@ -29,15 +29,12 @@ export default async function MeasurePage({ searchParams }: { searchParams: { jo
   const openings = Array.isArray(saved?.openings) ? saved.openings : [];
 
   return (
-    <main className="mx-auto max-w-xl px-4 py-6">
-      <ToolNav current="/dashboard/measure" />
-      <h1 className="mt-6 text-2xl font-bold">Measure</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        On the phone, add each window and door and type the size. The sketch stays with that job.
-      </p>
-      <div className="mt-6">
-        <MeasurePad jobs={jobs || []} initialJob={first} initialOpenings={openings} />
-      </div>
-    </main>
+    <ToolPage
+      current="/dashboard/measure"
+      title="Measure"
+      lede="Add each window and door, type the size, and it stays on that job. Made for a phone."
+    >
+      <MeasurePad jobs={jobs || []} initialJob={first} initialOpenings={openings} />
+    </ToolPage>
   );
 }

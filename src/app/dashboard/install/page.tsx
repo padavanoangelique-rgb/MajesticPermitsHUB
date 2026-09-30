@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { ToolNav } from "@/components/contractor/tool-nav";
+import { ToolPage } from "@/components/contractor/tool-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -40,13 +40,12 @@ export default async function InstallPage() {
   }
 
   return (
-    <main className="mx-auto max-w-xl px-4 py-6">
-      <ToolNav current="/dashboard/install" />
-      <h1 className="mt-6 text-2xl font-bold">Install board</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Jobs that are approved or in inspections. The date is the inspection already on the job.
-      </p>
-      <ul className="mt-6 grid gap-3">
+    <ToolPage
+      current="/dashboard/install"
+      title="Install board"
+      lede="Approved jobs only. The date is the inspection already on that job."
+    >
+      <ul className="grid gap-3">
         {readyJobs.length === 0 && <li className="text-sm text-muted-foreground">Nothing is ready to install yet.</li>}
         {readyJobs.map((job) => {
           const rows = byJob.get(job.id) || [];
@@ -68,6 +67,6 @@ export default async function InstallPage() {
           );
         })}
       </ul>
-    </main>
+    </ToolPage>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminLinks } from "@/components/admin/admin-links";
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/auth-guard";
 
@@ -35,8 +36,8 @@ export default async function AdminInstallPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
-      <Link href="/admin" className="text-sm text-muted-foreground">← All jobs</Link>
-      <h1 className="mt-4 text-2xl font-bold">Install board</h1>
+      <AdminLinks current="/admin/install" />
+      <h1 className="mt-6 text-2xl font-bold">Install board</h1>
       <p className="mt-2 text-sm text-muted-foreground">The same approved jobs the contractor sees, with the inspection date on the job.</p>
       <ul className="mt-6 grid gap-3">
         {ready.length === 0 && <li className="text-sm text-muted-foreground">Nothing is ready to install.</li>}

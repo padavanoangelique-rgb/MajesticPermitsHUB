@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminLinks } from "@/components/admin/admin-links";
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/auth-guard";
 import { getPermitForm } from "@/lib/permit-forms";
@@ -28,8 +29,8 @@ export default async function AdminFormsPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
-      <Link href="/admin" className="text-sm text-muted-foreground">← All jobs</Link>
-      <h1 className="mt-4 text-2xl font-bold">Forms sent for signature</h1>
+      <AdminLinks current="/admin/forms" />
+      <h1 className="mt-6 text-2xl font-bold">Forms sent for signature</h1>
       <p className="mt-2 text-sm text-muted-foreground">Every form a contractor filled. Signed ones stay on the job.</p>
       <ul className="mt-6 grid gap-3">
         {(sends || []).length === 0 && <li className="text-sm text-muted-foreground">None yet.</li>}

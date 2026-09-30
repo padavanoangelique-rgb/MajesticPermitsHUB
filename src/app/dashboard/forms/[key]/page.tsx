@@ -4,7 +4,7 @@ import { getContractorForUser } from "@/lib/contractor";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getPermitForm } from "@/lib/permit-forms";
-import { ToolNav } from "@/components/contractor/tool-nav";
+import { ToolPage } from "@/components/contractor/tool-nav";
 import { FormFiller } from "@/components/contractor/form-filler";
 
 export const dynamic = "force-dynamic";
@@ -33,12 +33,8 @@ export default async function FormFillPage({ params }: { params: { key: string }
   ]);
 
   return (
-    <main className="mx-auto max-w-xl px-4 py-6">
-      <ToolNav current="/dashboard/forms" />
-      <h1 className="mt-6 text-2xl font-bold">{form.name}</h1>
-      <p className="mt-2 text-sm text-muted-foreground">{form.blurb}</p>
-      <div className="mt-6">
-        <FormFiller
+    <ToolPage current="/dashboard/forms" title={form.name} lede={form.blurb}>
+      <FormFiller
           form={form}
           company={{
             company_name: contractor.company_name || contractor.name || "",
@@ -50,7 +46,6 @@ export default async function FormFillPage({ params }: { params: { key: string }
             permit_number: job.permit_number,
           }))}
         />
-      </div>
-    </main>
+    </ToolPage>
   );
 }

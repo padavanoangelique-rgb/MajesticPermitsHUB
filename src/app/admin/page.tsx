@@ -10,6 +10,7 @@ import { JobsFilterBar } from "@/components/admin/jobs-filter-bar";
 import { AdminKpiTiles } from "@/components/admin/admin-kpi-tiles";
 import { NotificationBell } from "@/components/admin/notification-bell";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { AdminLinks } from "@/components/admin/admin-links";
 
 export const dynamic = "force-dynamic";
 
@@ -109,15 +110,6 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <Logo subtitle="Admin" />
 
           <nav className="flex flex-wrap items-center justify-end gap-3">
-            <Link href="/admin/contractors" className="text-sm font-medium text-muted-foreground hover:text-primary">
-              Contractors
-            </Link>
-            <Link href="/admin/forms" className="text-sm font-medium text-muted-foreground hover:text-primary">
-              Forms
-            </Link>
-            <Link href="/admin/install" className="text-sm font-medium text-muted-foreground hover:text-primary">
-              Install
-            </Link>
             <Link
               href="/admin/inspections"
               className="text-sm font-medium text-muted-foreground hover:text-primary dark:text-muted-foreground"
@@ -163,6 +155,9 @@ export default async function AdminPage({ searchParams }: PageProps) {
           needsInspection={kpiCounts.needsInspection}
           needsFollowUp={kpiCounts.needsFollowUp}
         />
+        <div className="mt-6">
+          <AdminLinks />
+        </div>
 
         <div className="mt-10 flex flex-wrap items-end justify-between gap-4">
           <div>
