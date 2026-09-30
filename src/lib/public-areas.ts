@@ -321,33 +321,22 @@ function relatedSlugs(slug: string, county: PublicArea["county"]) {
 function guideArea(slug: string): PublicArea | null {
   const city = GUIDE_CITIES.find((item) => item.slug === slug);
   if (!city) return null;
-  const hvhz = city.county === "Broward" || city.county === "Miami-Dade";
-  const product = hvhz
-    ? "Miami-Dade and Broward are in the high-velocity hurricane zone. The window or door needs a current Miami-Dade Notice of Acceptance, or a Florida Product Approval that says it is approved for HVHZ."
-    : "Palm Beach is a wind-borne debris region, not the high-velocity zone. The product still needs a current Florida Product Approval or a Notice of Acceptance, and the design pressure has to match that house.";
-  const match = city.county === "Broward"
-    ? "A Broward folio does not name the city. The city is the 4-digit tax district code. We match the packet to that code before we file."
-    : city.county === "Miami-Dade"
-      ? "The city comes from the first two digits of the 13-digit folio. We do not guess it from the mailing address."
-      : "The city comes from the first two digits of the 17-digit parcel control number. We do not guess it from the mailing address.";
   return {
     slug: city.slug,
     city: city.city,
     county: city.county,
-    description: `${city.city} window, door, roofing, and renovation permits. ${city.county} County. We file the packet that department actually uses.`,
-    intro: `${city.city} is its own building department in ${city.county} County, even when the mailing address looks like the city next door. ${product} ${match}`,
+    description: `Windows, doors, roofs, and renovations in ${city.city}. We handle the permit and keep you updated.`,
+    intro: `If the house is in ${city.city}, that building department reviews the work. We file it, watch it, and tell you when something changes.`,
     watch: [
-      `${city.city} gets its own application, opening schedule, product approvals, and floor plan. We do not take another city's form and change the name.`,
-      "A Notice of Commencement is recorded at the county when the contract is over the amount that department requires. We use their number, not a guess.",
-      "The contractor has to be registered with that building department before the portal will take the application. License, insurance, and the local receipt are part of that, not an afterthought.",
-      hvhz
-        ? "In this county, one window is enough to trigger full opening protection. The 25 percent glazing exception used elsewhere does not apply."
-        : "If the address is in a historic district, that review is separate from the building permit. We check it before we tell you the only clock is the building department.",
+      `We keep you posted while ${city.city} reviews the permit.`,
+      "You get a status, not a pile of forms to figure out.",
+      "Inspections are requested when the city is ready for them.",
+      "A letter about an old permit is a free report, not a new job.",
     ],
-    windows: `For ${city.city} we mark the approval for each opening, the design pressure the house needs, and the design pressure the product provides. Bedroom windows still have to meet the egress sizes in the Florida Building Code.`,
-    doors: `An impact door in ${city.city} is not filed off the window approval next to it. The rough opening, the hardware, and the approval number have to be that door.`,
-    roofing: `A reroof in ${city.city} is a roof packet, not the window checklist with a new title. The system has to be an approved assembly for ${city.county} County.`,
-    renovation: `A kitchen, a bath, or a wall that moves is a renovation permit in ${city.city}. We do not push it through the window checklist to make it look faster.`,
+    windows: `Replacing windows in ${city.city}? We prepare the permit and tell you when it is approved.`,
+    doors: `Doors in ${city.city} stay on the same job, so an entry door or slider is not forgotten.`,
+    roofing: `A roof in ${city.city} is its own permit. You still get the same updates.`,
+    renovation: `Kitchens, baths, and other remodel work in ${city.city} stay on one timeline.`,
     related: relatedSlugs(slug, city.county),
   };
 }

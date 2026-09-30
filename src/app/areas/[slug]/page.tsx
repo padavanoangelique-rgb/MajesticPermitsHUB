@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicShell } from "@/components/public/public-shell";
 import { getArea, allAreas } from "@/lib/public-areas";
-import { PUBLIC_POSTS } from "@/lib/public-posts";
 
 type Params = { slug: string };
 
@@ -15,8 +14,8 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
   const area = getArea(params.slug);
   if (!area) return {};
   return {
-    title: `${area.city} permit expediter`,
-    description: area.description,
+    title: `${area.city} permits`,
+    description: `Windows, doors, roofs, and renovations in ${area.city}. Majestic Permits handles the paperwork, the updates, and the inspections.`,
   };
 }
 
@@ -27,84 +26,78 @@ export default function AreaPage({ params }: { params: Params }) {
   const related = area.related
     .map((slug) => getArea(slug))
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
-  const posts = PUBLIC_POSTS.filter((post) => post.citySlug === area.slug);
+
+  const jobs = [
+    {
+      title: "Windows",
+      text: `Replacing windows in ${area.city}? We prepare the permit, track the review, and tell you when it is approved.`,
+    },
+    {
+      title: "Doors",
+      text: `Entry doors and sliders are their own permit. We keep that job next to the window work so nothing is left off.`,
+    },
+    {
+      title: "Roofing",
+      text: `A new roof in ${area.city} is a separate permit from the openings. We run it with the same updates you already get.`,
+    },
+    {
+      title: "Renovations",
+      text: `Kitchens, baths, and other interior work stay on one timeline, with the inspections called when the city is ready for them.`,
+    },
+  ];
 
   return (
     <PublicShell>
       <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        <p className="text-sm font-medium text-primary">
+        <p className="text-sm font-medium text-violet-300">
           <Link href="/areas">Areas</Link>
           <span className="text-muted-foreground"> · {area.county} County</span>
         </p>
         <h1 className="mt-3 text-4xl font-bold tracking-tight text-foreground">
-          {area.city} permit expediter
+          Permits in <span className="text-majestic">{area.city}</span>
         </h1>
-        <p className="mt-6 text-lg leading-relaxed text-muted-foreground">{area.intro}</p>
+        <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
+          If the house is in {area.city}, this is the building department that reviews the work.
+          Majestic Permits is the team that files it, watches it, and keeps you posted. You stay
+          on the job. We sit with the city.
+        </p>
 
-        <h2 className="mt-10 text-2xl font-semibold text-foreground">What we watch</h2>
-        <ul className="mt-4 space-y-3 text-muted-foreground">
-          {area.watch.map((item) => (
-            <li key={item} className="rounded-2xl border border-border bg-card px-4 py-3">
-              {item}
+        <ul className="mt-8 grid gap-3 sm:grid-cols-2">
+          {jobs.map((job) => (
+            <li key={job.title} className="rounded-2xl border border-violet-400/20 bg-card/80 px-4 py-4">
+              <p className="font-semibold text-foreground">{job.title}</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{job.text}</p>
             </li>
           ))}
         </ul>
 
-        <h2 className="mt-10 text-2xl font-semibold text-foreground">Windows</h2>
-        <p className="mt-3 leading-relaxed text-muted-foreground">{area.windows}</p>
-        <h2 className="mt-8 text-2xl font-semibold text-foreground">Doors</h2>
-        <p className="mt-3 leading-relaxed text-muted-foreground">{area.doors}</p>
-        <h2 className="mt-8 text-2xl font-semibold text-foreground">Roofing</h2>
-        <p className="mt-3 leading-relaxed text-muted-foreground">{area.roofing}</p>
-        <h2 className="mt-8 text-2xl font-semibold text-foreground">Renovation</h2>
-        <p className="mt-3 leading-relaxed text-muted-foreground">{area.renovation}</p>
+        <div className="mt-8 rounded-3xl border border-violet-400/30 bg-gradient-to-br from-violet-600/25 to-card/70 p-6">
+          <h2 className="text-xl font-semibold text-foreground">Got a letter about an old permit?</h2>
+          <p className="mt-2 text-muted-foreground">
+            An open or expired permit in {area.city} is not a new job. Ask for a free report of what
+            the city still shows. There is nothing to buy just to find out.
+          </p>
+          <Link href="/permit-closer" className="mt-4 inline-flex font-semibold text-violet-300">
+            Get the free permit report
+          </Link>
+        </div>
 
-        {posts.length > 0 && (
-          <div className="mt-10">
-            <h2 className="text-2xl font-semibold text-foreground">Related reading</h2>
-            <ul className="mt-3 space-y-2">
-              {posts.map((post) => (
-                <li key={post.slug}>
-                  <Link href={`/blog/${post.slug}`} className="font-medium text-primary">
-                    {post.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <h2 className="mt-10 text-2xl font-semibold text-foreground">The packet</h2>
-        <p className="mt-3 leading-relaxed text-muted-foreground">
-          {area.county === "Broward"
-            ? `${area.city} gets the Broward packet plus anything this city publishes on its own: the building application, the retrofit window and door schedule, the product-approval sheets with the model marked, the floor plan, and a Notice of Commencement when the job requires one. An affidavit or a checklist is included only when ${area.city} actually asks for it.`
-            : area.county === "Miami-Dade"
-              ? `${area.city} gets the Miami-Dade packet plus this city's own sheets when it has them: the application, the opening schedule, the Notice of Acceptance pages with the model marked, the floor plan, and a Notice of Commencement when the job requires one. We do not file a Broward retrofit form here.`
-              : `${area.city} gets the Palm Beach packet plus this city's own sheets when it has them: the application, the opening schedule, the product approval with the model marked, the floor plan, and a Notice of Commencement when the job requires one.`}
-        </p>
-
-        <div className="mt-10 flex flex-wrap gap-3">
+        <div className="mt-8">
           <Link
             href="/#info"
             className="inline-flex min-h-12 items-center rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
           >
             Request more info
           </Link>
-          <Link
-            href="/permit-closer"
-            className="inline-flex min-h-12 items-center rounded-2xl border border-border px-6 py-3 text-sm font-semibold"
-          >
-            Expired permit
-          </Link>
         </div>
 
-        <h2 className="mt-12 text-xl font-semibold text-foreground">Other cities</h2>
+        <h2 className="mt-12 text-xl font-semibold text-foreground">Nearby</h2>
         <ul className="mt-4 flex flex-wrap gap-2">
           {related.map((item) => (
             <li key={item.slug}>
               <Link
                 href={`/areas/${item.slug}`}
-                className="inline-flex rounded-full border border-border px-4 py-2 text-sm hover:border-primary hover:text-primary"
+                className="inline-flex rounded-full border border-violet-400/25 px-4 py-2 text-sm hover:border-violet-300"
               >
                 {item.city}
               </Link>
@@ -113,11 +106,6 @@ export default function AreaPage({ params }: { params: Params }) {
           <li>
             <Link href="/areas" className="inline-flex rounded-full border border-border px-4 py-2 text-sm">
               All areas
-            </Link>
-          </li>
-          <li>
-            <Link href="/" className="inline-flex rounded-full border border-border px-4 py-2 text-sm">
-              Home
             </Link>
           </li>
         </ul>
