@@ -6,7 +6,7 @@ const SITE = "https://majesticpermits.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  const staticRoutes = ["", "/areas", "/blog", "/faq"].map((path) => ({
+  const staticRoutes = ["", "/areas", "/blog", "/faq", "/permit-closer"].map((path) => ({
     url: `${SITE}${path || "/"}`,
     lastModified: now,
   }));

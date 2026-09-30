@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { PUBLIC_FORM_BRANDS, PUBLIC_PROJECT_TYPES } from "@/lib/brands";
 
-export function LeadForm({ tone = "light" }: { tone?: "light" | "dark" }) {
+export function LeadForm({
+  tone = "light",
+  compact = false,
+  defaultBrand = "Majestic Permits",
+}: {
+  tone?: "light" | "dark";
+  compact?: boolean;
+  defaultBrand?: (typeof PUBLIC_FORM_BRANDS)[number];
+}) {
   const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [error, setError] = useState("");
   const dark = tone === "dark";
@@ -73,11 +81,13 @@ export function LeadForm({ tone = "light" }: { tone?: "light" | "dark" }) {
       onSubmit={onSubmit}
       className={
         dark
-          ? "relative rounded-3xl border border-white/10 bg-card p-6 sm:p-8"
-          : "relative rounded-3xl border border-border bg-card p-6 shadow-soft sm:p-8"
+          ? "relative rounded-3xl border border-white/10 bg-card p-5 sm:p-6"
+          : compact
+            ? "relative rounded-3xl border border-border bg-card p-4 shadow-soft sm:p-5"
+            : "relative rounded-3xl border border-border bg-card p-6 shadow-soft sm:p-8"
       }
     >
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className={compact ? "grid gap-3 sm:grid-cols-2" : "grid gap-5 sm:grid-cols-2"}>
         <label className="block text-sm font-medium">
           Full name <span className="text-accent">*</span>
           <input name="fullName" required autoComplete="name" className={inputClass} />
@@ -109,7 +119,7 @@ export function LeadForm({ tone = "light" }: { tone?: "light" | "dark" }) {
         </label>
         <label className="block text-sm font-medium">
           Brand <span className="text-accent">*</span>
-          <select name="brand" required className={inputClass} defaultValue="Majestic Permits">
+          <select name="brand" required className={inputClass} defaultValue={defaultBrand}>
             {PUBLIC_FORM_BRANDS.map((brand) => (
               <option key={brand} value={brand}>
                 {brand}
@@ -119,7 +129,12 @@ export function LeadForm({ tone = "light" }: { tone?: "light" | "dark" }) {
         </label>
         <label className="block text-sm font-medium sm:col-span-2">
           Notes
-          <textarea name="notes" rows={3} className={inputClass} placeholder="Optional. Scope, HOA, or an expired permit number." />
+          <textarea
+            name="notes"
+            rows={compact ? 2 : 3}
+            className={inputClass}
+            placeholder="Optional. Scope, HOA, or an expired permit number."
+          />
         </label>
       </div>
 

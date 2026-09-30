@@ -4,6 +4,7 @@ import { BrandMark } from "@/components/public/brand-mark";
 
 const LINKS = [
   { href: "/areas", label: "Areas" },
+  { href: "/permit-closer", label: "Permit Closer" },
   { href: "/blog", label: "Blog" },
   { href: "/faq", label: "FAQ" },
   { href: "/#work", label: "Work" },

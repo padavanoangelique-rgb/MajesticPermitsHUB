@@ -25,6 +25,9 @@ export function SiteFooter() {
           <Link href="/areas" className="text-foreground hover:text-primary">
             Areas we serve
           </Link>
+          <Link href="/permit-closer" className="text-foreground hover:text-primary">
+            The Permit Closer
+          </Link>
           <Link href="/blog" className="text-foreground hover:text-primary">
             Blog
           </Link>
