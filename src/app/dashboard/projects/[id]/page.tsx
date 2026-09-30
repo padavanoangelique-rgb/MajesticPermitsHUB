@@ -15,6 +15,7 @@ import { getContractorForUser } from "@/lib/contractor";
 import { upcomingInspectionDates } from "@/lib/next-inspection-day";
 import { parseOnsiteFromNotes } from "@/lib/onsite-contact";
 import { publicTrackBrand } from "@/lib/public-brand";
+import { JobStatusBar, stageIndexFromTitle } from "@/components/contractor/job-status-bar";
 
 interface PageProps {
   params: { id: string };
@@ -84,36 +85,35 @@ export default async function ContractorProjectPage({ params }: PageProps) {
     }
   }
 
-  const stageText = (job.stage || "").toLowerCase();
-  let currentIndex = 2;
-  if (stageText.includes("ready") || stageText.includes("getting")) currentIndex = 0;
-  else if (stageText.includes("submit")) currentIndex = 1;
-  else if (stageText.includes("review")) currentIndex = 2;
-  else if (stageText.includes("correct")) currentIndex = 3;
-  else if (stageText.includes("approv")) currentIndex = 4;
-  else if (stageText.includes("inspect")) currentIndex = 5;
-  else if (stageText.includes("final")) currentIndex = 6;
-  else if (stageText.includes("close") || stageText.includes("complete") || stageText.includes("done"))
-    currentIndex = 7;
+  const currentIndex = stageIndexFromTitle(job.stage || "");
 
   const trackUrl = link?.token
     ? `https://hub.majesticpermits.com/track/${link.token}`
     : "";
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card dark:border-border dark:bg-card">
-        <div className="mx-auto flex h-16 max-w-3xl items-center px-4 sm:px-6">
+    <div className="min-h-screen">
+      <header className="border-b border-border bg-card/80">
+        <div className="mx-auto flex h-14 max-w-3xl items-center px-4 sm:px-6">
           <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-primary">
             ← All projects
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <h1 className="text-2xl font-bold text-primary dark:text-white">
+      <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
+        <h1 className="text-2xl font-bold leading-tight text-primary dark:text-white">
           {job.property_address}
         </h1>
+        <div className="mt-4 rounded-2xl border border-violet-400/25 bg-card/80 p-4">
+          <JobStatusBar stage={job.stage || ""} />
+        </div>
+        <Link
+          href="#inspections"
+          className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white sm:w-auto"
+        >
+          Schedule inspection
+        </Link>
 
         <div className="mt-4">
           <PermitHeader
@@ -123,7 +123,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
           />
         </div>
 
-        <div className="mt-10">
+        <div className="mt-8 hidden sm:block">
           <StageStepper stages={PERMIT_STAGES} currentIndex={currentIndex} />
         </div>
 

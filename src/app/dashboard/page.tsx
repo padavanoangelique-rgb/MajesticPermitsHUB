@@ -1,11 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
 import { CONTRACTOR_BUCKETS } from "@/lib/dashboard-buckets";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { JobStatusBar } from "@/components/contractor/job-status-bar";
 import { DECLINED_REQUEST_SUB, PENDING_REQUEST_SUB } from "@/lib/job-request";
 
 export const dynamic = "force-dynamic";
@@ -70,8 +70,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-border bg-card dark:border-border dark:bg-card">
-        <div className="mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 sm:px-6">
+      <header className="border-b border-border bg-card/80">
+        <div className="mx-auto flex max-w-screen-xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
             <Image
               src="/icons/icon-512.png"
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-primary dark:text-white">
-              Your Projects
+              Dashboard
             </h1>
             <p className="mt-1 text-muted-foreground">
               {totalJobs} active project{totalJobs !== 1 ? "s" : ""}
@@ -117,19 +117,19 @@ export default async function DashboardPage() {
           </div>
           <Link
             href="/dashboard/new"
-            className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white"
           >
             Request a job
           </Link>
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <a href="#in_review" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-violet-600/30 to-indigo-950/40 px-5 py-4">
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <a href="#in_review" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-[#3b1d78] to-[#1a1038] px-4 py-4 sm:px-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">Pending review</p>
             <p className="mt-1 text-3xl font-bold text-white">{reviewCount}</p>
             <p className="mt-1 text-sm text-violet-100/80">Submitted, in review, or waiting on a correction.</p>
           </a>
-          <a href="#needs_inspection" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-indigo-600/30 to-violet-950/40 px-5 py-4">
+          <a href="#needs_inspection" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-[#312e81] to-[#1a1038] px-4 py-4 sm:px-5">
             <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">Needs inspection</p>
             <p className="mt-1 text-3xl font-bold text-white">{inspectionCount}</p>
             <p className="mt-1 text-sm text-violet-100/80">Approved jobs that still need a visit requested.</p>
@@ -172,7 +172,6 @@ export default async function DashboardPage() {
                     id={bucket.key}
                     title={bucket.key === "in_review" ? "Pending review" : bucket.label}
                     items={bucket.items}
-                    askInspection={bucket.key === "approved" || bucket.key === "needs_inspection"}
                   />
                 )
             )}
@@ -191,13 +190,11 @@ function StageSection({
   title,
   items,
   accent = "blue",
-  askInspection = false,
 }: {
   id?: string;
   title: string;
   items: any[];
   accent?: "blue" | "amber";
-  askInspection?: boolean;
 }) {
   const accentPill =
     accent === "amber"
@@ -221,57 +218,28 @@ function StageSection({
       </header>
       <ul className="divide-y divide-border dark:divide-border">
         {items.map((job) => (
-          <li key={job.id} className="flex flex-wrap items-center gap-3 px-5 py-4">
+          <li key={job.id} className="px-4 py-4 sm:px-5">
+            <JobStatusBar stage={job.stage || job.sub_status || ""} />
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link
               href={`/dashboard/projects/${job.id}`}
-              className="flex min-w-0 flex-1 flex-wrap items-center gap-4 rounded-xl transition hover:bg-secondary/70 dark:hover:bg-secondary/40"
+              className="min-w-0 flex-1"
             >
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-primary dark:text-white">
-                  {job.property_address}
-                </p>
-                {job.sub_status && (
-                  <p className="mt-0.5 text-xs text-muted-foreground">{job.sub_status}</p>
-                )}
-              </div>
-              <div className="hidden text-xs text-muted-foreground sm:block">
-                {job.permit_number ? (
-                  <>
-                    <span className="text-muted-foreground">Permit</span>{" "}
-                    <span className="font-medium text-foreground dark:text-muted-foreground">
-                      {job.permit_number}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-muted-foreground">No permit #</span>
-                )}
-              </div>
-              <div className="text-right text-xs text-muted-foreground">
-                {job.permit_eta ? (
-                  <>
-                    <span className="text-muted-foreground">ETA</span>{" "}
-                    <span className="font-medium text-foreground dark:text-muted-foreground">
-                      {format(new Date(job.permit_eta), "MMM d, yyyy")}
-                    </span>
-                  </>
-                ) : job.updated_at ? (
-                  <>
-                    <span className="text-muted-foreground">Updated</span>{" "}
-                    <span className="font-medium text-foreground dark:text-muted-foreground">
-                      {format(new Date(job.updated_at), "MMM d")}
-                    </span>
-                  </>
-                ) : null}
-              </div>
+              <p className="text-sm font-semibold text-primary dark:text-white">
+                {job.property_address}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {job.permit_number ? `Permit ${job.permit_number}` : "No permit number yet"}
+                {job.sub_status ? ` · ${job.sub_status}` : ""}
+              </p>
             </Link>
-            {askInspection && (
-              <Link
-                href={`/dashboard/projects/${job.id}#inspections`}
-                className="rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-white"
-              >
-                Request inspection
-              </Link>
-            )}
+            <Link
+              href={`/dashboard/projects/${job.id}#inspections`}
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white sm:w-auto"
+            >
+              Schedule inspection
+            </Link>
+            </div>
           </li>
         ))}
       </ul>
