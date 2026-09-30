@@ -165,15 +165,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="work" className="border-t border-border bg-secondary py-16">
+      <section id="work" className="border-t border-border bg-secondary py-20 sm:py-28">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             From the job file
           </h2>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
+          <p className="mt-3 max-w-xl text-muted-foreground">
             Approvals, sealed plans, and finished openings. Real files go here as they are ready to show. Nothing stock.
           </p>
-          <div className="mt-8">
+          <div className="mt-14 sm:mt-20">
             <WorkGrid />
           </div>
         </div>
