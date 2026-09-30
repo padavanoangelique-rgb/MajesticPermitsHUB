@@ -114,6 +114,7 @@ export default function LandingPage() {
           <Link href="/permit-closer" className="hover:text-foreground">Permit Closer</Link>
           <Link href="/blog" className="hover:text-foreground">Blog</Link>
           <Link href="/faq" className="hover:text-foreground">FAQ</Link>
+          <a href="#info" className="hover:text-foreground">More info</a>
           <Link href="/contact" className="hover:text-foreground">Contact</Link>
         </nav>
         <div className="ml-auto flex items-center gap-2">
