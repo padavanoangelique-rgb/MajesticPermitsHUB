@@ -14,8 +14,8 @@ export async function sendAccountingEmail(opts: {
       subject: opts.subject,
       html: `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;padding:24px;">
         <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #dedede;border-radius:16px;padding:28px;">
-          <p style="margin:0 0 6px;color:#156cdd;font-weight:700;">Majestic Accounting</p>
-          <h1 style="margin:0 0 12px;color:#156cdd;font-size:22px;">${opts.heading}</h1>
+          <p style="margin:0 0 6px;color:#5c4dff;font-weight:700;">Majestic Accounting</p>
+          <h1 style="margin:0 0 12px;color:#5c4dff;font-size:22px;">${opts.heading}</h1>
           ${opts.bodyHtml}
         </div>
       </body></html>`,

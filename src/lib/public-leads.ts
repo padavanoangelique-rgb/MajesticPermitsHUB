@@ -180,7 +180,7 @@ async function notifyHello(input: PublicLeadInput, kind: "new lead" | "existing-
     subject,
     html: `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f7fb;padding:24px;">
       <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:28px;">
-        <p style="margin:0 0 8px;color:#156cdd;font-weight:700;">Majestic Permits</p>
+        <p style="margin:0 0 8px;color:#5c4dff;font-weight:700;">Majestic Permits</p>
         <h1 style="margin:0 0 16px;font-size:20px;color:#0f172a;">Website project request</h1>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${body}</table>
       </div>

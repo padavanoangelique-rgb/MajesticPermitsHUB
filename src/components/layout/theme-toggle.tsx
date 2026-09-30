@@ -31,7 +31,7 @@ export function ThemeToggle() {
       onClick={toggle}
       className="rounded-full p-2 text-muted-foreground transition hover:bg-secondary dark:hover:bg-secondary"
       aria-label="Toggle theme"
-      title={theme === "dark" ? "Switch to white + blue" : "Switch to black + lime"}
+      title="Toggle theme"
     >
       {theme === "dark" ? (
         <Sun className="h-5 w-5 text-primary" />

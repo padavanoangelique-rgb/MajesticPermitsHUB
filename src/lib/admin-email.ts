@@ -24,7 +24,7 @@ export async function sendAdminRequestEmail(opts: {
   );
 
   const action = opts.actionUrl
-    ? `<p style="margin:24px 0 0;"><a href="${opts.actionUrl}" style="display:inline-block;background:#156cdd;color:#fff;text-decoration:none;font-weight:600;padding:12px 18px;border-radius:10px;">${opts.actionLabel || "Open in Hub"}</a></p>`
+    ? `<p style="margin:24px 0 0;"><a href="${opts.actionUrl}" style="display:inline-block;background:#5c4dff;color:#fff;text-decoration:none;font-weight:600;padding:12px 18px;border-radius:10px;">${opts.actionLabel || "Open in Hub"}</a></p>`
     : "";
 
   const { error } = await getResend().emails.send({
@@ -34,8 +34,8 @@ export async function sendAdminRequestEmail(opts: {
     subject: opts.subject,
     html: `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;padding:24px;">
       <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #dedede;border-radius:16px;padding:28px;">
-        <p style="margin:0 0 6px;color:#156cdd;font-weight:700;">Majestic Permits</p>
-        <h1 style="margin:0 0 12px;color:#156cdd;font-size:22px;">${opts.heading}</h1>
+        <p style="margin:0 0 6px;color:#5c4dff;font-weight:700;">Majestic Permits</p>
+        <h1 style="margin:0 0 12px;color:#5c4dff;font-size:22px;">${opts.heading}</h1>
         ${opts.bodyHtml}
         ${action}
         <p style="margin:20px 0 0;font-size:12px;color:#64748b;">Replies go to ${inbox}</p>

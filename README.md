@@ -36,7 +36,7 @@ Permit AIO is reserved on the Brand select so that product can land in the same 
 
 ## Logos
 
-Drop PNGs here when you have them. Until then the site uses a blue / lime “M”.
+Drop PNGs here when you have them. Until then the site uses a violet “M”.
 
 - `/public/logos/majestic_permits_logo.png`
 - `/public/logos/permit_closer_logo.png`

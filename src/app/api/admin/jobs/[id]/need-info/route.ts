@@ -67,15 +67,15 @@ export async function POST(
       subject: `Need more information — ${job.property_address}`,
       html: `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;padding:24px;">
         <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #dedede;border-radius:16px;padding:28px;">
-          <p style="margin:0 0 6px;color:#156cdd;font-weight:700;">Majestic Permits</p>
-          <h1 style="margin:0 0 12px;color:#156cdd;font-size:22px;">We need more information</h1>
+          <p style="margin:0 0 6px;color:#5c4dff;font-weight:700;">Majestic Permits</p>
+          <h1 style="margin:0 0 12px;color:#5c4dff;font-size:22px;">We need more information</h1>
           <p style="margin:0;color:#334155;font-size:15px;line-height:1.65;">
             Hi ${contractor.company_name || contractor.name || "there"},
             Majestic needs ${need} for <strong>${job.property_address}</strong>.
           </p>
           <p style="margin:16px 0 0;color:#334155;font-size:15px;line-height:1.65;white-space:pre-wrap;">${message}</p>
           <p style="margin:24px 0 0;">
-            <a href="${attachUrl}" style="display:inline-block;background:#156cdd;color:#fff;text-decoration:none;font-weight:600;padding:12px 18px;border-radius:10px;">${buttonLabel}</a>
+            <a href="${attachUrl}" style="display:inline-block;background:#5c4dff;color:#fff;text-decoration:none;font-weight:600;padding:12px 18px;border-radius:10px;">${buttonLabel}</a>
           </p>
           <p style="margin:14px 0 0;font-size:12px;color:#64748b;">Sign in to Hub if asked, then upload or reply on the job page.</p>
         </div>
