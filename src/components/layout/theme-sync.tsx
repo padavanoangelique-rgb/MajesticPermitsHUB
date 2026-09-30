@@ -3,7 +3,7 @@
 import { useTheme } from "next-themes";
 import { useEffect } from "react";
 
-const KEY = "majestic-theme";
+const KEY = "majestic-color";
 
 export function ThemeSync() {
   const { theme, setTheme } = useTheme();
@@ -26,7 +26,7 @@ export function ThemeSync() {
     window.addEventListener("message", onMessage);
 
     try {
-      const saved = localStorage.getItem(KEY) || localStorage.getItem("admin-theme");
+      const saved = localStorage.getItem(KEY);
       if (saved === "light" || saved === "dark") apply(saved);
     } catch {}
 

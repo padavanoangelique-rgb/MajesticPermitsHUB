@@ -18,8 +18,7 @@ export function ThemeToggle() {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
     try {
-      localStorage.setItem("majestic-theme", next);
-      localStorage.setItem("admin-theme", next);
+      localStorage.setItem("majestic-color", next);
     } catch {}
     if (window.parent && window.parent !== window) {
       window.parent.postMessage({ type: "majestic-theme", theme: next }, "*");
