@@ -3,30 +3,30 @@
 @tailwind utilities;
 
 /*
- * Majestic palette: deep navy, electric blue, violet.
- * Same colors in light and dark so every view matches.
+ * Two views, one purple.
+ * Light = white + violet. Dark = the navy view.
  */
 @layer base {
   :root {
-    --background: 226 48% 5%;
-    --foreground: 220 40% 96%;
-    --card: 224 42% 11%;
-    --card-foreground: 220 40% 96%;
-    --popover: 224 42% 11%;
-    --popover-foreground: 220 40% 96%;
-    --primary: 226 100% 67%;
+    --background: 0 0% 100%;
+    --foreground: 232 32% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 232 32% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 232 32% 12%;
+    --primary: 258 84% 58%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 225 36% 15%;
-    --secondary-foreground: 220 30% 94%;
-    --muted: 225 32% 16%;
-    --muted-foreground: 222 18% 72%;
-    --accent: 262 95% 76%;
-    --accent-foreground: 226 48% 8%;
-    --destructive: 0 72% 58%;
+    --secondary: 260 45% 97%;
+    --secondary-foreground: 232 28% 18%;
+    --muted: 260 30% 96%;
+    --muted-foreground: 232 10% 38%;
+    --accent: 262 80% 52%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
-    --border: 224 28% 22%;
-    --input: 226 42% 8%;
-    --ring: 258 90% 70%;
+    --border: 258 22% 88%;
+    --input: 258 22% 88%;
+    --ring: 258 84% 58%;
     --radius: 1rem;
   }
 
@@ -59,6 +59,9 @@
   }
   html {
     font-size: 17px;
+    color-scheme: light;
+  }
+  html.dark {
     color-scheme: dark;
   }
   body {
@@ -71,10 +74,13 @@
     background-image: linear-gradient(105deg, #3d6cff 0%, #7a4dff 100%);
   }
   .text-majestic {
-    background-image: linear-gradient(100deg, #8eb6ff 0%, #c4b5ff 55%, #8b6cff 100%);
+    background-image: linear-gradient(100deg, #3d5cff 0%, #7a4dff 55%, #9a3dff 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+  .dark .text-majestic {
+    background-image: linear-gradient(100deg, #8eb6ff 0%, #c4b5ff 55%, #8b6cff 100%);
   }
 }
 
