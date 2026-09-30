@@ -105,10 +105,19 @@ export default async function AdminPage({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card dark:border-border dark:bg-card">
-        <div className="mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex min-h-16 max-w-screen-2xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Logo subtitle="Admin" />
 
-          <nav className="flex items-center gap-3">
+          <nav className="flex flex-wrap items-center justify-end gap-3">
+            <Link href="/admin/contractors" className="text-sm font-medium text-muted-foreground hover:text-primary">
+              Contractors
+            </Link>
+            <Link href="/admin/forms" className="text-sm font-medium text-muted-foreground hover:text-primary">
+              Forms
+            </Link>
+            <Link href="/admin/install" className="text-sm font-medium text-muted-foreground hover:text-primary">
+              Install
+            </Link>
             <Link
               href="/admin/inspections"
               className="text-sm font-medium text-muted-foreground hover:text-primary dark:text-muted-foreground"

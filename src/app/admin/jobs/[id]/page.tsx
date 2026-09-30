@@ -15,6 +15,7 @@ import { DeleteJobButton } from "@/components/admin/delete-job-button";
 import { NeedMoreInfoForm } from "@/components/admin/need-more-info-form";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { SITE_URL } from "@/lib/email";
+import { getPermitForm } from "@/lib/permit-forms";
 
 interface PageProps {
   params: { id: string };
@@ -75,6 +76,24 @@ export default async function JobDetailPage({ params }: PageProps) {
     )
     .eq("job_id", job.id)
     .order("created_at", { ascending: false });
+
+  const [{ data: companyFile }, { data: measure }, { data: formSends }] = await Promise.all([
+    job.contractor_id
+      ? supabase
+          .from("contractor_records")
+          .select("license_number, license_expires, coi_carrier, coi_policy, coi_expires")
+          .eq("contractor_id", job.contractor_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null as any }),
+    supabase.from("job_measures").select("openings, updated_at").eq("job_id", job.id).maybeSingle(),
+    supabase
+      .from("contractor_form_sends")
+      .select("id, form_key, status, signer_email, signed_name, signed_at, token, created_at")
+      .eq("job_id", job.id)
+      .order("created_at", { ascending: false }),
+  ]);
+  const openings = Array.isArray(measure?.openings) ? measure.openings : [];
+  const addressQuery = encodeURIComponent(job.property_address || "");
 
   return (
     <div className="min-h-screen bg-background">
@@ -153,6 +172,73 @@ export default async function JobDetailPage({ params }: PageProps) {
               noc_status: job.noc_status ?? null,
             }}
           />
+        </Section>
+
+        <Section title="Company file">
+          {assignedContractor ? (
+            <div className="space-y-2 text-sm">
+              <p className="font-medium">
+                {assignedContractor.company_name || assignedContractor.name}
+              </p>
+              <p>License {companyFile?.license_number || "not on file"}{companyFile?.license_expires ? ` · expires ${String(companyFile.license_expires).slice(0, 10)}` : ""}</p>
+              <p>
+                Insurance {companyFile?.coi_carrier || "not on file"}
+                {companyFile?.coi_policy ? ` · ${companyFile.coi_policy}` : ""}
+                {companyFile?.coi_expires ? ` · expires ${String(companyFile.coi_expires).slice(0, 10)}` : ""}
+              </p>
+              <Link href="/admin/contractors" className="inline-flex font-semibold text-violet-300">
+                All contractor files
+              </Link>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No contractor is assigned to this job yet.</p>
+          )}
+        </Section>
+
+        <Section title="Field measurements">
+          {openings.length === 0 ? (
+            <p className="text-sm text-muted-foreground">The contractor has not saved a measure sketch on this job.</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {openings.map((opening: any, index: number) => (
+                <li key={index}>
+                  {opening.label || "Opening"} · {opening.kind || "window"} · {opening.width || "—"} x {opening.height || "—"}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+
+        <Section title="Forms sent for signature">
+          {(formSends || []).length === 0 ? (
+            <p className="text-sm text-muted-foreground">No filled form has been sent from this job.</p>
+          ) : (
+            <ul className="space-y-3 text-sm">
+              {(formSends || []).map((send: any) => (
+                <li key={send.id} className="rounded-xl border border-border px-3 py-2">
+                  <p className="font-medium">{getPermitForm(send.form_key)?.name || send.form_key}</p>
+                  <p className="text-muted-foreground">
+                    {send.status === "signed" ? `Signed by ${send.signed_name}` : "Waiting on a signature"}
+                    {send.signer_email ? ` · ${send.signer_email}` : ""}
+                  </p>
+                  <Link href={`/sign/${send.token}`} className="font-semibold text-violet-300">
+                    Open the form
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link href="/admin/forms" className="mt-3 inline-flex text-sm font-semibold text-violet-300">
+            All signed forms
+          </Link>
+        </Section>
+
+        <Section title="Property appraiser">
+          <div className="flex flex-wrap gap-3 text-sm">
+            <a className="font-semibold text-violet-300" href={`https://www.miamidade.gov/Apps/PA/propertysearch/#/?address=${addressQuery}`} target="_blank" rel="noreferrer">Miami-Dade</a>
+            <a className="font-semibold text-violet-300" href="https://web.bcpa.net/bcpaclient/#/Record-Search" target="_blank" rel="noreferrer">Broward</a>
+            <a className="font-semibold text-violet-300" href={`https://pbcpao.gov/Property/Search?address=${addressQuery}`} target="_blank" rel="noreferrer">Palm Beach</a>
+          </div>
         </Section>
 
         <Section title="Inspections (up to 3)">
