@@ -10,7 +10,7 @@ const COPY: Record<
 > = {
   "more-info": {
     button: "Register your company",
-    done: "We have your company. We will email you about registration. A new permit is requested inside the hub after you are onboarded.",
+    done: "We have your email. We will write you about registration. A new permit is requested inside the hub after you are onboarded.",
     company: true,
   },
   "permit-report": {
@@ -90,8 +90,8 @@ export function InquiryForm({ intent }: { intent: InquiryIntent }) {
         </label>
         {copy.company && (
           <label className="block text-sm font-medium">
-            Company <span className="text-accent">*</span>
-            <input name="company" required autoComplete="organization" className={inputClass} />
+            Company
+            <input name="company" autoComplete="organization" className={inputClass} placeholder="Optional" />
           </label>
         )}
         {copy.address && (

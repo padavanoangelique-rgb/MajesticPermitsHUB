@@ -29,10 +29,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    if (parsed.data.intent === "more-info" && parsed.data.company.trim().length < 2) {
-      return NextResponse.json({ error: "Add your company name." }, { status: 400 });
-    }
-
     if (parsed.data.intent === "permit-report" && parsed.data.propertyAddress.trim().length < 5) {
       return NextResponse.json(
         { error: "Add the property address from the letter." },

@@ -161,7 +161,7 @@ export default function LandingPage() {
           <div id="info">
             <h2 className="text-lg font-semibold">Register your company</h2>
             <p className="mb-3 mt-1 text-sm text-muted-foreground">
-              Name, email, and company. We onboard you as a client. After that, your crew requests permits inside the hub. This page does not open a permit.
+              Name and email. Company if you have one. We onboard you as a client. After that, your crew requests permits inside the hub. This page does not open a permit.
             </p>
             <InquiryForm intent="more-info" />
           </div>
