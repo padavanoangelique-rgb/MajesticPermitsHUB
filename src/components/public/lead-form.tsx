@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { PUBLIC_FORM_BRANDS, PUBLIC_PROJECT_TYPES } from "@/lib/brands";
 
-const inputClass =
-  "w-full rounded-xl border border-border bg-background px-4 py-3 text-base text-foreground outline-none ring-primary/30 placeholder:text-muted-foreground focus:ring-2";
-
-export function LeadForm() {
+export function LeadForm({ tone = "light" }: { tone?: "light" | "dark" }) {
   const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [error, setError] = useState("");
+  const dark = tone === "dark";
+
+  const inputClass = dark
+    ? "mt-1.5 w-full rounded-xl border border-white/10 bg-[#070d18] px-4 py-3 text-base text-white outline-none ring-[#156cdd]/40 placeholder:text-white/35 focus:ring-2"
+    : "mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-3 text-base text-foreground outline-none ring-primary/30 placeholder:text-muted-foreground focus:ring-2";
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -48,9 +50,9 @@ export function LeadForm() {
 
   if (status === "done") {
     return (
-      <div className="rounded-3xl border border-primary/30 bg-primary/5 p-8 sm:p-10">
-        <h3 className="text-2xl font-semibold text-foreground">We have it.</h3>
-        <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+      <div className={dark ? "rounded-3xl border border-white/10 bg-[#10182a] p-8" : "rounded-3xl border border-primary/30 bg-primary/5 p-8 sm:p-10"}>
+        <h3 className={dark ? "text-2xl font-semibold text-white" : "text-2xl font-semibold text-foreground"}>We have it.</h3>
+        <p className={dark ? "mt-3 text-base leading-relaxed text-white/70" : "mt-3 text-base leading-relaxed text-muted-foreground"}>
           Thanks. Your project is in our queue. We will reach you at the phone
           or email you entered. If you already work with us, this stays on that
           account — we do not open a second one.
@@ -58,7 +60,7 @@ export function LeadForm() {
         <button
           type="button"
           onClick={() => setStatus("idle")}
-          className="mt-6 text-sm font-semibold text-primary"
+          className="mt-6 text-sm font-semibold text-[#7eb6ff]"
         >
           Send another project
         </button>
@@ -67,27 +69,34 @@ export function LeadForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="relative rounded-3xl border border-border bg-card p-6 shadow-soft sm:p-8">
+    <form
+      onSubmit={onSubmit}
+      className={
+        dark
+          ? "relative rounded-3xl border border-white/10 bg-[#10182a] p-6 sm:p-8"
+          : "relative rounded-3xl border border-border bg-card p-6 shadow-soft sm:p-8"
+      }
+    >
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="block text-sm font-medium">
-          Full name <span className="text-primary">*</span>
-          <input name="fullName" required autoComplete="name" className={`mt-1.5 ${inputClass}`} />
+          Full name <span className="text-[#7eb6ff]">*</span>
+          <input name="fullName" required autoComplete="name" className={inputClass} />
         </label>
         <label className="block text-sm font-medium">
-          Phone <span className="text-primary">*</span>
-          <input name="phone" type="tel" required autoComplete="tel" className={`mt-1.5 ${inputClass}`} />
+          Phone <span className="text-[#7eb6ff]">*</span>
+          <input name="phone" type="tel" required autoComplete="tel" className={inputClass} />
         </label>
         <label className="block text-sm font-medium">
-          Email <span className="text-primary">*</span>
-          <input name="email" type="email" required autoComplete="email" className={`mt-1.5 ${inputClass}`} />
+          Email <span className="text-[#7eb6ff]">*</span>
+          <input name="email" type="email" required autoComplete="email" className={inputClass} />
         </label>
         <label className="block text-sm font-medium sm:col-span-2">
-          Property address <span className="text-primary">*</span>
-          <input name="propertyAddress" required autoComplete="street-address" className={`mt-1.5 ${inputClass}`} />
+          Property address <span className="text-[#7eb6ff]">*</span>
+          <input name="propertyAddress" required autoComplete="street-address" className={inputClass} />
         </label>
         <label className="block text-sm font-medium">
-          Project type <span className="text-primary">*</span>
-          <select name="projectType" required className={`mt-1.5 ${inputClass}`} defaultValue="">
+          Project type <span className="text-[#7eb6ff]">*</span>
+          <select name="projectType" required className={inputClass} defaultValue="">
             <option value="" disabled>
               Select one
             </option>
@@ -99,8 +108,8 @@ export function LeadForm() {
           </select>
         </label>
         <label className="block text-sm font-medium">
-          Brand <span className="text-primary">*</span>
-          <select name="brand" required className={`mt-1.5 ${inputClass}`} defaultValue="Majestic Permits">
+          Brand <span className="text-[#7eb6ff]">*</span>
+          <select name="brand" required className={inputClass} defaultValue="Majestic Permits">
             {PUBLIC_FORM_BRANDS.map((brand) => (
               <option key={brand} value={brand}>
                 {brand}
@@ -110,7 +119,7 @@ export function LeadForm() {
         </label>
         <label className="block text-sm font-medium sm:col-span-2">
           Notes
-          <textarea name="notes" rows={4} className={`mt-1.5 ${inputClass}`} placeholder="Optional. Scope, HOA, or an expired permit number." />
+          <textarea name="notes" rows={3} className={inputClass} placeholder="Optional. Scope, HOA, or an expired permit number." />
         </label>
       </div>
 
@@ -122,7 +131,7 @@ export function LeadForm() {
       </div>
 
       {status === "error" && (
-        <p className="mt-4 text-sm text-destructive" role="alert">
+        <p className="mt-4 text-sm text-red-300" role="alert">
           {error}
         </p>
       )}
@@ -130,7 +139,7 @@ export function LeadForm() {
       <button
         type="submit"
         disabled={status === "sending"}
-        className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-2xl bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
+        className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#156cdd] px-6 py-3 text-base font-semibold text-white transition hover:bg-[#1d7cf0] disabled:opacity-60"
       >
         {status === "sending" ? "Sending…" : "Start your project"}
       </button>

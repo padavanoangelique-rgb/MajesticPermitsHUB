@@ -1,255 +1,276 @@
 import Link from "next/link";
 import {
+  BadgeCheck,
+  Check,
+  Clock3,
   FileCheck,
-  Clock,
   Link2,
-  Building2,
-  Home,
   ShieldCheck,
-  MapPin,
-  Wrench,
 } from "lucide-react";
-import { PublicShell } from "@/components/public/public-shell";
 import { LeadForm } from "@/components/public/lead-form";
-import { WorkGrid } from "@/components/public/work-grid";
 import { PUBLIC_AREAS } from "@/lib/public-areas";
-import { PUBLIC_POSTS } from "@/lib/public-posts";
 import { PUBLIC_HELLO, PUBLIC_PHONE_DISPLAY, PUBLIC_PHONE_TEL } from "@/lib/mailboxes";
+
+const PACKAGE = [
+  ["City-ready application", "The form and drawings that department actually reviews."],
+  ["Product approval check", "The notice or Florida approval matched to the opening."],
+  ["Portal filing", "Uploaded in that city’s system, not a stack of email."],
+  ["Correction replies", "Comments answered where the reviewer will see them."],
+  ["Inspection follow-through", "Scheduled, resulted, and written back to you."],
+  ["Expired permit close-out", "The Permit Closer path when the permit is already stuck."],
+];
+
+const STAGES = [
+  "Getting your project ready",
+  "Submitted to the city",
+  "Under review",
+  "Approved — ready to build",
+];
+
+const PHOTOS = [
+  {
+    src: "/work/south-florida-impact-windows.jpg",
+    alt: "South Florida house with impact windows",
+    label: "Impact windows",
+    className: "sm:col-span-5 sm:col-start-1",
+  },
+  {
+    src: "/work/florida-tile-reroof.jpg",
+    alt: "Clay tile reroof underway on a Florida house",
+    label: "Reroof",
+    className: "sm:col-span-4 sm:col-start-8 sm:mt-28",
+  },
+  {
+    src: "/work/impact-sliding-door.jpg",
+    alt: "New impact sliding glass door on a Florida patio",
+    label: "Impact door",
+    className: "sm:col-span-4 sm:col-start-3 sm:mt-4",
+  },
+];
 
 export default function LandingPage() {
   return (
-    <PublicShell>
-      <section className="mx-auto max-w-6xl px-4 pb-16 pt-12 sm:px-6 sm:pt-20">
-        <div className="max-w-3xl">
-          <p className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-            Miami-Dade · Broward · Palm Beach
-          </p>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
-            We handle your permits.
-            <br />
-            You build.
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-            Permit expediting for contractors and homeowners. Windows, doors,
-            roofing, renovations, and expired-permit close-outs. We build the
-            package, file it with the building department, and keep the status
-            in plain English.
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+    <div className="relative min-h-screen overflow-hidden bg-[#05070d] text-white">
+      <img
+        src="/work/miami-glass-tower-dusk.jpg"
+        alt=""
+        className="pointer-events-none absolute -right-[8%] top-0 hidden h-[720px] w-[58%] object-cover opacity-40 sm:block"
+      />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#05070d]/30 via-[#05070d]/75 to-[#05070d]" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-full bg-gradient-to-r from-[#05070d] via-[#05070d]/88 to-transparent sm:w-[72%]" />
+
+      <header className="relative z-20 mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-5 sm:px-6">
+        <Link href="/" className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#156cdd] text-sm font-bold">
+            M
+          </span>
+          <span className="text-lg font-semibold tracking-tight">Majestic Permits</span>
+        </Link>
+        <nav className="order-last flex w-full flex-wrap gap-x-5 gap-y-2 text-sm text-white/70 md:order-none md:w-auto md:flex-1">
+          <Link href="/areas" className="hover:text-white">Areas</Link>
+          <Link href="/blog" className="hover:text-white">Blog</Link>
+          <Link href="/faq" className="hover:text-white">FAQ</Link>
+          <a href="#work" className="hover:text-white">Work</a>
+          <a href="#start" className="hover:text-white">Start a project</a>
+        </nav>
+        <Link
+          href="/login"
+          className="ml-auto rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/15"
+        >
+          Client Login
+        </Link>
+      </header>
+
+      <main className="relative z-10">
+        <section className="mx-auto grid max-w-6xl items-end gap-10 px-4 pb-6 pt-8 sm:px-6 lg:grid-cols-[1.2fr_0.8fr] lg:pt-16">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
+              Permits. Handled. South Florida.
+            </p>
+            <h1 className="mt-4 max-w-xl text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
+              File a <span className="text-[#4da3ff]">complete</span> permit package.
+            </h1>
+            <div className="mt-5 h-1 w-16 rounded-full bg-[#156cdd]" />
+            <p className="mt-5 max-w-md text-base leading-relaxed text-white/75 sm:text-lg">
+              Windows, doors, roofing, renovations, and expired-permit close-outs
+              in Miami-Dade, Broward, and Palm Beach. We build the package, file
+              it, and keep the status in plain English.
+            </p>
+          </div>
+          <div className="max-w-xs justify-self-start lg:justify-self-end lg:pb-6">
+            <p className="flex items-start gap-3 text-sm leading-relaxed text-white/85">
+              <BadgeCheck className="mt-0.5 h-6 w-6 shrink-0 text-[#4da3ff]" />
+              <span>
+                City-specific filing.
+                <br />
+                One private tracking link.
+                <br />
+                No password for homeowners.
+              </span>
+            </p>
+          </div>
+        </section>
+
+        <section className="mx-auto grid max-w-6xl gap-4 px-4 py-8 sm:px-6 lg:grid-cols-[0.86fr_1.14fr]">
+          <div className="rounded-3xl border border-white/10 bg-[#0c1424]/90 p-6 backdrop-blur-sm sm:p-7">
+            <div className="flex items-start gap-3">
+              <ShieldCheck className="h-8 w-8 text-[#4da3ff]" />
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-wide text-[#7eb6ff]">
+                  The package
+                </p>
+                <p className="text-sm text-white/60">Everything the department needs. Done in order.</p>
+              </div>
+            </div>
+            <ul className="mt-6 space-y-4">
+              {PACKAGE.map(([title, body]) => (
+                <li key={title} className="flex gap-3">
+                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-[#4da3ff]" />
+                  <div>
+                    <p className="font-semibold">{title}</p>
+                    <p className="text-sm text-white/60">{body}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 rounded-2xl border border-white/10 px-4 py-3 text-sm text-white/75">
+              Human-run. Filed in the city’s portal. Ready for review.
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-[#0b1220]/95 p-4 shadow-2xl backdrop-blur-sm sm:p-5">
+            <div className="flex items-center justify-between border-b border-white/10 px-2 pb-3">
+              <p className="text-sm font-semibold">Permit status</p>
+              <p className="text-xs text-white/45">Example · not a live job</p>
+            </div>
+            <div className="mt-4 rounded-2xl border border-white/10 bg-[#10192c] p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-lg font-semibold">Window replacement</p>
+                  <p className="text-sm text-white/55">Broward · impact openings</p>
+                </div>
+                <span className="rounded-full bg-[#156cdd]/20 px-3 py-1 text-xs font-semibold text-[#9cc7ff]">
+                  Getting ready
+                </span>
+              </div>
+              <ol className="mt-5 space-y-3">
+                {STAGES.map((stage, index) => (
+                  <li key={stage} className="flex items-center gap-3 text-sm">
+                    <span
+                      className={
+                        index === 0
+                          ? "flex h-6 w-6 items-center justify-center rounded-full bg-[#156cdd] text-xs font-bold"
+                          : "flex h-6 w-6 items-center justify-center rounded-full border border-white/15 text-xs text-white/50"
+                      }
+                    >
+                      {index === 0 ? <Check className="h-3.5 w-3.5" /> : index + 1}
+                    </span>
+                    <span className={index === 0 ? "text-white" : "text-white/55"}>{stage}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
             <a
               href="#start"
-              className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-primary px-8 py-3 text-base font-semibold text-primary-foreground"
+              className="mt-4 flex min-h-12 items-center justify-center rounded-xl bg-[#156cdd] text-sm font-semibold text-white hover:bg-[#1d7cf0]"
             >
               Start your project
             </a>
-            <a
-              href="#how"
-              className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-border px-8 py-3 text-base font-semibold text-foreground"
-            >
-              See how it works
-            </a>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="how" className="border-t border-border bg-secondary py-16">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            How it works
-          </h2>
-          <p className="mt-3 max-w-xl text-lg text-muted-foreground">
-            Three steps. No chasing the city yourself.
-          </p>
-          <div className="mt-10 grid gap-6 sm:grid-cols-3">
+        <section className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
+          <div className="grid gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              {
-                icon: FileCheck,
-                title: "1. Tell us about the project",
-                body: "Address, trade, and what you already have. We tell you what the department still needs.",
-              },
-              {
-                icon: Clock,
-                title: "2. We run the paperwork",
-                body: "Application, product approvals, corrections, and the follow-up the reviewer actually reads.",
-              },
-              {
-                icon: Link2,
-                title: "3. You track it on one link",
-                body: "A private page. Big status stages. Email when something changes. No password.",
-              },
-            ].map((item) => (
-              <div key={item.title} className="rounded-3xl border border-border bg-card p-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <item.icon className="h-6 w-6" />
+              [Clock3, "One desk", "You are not chasing three portals and an association at once."],
+              [ShieldCheck, "City checklists", "Weston is not Miami. We use the packet that city published."],
+              [Link2, "Plain status", "Homeowners get one private link. No login."],
+              [FileCheck, "Close-outs too", "Stuck and expired permits are a real job, not a side note."],
+            ].map(([Icon, title, body]) => {
+              const ItemIcon = Icon as typeof Clock3;
+              return (
+                <div key={title as string} className="bg-[#0c1424] p-5">
+                  <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/80">
+                    <ItemIcon className="h-4 w-4 text-[#4da3ff]" />
+                    {title as string}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-white/60">{body as string}</p>
                 </div>
-                <h3 className="mt-5 text-xl font-semibold text-foreground">{item.title}</h3>
-                <p className="mt-3 text-muted-foreground">{item.body}</p>
-              </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section id="work" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+          <h2 className="text-2xl font-semibold sm:text-3xl">From the job</h2>
+          <p className="mt-2 max-w-md text-sm text-white/60">
+            Openings, roofs, and the buildings these permits are for.
+          </p>
+          <div className="mt-10 grid grid-cols-1 gap-y-14 sm:grid-cols-12 sm:gap-x-10">
+            {PHOTOS.map((photo) => (
+              <figure key={photo.src} className={photo.className}>
+                <img
+                  src={photo.src}
+                  alt={photo.alt}
+                  className="aspect-[4/3] w-full rounded-3xl object-cover shadow-2xl"
+                />
+                <figcaption className="mt-3 text-sm text-white/70">{photo.label}</figcaption>
+              </figure>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="who" className="py-16">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Built for both sides of the job
-          </h2>
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
-            <div className="rounded-3xl border border-border bg-card p-8">
-              <Building2 className="h-10 w-10 text-primary" />
-              <h3 className="mt-5 text-2xl font-semibold text-foreground">Contractors</h3>
-              <ul className="mt-4 space-y-3 text-muted-foreground">
-                <li>A portal for the jobs assigned to you</li>
-                <li>Status, documents, and inspection requests</li>
-                <li>Quotes and a weekly picture of what is open</li>
-              </ul>
-            </div>
-            <div className="rounded-3xl border border-border bg-card p-8">
-              <Home className="h-10 w-10 text-primary" />
-              <h3 className="mt-5 text-2xl font-semibold text-foreground">Homeowners</h3>
-              <ul className="mt-4 space-y-3 text-muted-foreground">
-                <li>No login</li>
-                <li>One private tracking link</li>
-                <li>Stage names a person can read</li>
-              </ul>
-            </div>
+        <section id="start" className="mx-auto grid max-w-6xl items-start gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:py-12">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Send the project.
+            </h2>
+            <p className="mt-3 max-w-sm text-white/70">
+              This form is the lead catcher. A new person is saved as a lead.
+              If we already have your email or phone, it opens a job on that account.
+            </p>
+            <p className="mt-6 text-sm text-white/70">
+              <a className="font-semibold text-[#9cc7ff]" href={`tel:${PUBLIC_PHONE_TEL}`}>
+                {PUBLIC_PHONE_DISPLAY}
+              </a>
+              <span className="mx-2 text-white/30">·</span>
+              <a className="font-semibold text-[#9cc7ff]" href={`mailto:${PUBLIC_HELLO}`}>
+                {PUBLIC_HELLO}
+              </a>
+            </p>
           </div>
-        </div>
-      </section>
+          <LeadForm tone="dark" />
+        </section>
 
-      <section className="border-y border-border bg-secondary py-8">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-10 gap-y-3 px-4 text-sm font-medium text-muted-foreground">
-          <span className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-primary" /> Licensed & insured
-          </span>
-          <span className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-primary" /> Miami-Dade · Broward · Palm Beach
-          </span>
-          <span className="flex items-center gap-2">
-            <Wrench className="h-4 w-4 text-primary" /> Windows · Doors · Roofing · Renovations
-          </span>
-        </div>
-      </section>
-
-      <section id="areas" className="py-16">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                Areas we serve
-              </h2>
-              <p className="mt-3 max-w-xl text-muted-foreground">
-                Each city runs a different portal and a different checklist. These are the departments we write about and file with most.
-              </p>
-            </div>
-            <Link href="/areas" className="text-sm font-semibold text-primary">
-              All cities
-            </Link>
-          </div>
-          <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <section className="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Areas</p>
+          <ul className="mt-3 flex flex-wrap gap-2">
             {PUBLIC_AREAS.map((area) => (
               <li key={area.slug}>
                 <Link
                   href={`/areas/${area.slug}`}
-                  className="block rounded-2xl border border-border px-4 py-3 text-sm font-medium text-foreground hover:border-primary hover:text-primary"
+                  className="inline-flex rounded-full border border-white/10 px-3 py-1.5 text-sm text-white/75 hover:border-[#156cdd] hover:text-white"
                 >
                   {area.city}
-                  <span className="mt-1 block text-xs font-normal text-muted-foreground">
-                    {area.county}
-                  </span>
                 </Link>
               </li>
             ))}
           </ul>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      <section id="work" className="border-t border-border bg-secondary py-20 sm:py-28">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            From the job file
-          </h2>
-          <p className="mt-3 max-w-xl text-muted-foreground">
-            Approvals, sealed plans, and finished openings. Real files go here as they are ready to show. Nothing stock.
+      <footer className="relative z-10 border-t border-white/10">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-sm text-white/55 sm:px-6">
+          <p>majesticpermits.com</p>
+          <p className="flex flex-wrap gap-4">
+            <Link href="/areas" className="hover:text-white">Areas</Link>
+            <Link href="/blog" className="hover:text-white">Blog</Link>
+            <Link href="/faq" className="hover:text-white">FAQ</Link>
+            <a href={`mailto:${PUBLIC_HELLO}`} className="hover:text-white">{PUBLIC_HELLO}</a>
+            <a href={`tel:${PUBLIC_PHONE_TEL}`} className="hover:text-white">{PUBLIC_PHONE_DISPLAY}</a>
           </p>
-          <div className="mt-14 sm:mt-20">
-            <WorkGrid />
-          </div>
         </div>
-      </section>
-
-      <section id="pricing" className="py-16">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Simple pricing
-          </h2>
-          <p className="mt-3 max-w-xl text-muted-foreground">
-            A quote after we see the scope. City fees stay city fees.
-          </p>
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
-            <div className="rounded-3xl border border-border bg-card p-8">
-              <h3 className="text-xl font-semibold text-foreground">Per permit</h3>
-              <p className="mt-3 text-muted-foreground">
-                A fee quoted up front for one application. The right fit for a single house or an occasional project.
-              </p>
-              <a href="#start" className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">
-                Get a quote
-              </a>
-            </div>
-            <div className="rounded-3xl border border-primary/40 bg-primary/5 p-8">
-              <h3 className="text-xl font-semibold text-foreground">Retainer</h3>
-              <p className="mt-3 text-muted-foreground">
-                For contractors with a steady queue. Priority handling and one report instead of a thread of texts.
-              </p>
-              <a href="#start" className="mt-6 inline-flex min-h-11 items-center rounded-xl border border-primary px-5 py-2.5 text-sm font-semibold text-primary">
-                Ask about a retainer
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-border py-16">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">From the desk</h2>
-          <ul className="mt-6 divide-y divide-border">
-            {PUBLIC_POSTS.map((post) => (
-              <li key={post.slug} className="py-4">
-                <Link href={`/blog/${post.slug}`} className="text-lg font-semibold text-foreground hover:text-primary">
-                  {post.title}
-                </Link>
-                <p className="mt-1 text-sm text-muted-foreground">{post.description}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section id="start" className="border-t border-border bg-secondary py-16">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr]">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Start your project
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              New inquiries become a lead. If we already have your email or phone, this opens a job on that account instead of a second profile.
-            </p>
-            <p className="mt-6 text-sm text-muted-foreground">
-              Or call{" "}
-              <a className="font-semibold text-primary" href={`tel:${PUBLIC_PHONE_TEL}`}>
-                {PUBLIC_PHONE_DISPLAY}
-              </a>{" "}
-              or email{" "}
-              <a className="font-semibold text-primary" href={`mailto:${PUBLIC_HELLO}`}>
-                {PUBLIC_HELLO}
-              </a>
-              .
-            </p>
-          </div>
-          <LeadForm />
-        </div>
-      </section>
-    </PublicShell>
+      </footer>
+    </div>
   );
 }
