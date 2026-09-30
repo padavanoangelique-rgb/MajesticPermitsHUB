@@ -6,6 +6,7 @@ import { getContractorForUser } from "@/lib/contractor";
 import { CONTRACTOR_BUCKETS } from "@/lib/dashboard-buckets";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { JobStatusBar } from "@/components/contractor/job-status-bar";
+import { ToolNav } from "@/components/contractor/tool-nav";
 import { DECLINED_REQUEST_SUB, PENDING_REQUEST_SUB } from "@/lib/job-request";
 
 export const dynamic = "force-dynamic";
@@ -105,8 +106,9 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-screen-xl px-4 py-10 sm:px-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      <main className="mx-auto max-w-screen-xl px-4 py-6 sm:px-6">
+        <ToolNav />
+        <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-primary dark:text-white">
               Dashboard
