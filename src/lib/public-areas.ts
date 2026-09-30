@@ -1,3 +1,5 @@
+import { GUIDE_CITIES } from "@/lib/guide-cities";
+
 export type PublicArea = {
   slug: string;
   city: string;
@@ -303,14 +305,79 @@ export const PUBLIC_AREAS: PublicArea[] = [
   },
 ];
 
+const RICH = new Map(PUBLIC_AREAS.map((area) => [area.slug, area]));
+
+function relatedSlugs(slug: string, county: PublicArea["county"]) {
+  const same = GUIDE_CITIES.filter((city) => city.county === county);
+  const start = Math.max(0, same.findIndex((city) => city.slug === slug));
+  const picked: string[] = [];
+  for (let i = 1; picked.length < 3 && i <= same.length; i += 1) {
+    const city = same[(start + i) % same.length];
+    if (city && city.slug !== slug) picked.push(city.slug);
+  }
+  return picked;
+}
+
+function guideArea(slug: string): PublicArea | null {
+  const city = GUIDE_CITIES.find((item) => item.slug === slug);
+  if (!city) return null;
+  const hvhz = city.county === "Broward" || city.county === "Miami-Dade";
+  const product = hvhz
+    ? "Miami-Dade and Broward are in the high-velocity hurricane zone. The window or door needs a current Miami-Dade Notice of Acceptance, or a Florida Product Approval that says it is approved for HVHZ."
+    : "Palm Beach is a wind-borne debris region, not the high-velocity zone. The product still needs a current Florida Product Approval or a Notice of Acceptance, and the design pressure has to match that house.";
+  const match = city.county === "Broward"
+    ? "A Broward folio does not name the city. The city is the 4-digit tax district code. We match the packet to that code before we file."
+    : city.county === "Miami-Dade"
+      ? "The city comes from the first two digits of the 13-digit folio. We do not guess it from the mailing address."
+      : "The city comes from the first two digits of the 17-digit parcel control number. We do not guess it from the mailing address.";
+  return {
+    slug: city.slug,
+    city: city.city,
+    county: city.county,
+    description: `${city.city} window, door, roofing, and renovation permits. ${city.county} County. We file the packet that department actually uses.`,
+    intro: `${city.city} is its own building department in ${city.county} County, even when the mailing address looks like the city next door. ${product} ${match}`,
+    watch: [
+      `${city.city} gets its own application, opening schedule, product approvals, and floor plan. We do not take another city's form and change the name.`,
+      "A Notice of Commencement is recorded at the county when the contract is over the amount that department requires. We use their number, not a guess.",
+      "The contractor has to be registered with that building department before the portal will take the application. License, insurance, and the local receipt are part of that, not an afterthought.",
+      hvhz
+        ? "In this county, one window is enough to trigger full opening protection. The 25 percent glazing exception used elsewhere does not apply."
+        : "If the address is in a historic district, that review is separate from the building permit. We check it before we tell you the only clock is the building department.",
+    ],
+    windows: `For ${city.city} we mark the approval for each opening, the design pressure the house needs, and the design pressure the product provides. Bedroom windows still have to meet the egress sizes in the Florida Building Code.`,
+    doors: `An impact door in ${city.city} is not filed off the window approval next to it. The rough opening, the hardware, and the approval number have to be that door.`,
+    roofing: `A reroof in ${city.city} is a roof packet, not the window checklist with a new title. The system has to be an approved assembly for ${city.county} County.`,
+    renovation: `A kitchen, a bath, or a wall that moves is a renovation permit in ${city.city}. We do not push it through the window checklist to make it look faster.`,
+    related: relatedSlugs(slug, city.county),
+  };
+}
+
 export function getArea(slug: string) {
-  return PUBLIC_AREAS.find((area) => area.slug === slug) || null;
+  return RICH.get(slug) || guideArea(slug);
+}
+
+export function allAreas() {
+  const seen = new Set<string>();
+  const areas: PublicArea[] = [];
+  for (const city of GUIDE_CITIES) {
+    if (seen.has(city.slug)) continue;
+    seen.add(city.slug);
+    const area = RICH.get(city.slug) || guideArea(city.slug);
+    if (area) areas.push(area);
+  }
+  for (const area of PUBLIC_AREAS) {
+    if (!seen.has(area.slug)) areas.push(area);
+  }
+  return areas;
 }
 
 export function areasByCounty() {
   const counties: PublicArea["county"][] = ["Miami-Dade", "Broward", "Palm Beach"];
+  const all = allAreas();
   return counties.map((county) => ({
     county,
-    areas: PUBLIC_AREAS.filter((area) => area.county === county),
+    areas: all
+      .filter((area) => area.county === county)
+      .sort((a, b) => a.city.localeCompare(b.city)),
   }));
 }

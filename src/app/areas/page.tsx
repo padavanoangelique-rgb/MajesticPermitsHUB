@@ -15,7 +15,7 @@ export default function AreasIndexPage() {
       <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <h1 className="text-4xl font-bold tracking-tight text-foreground">Areas we serve</h1>
         <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
-          Same three counties. Different building departments. Pick the city the property sits in. If it is not listed, use the form and we will say whether we can take it.
+          Every municipality in Miami-Dade, Broward, and Palm Beach has a page. The property's city is the building department, not the mailing address. Each page says which forms that city actually uses.
         </p>
         <div className="mt-10 space-y-10">
           {areasByCounty().map((group) => (
@@ -38,8 +38,8 @@ export default function AreasIndexPage() {
           ))}
         </div>
         <p className="mt-10 text-sm">
-          <Link href="/#start" className="font-semibold text-primary">
-            Start a project
+          <Link href="/#info" className="font-semibold text-primary">
+            Request more info
           </Link>
           <span className="text-muted-foreground"> · </span>
           <Link href="/blog" className="text-foreground hover:text-primary">

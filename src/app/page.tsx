@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { InquiryForm } from "@/components/public/lead-form";
-import { PUBLIC_AREAS } from "@/lib/public-areas";
+import { areasByCounty } from "@/lib/public-areas";
 import { PUBLIC_FAQS } from "@/lib/public-faq";
 import { PUBLIC_POSTS } from "@/lib/public-posts";
 import { PUBLIC_HELLO, PUBLIC_PHONE_DISPLAY, PUBLIC_PHONE_TEL } from "@/lib/mailboxes";
@@ -389,19 +389,26 @@ export default function LandingPage() {
         </section>
 
         <section className="mx-auto max-w-6xl px-4 pb-12 sm:px-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Areas</h2>
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {PUBLIC_AREAS.map((area) => (
-              <li key={area.slug}>
-                <Link
-                  href={`/areas/${area.slug}`}
-                  className="inline-flex rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground hover:border-primary hover:text-foreground"
-                >
-                  {area.city}
-                </Link>
-              </li>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Every jurisdiction</h2>
+          <div className="mt-4 space-y-4">
+            {areasByCounty().map((group) => (
+              <div key={group.county}>
+                <p className="text-sm font-semibold">{group.county}</p>
+                <ul className="mt-2 flex flex-wrap gap-2">
+                  {group.areas.map((area) => (
+                    <li key={area.slug}>
+                      <Link
+                        href={`/areas/${area.slug}`}
+                        className="inline-flex rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground hover:border-primary hover:text-foreground"
+                      >
+                        {area.city}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
       </main>
 

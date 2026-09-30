@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { PUBLIC_AREAS } from "@/lib/public-areas";
+import { allAreas } from "@/lib/public-areas";
 import { PUBLIC_POSTS } from "@/lib/public-posts";
 
 const SITE = "https://majesticpermits.com";
@@ -11,7 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: now,
   }));
 
-  const cities = PUBLIC_AREAS.map((area) => ({
+  const cities = allAreas().map((area) => ({
     url: `${SITE}/areas/${area.slug}`,
     lastModified: now,
   }));

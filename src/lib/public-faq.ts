@@ -2,7 +2,7 @@ export const PUBLIC_FAQS = [
   {
     question: "What areas do you serve?",
     answer:
-      "Miami-Dade, Broward, and Palm Beach. The cities we get asked about most have their own pages: Weston, Tamarac, Plantation, Pembroke Pines, Hollywood, Fort Lauderdale, Aventura, Miami, Hialeah, Boca Raton, West Palm Beach, and Boynton Beach. If your city is not on that list, send the address anyway. We will tell you straight if we can take it.",
+      "Miami-Dade, Broward, and Palm Beach. Every municipality in those three counties has its own page, including the unincorporated county. The mailing city is not always the building department. If you are not sure which page is yours, send the address.",
   },
   {
     question: "How much does expediting cost?",

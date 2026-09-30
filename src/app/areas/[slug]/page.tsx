@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicShell } from "@/components/public/public-shell";
-import { getArea, PUBLIC_AREAS } from "@/lib/public-areas";
+import { getArea, allAreas } from "@/lib/public-areas";
 import { PUBLIC_POSTS } from "@/lib/public-posts";
 
 type Params = { slug: string };
 
 export function generateStaticParams() {
-  return PUBLIC_AREAS.map((area) => ({ slug: area.slug }));
+  return allAreas().map((area) => ({ slug: area.slug }));
 }
 
 export function generateMetadata({ params }: { params: Params }): Metadata {
@@ -74,18 +74,27 @@ export default function AreaPage({ params }: { params: Params }) {
           </div>
         )}
 
+        <h2 className="mt-10 text-2xl font-semibold text-foreground">The packet</h2>
+        <p className="mt-3 leading-relaxed text-muted-foreground">
+          {area.county === "Broward"
+            ? `${area.city} gets the Broward packet plus anything this city publishes on its own: the building application, the retrofit window and door schedule, the product-approval sheets with the model marked, the floor plan, and a Notice of Commencement when the job requires one. An affidavit or a checklist is included only when ${area.city} actually asks for it.`
+            : area.county === "Miami-Dade"
+              ? `${area.city} gets the Miami-Dade packet plus this city's own sheets when it has them: the application, the opening schedule, the Notice of Acceptance pages with the model marked, the floor plan, and a Notice of Commencement when the job requires one. We do not file a Broward retrofit form here.`
+              : `${area.city} gets the Palm Beach packet plus this city's own sheets when it has them: the application, the opening schedule, the product approval with the model marked, the floor plan, and a Notice of Commencement when the job requires one.`}
+        </p>
+
         <div className="mt-10 flex flex-wrap gap-3">
           <Link
-            href="/#start"
+            href="/#info"
             className="inline-flex min-h-12 items-center rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
           >
-            Start a project in {area.city}
+            Request more info
           </Link>
           <Link
-            href="/faq"
+            href="/permit-closer"
             className="inline-flex min-h-12 items-center rounded-2xl border border-border px-6 py-3 text-sm font-semibold"
           >
-            FAQ
+            Expired permit
           </Link>
         </div>
 
