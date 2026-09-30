@@ -103,33 +103,33 @@ export default async function AdminPage({ searchParams }: PageProps) {
   const stageOptions = PERMIT_STAGES.map((s) => ({ title: s.title, short: s.short }));
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#090909]">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card dark:border-border dark:bg-card">
         <div className="mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
           <Logo subtitle="Admin" />
 
           <nav className="flex items-center gap-3">
             <Link
               href="/admin/inspections"
-              className="text-sm font-medium text-slate-600 hover:text-[#156cdd] dark:text-slate-300"
+              className="text-sm font-medium text-muted-foreground hover:text-primary dark:text-muted-foreground"
             >
               Inspections
             </Link>
             <Link
               href="/admin/job-requests"
-              className="text-sm font-medium text-slate-600 hover:text-[#156cdd] dark:text-slate-300"
+              className="text-sm font-medium text-muted-foreground hover:text-primary dark:text-muted-foreground"
             >
               Job requests
             </Link>
             <a
               href="/api/admin/report"
-              className="text-sm font-medium text-slate-600 hover:text-[#156cdd] dark:text-slate-300"
+              className="text-sm font-medium text-muted-foreground hover:text-primary dark:text-muted-foreground"
             >
               Download report
             </a>
             <Link
               href="/admin/new"
-              className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8]"
+              className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary"
             >
               + New Job
             </Link>
@@ -138,7 +138,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
             <form action="/auth/signout" method="post">
               <button
                 type="submit"
-                className="text-sm font-medium text-slate-500 hover:text-[#156cdd] dark:text-slate-400"
+                className="text-sm font-medium text-muted-foreground hover:text-primary dark:text-muted-foreground"
               >
                 Sign out
               </button>
@@ -157,15 +157,15 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
         <div className="mt-10 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[#156cdd] dark:text-white">All Jobs</h1>
-            <p className="mt-1 text-slate-500">
+            <h1 className="text-2xl font-bold text-primary dark:text-white">All Jobs</h1>
+            <p className="mt-1 text-muted-foreground">
               {filtered.length} of {jobs?.length || 0}
               {filtered.length !== (jobs?.length || 0) ? " shown" : " total"}
             </p>
           </div>
           <Link
             href="/admin/pipeline"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-[#090909] dark:text-slate-200"
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground hover:border-border dark:border-border dark:bg-card dark:text-foreground"
           >
             <LayoutGrid className="h-4 w-4" />
             Pipeline view
@@ -199,8 +199,8 @@ export default async function AdminPage({ searchParams }: PageProps) {
             />
           )}
           {filtered.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-700 dark:bg-[#090909]">
-              <p className="text-slate-500">
+            <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center dark:border-border dark:bg-card">
+              <p className="text-muted-foreground">
                 {jobs && jobs.length > 0
                   ? "No jobs match these filters."
                   : "No jobs yet. Create your first one."}
@@ -228,12 +228,12 @@ function AdminStageSection({
 }) {
   const accentPill =
     accent === "amber"
-      ? "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300"
-      : "bg-[#156cdd]/10 text-[#156cdd] dark:bg-[#9CE824]/15 dark:text-[#9CE824]";
+      ? "bg-amber-950/30 text-amber-200 dark:bg-amber-950/30 dark:text-amber-300"
+      : "bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary";
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#090909]">
-      <header className="flex items-center gap-3 border-b border-slate-100 px-5 py-3 dark:border-slate-800">
+    <section className="rounded-2xl border border-border bg-card dark:border-border dark:bg-card">
+      <header className="flex items-center gap-3 border-b border-border px-5 py-3 dark:border-border">
         <span
           className={
             "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider " +
@@ -242,11 +242,11 @@ function AdminStageSection({
         >
           {title}
         </span>
-        <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+        <span className="ml-auto rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground dark:bg-secondary dark:text-muted-foreground">
           {items.length}
         </span>
       </header>
-      <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+      <ul className="divide-y divide-border dark:divide-border">
         {items.map((job: any) => {
           const needsInspection = pendingInspectionJobIds.has(job.id);
           return (
@@ -254,44 +254,44 @@ function AdminStageSection({
               <Link
                 href={`/admin/jobs/${job.id}`}
                 className={
-                  "flex flex-wrap items-center gap-4 px-5 py-4 transition hover:bg-slate-50 dark:hover:bg-slate-800/40" +
-                  (needsInspection ? " bg-amber-50/70 dark:bg-amber-950/20" : "")
+                  "flex flex-wrap items-center gap-4 px-5 py-4 transition hover:bg-secondary dark:hover:bg-secondary/40" +
+                  (needsInspection ? " bg-amber-950/20 dark:bg-amber-950/20" : "")
                 }
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate text-sm font-semibold text-[#156cdd] dark:text-white">
+                    <p className="truncate text-sm font-semibold text-primary dark:text-white">
                       {job.property_address}
                     </p>
                     {needsInspection && (
-                      <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                      <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-200 dark:bg-amber-900/40 dark:text-amber-300">
                         Inspection needed
                       </span>
                     )}
                   </div>
-                  <p className="mt-0.5 truncate text-xs text-slate-500">
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
                     {job.brand}
                     {job.homeowner_name ? ` · ${job.homeowner_name}` : ""}
                   </p>
                 </div>
-                <div className="hidden w-36 truncate text-xs text-slate-500 sm:block">
+                <div className="hidden w-36 truncate text-xs text-muted-foreground sm:block">
                   {contractorMap.get(job.contractor_id) || "—"}
                 </div>
-                <div className="hidden w-28 text-xs text-slate-500 md:block">
+                <div className="hidden w-28 text-xs text-muted-foreground md:block">
                   {job.permit_number || "Pending"}
                 </div>
-                <div className="w-32 text-right text-xs text-slate-500">
+                <div className="w-32 text-right text-xs text-muted-foreground">
                   {job.permit_eta ? (
                     <>
-                      <span className="text-slate-400">ETA</span>{" "}
-                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                      <span className="text-muted-foreground">ETA</span>{" "}
+                      <span className="font-medium text-foreground dark:text-muted-foreground">
                         {format(new Date(job.permit_eta), "MMM d, yyyy")}
                       </span>
                     </>
                   ) : job.submitted_date ? (
                     <>
-                      <span className="text-slate-400">Submitted</span>{" "}
-                      <span className="font-medium text-slate-700 dark:text-slate-300">
+                      <span className="text-muted-foreground">Submitted</span>{" "}
+                      <span className="font-medium text-foreground dark:text-muted-foreground">
                         {format(new Date(job.submitted_date), "MMM d, yyyy")}
                       </span>
                     </>

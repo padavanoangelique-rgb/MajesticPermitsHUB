@@ -116,20 +116,20 @@ export default async function ContractorInspectionsPage() {
   const scheduledCount = events.filter((e) => e.kind === "scheduled").length;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#090909]">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card dark:border-border dark:bg-card">
         <div className="mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <Image src="/icons/icon-512.png" alt="Majestic Permits" width={36} height={36} className="rounded-lg" />
             <div>
-              <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
+              <p className="text-sm font-semibold text-primary dark:text-white">
                 {contractor.company_name || contractor.name}
               </p>
-              <p className="text-xs text-slate-500">Inspections</p>
+              <p className="text-xs text-muted-foreground">Inspections</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-sm font-medium text-slate-600 hover:text-[#156cdd]">
+            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary">
               Projects
             </Link>
             <ThemeToggle />
@@ -138,8 +138,8 @@ export default async function ContractorInspectionsPage() {
       </header>
 
       <main className="mx-auto max-w-screen-xl px-4 py-10 sm:px-6">
-        <h1 className="text-2xl font-bold text-[#156cdd] dark:text-white">Inspections</h1>
-        <p className="mt-1 text-slate-500">
+        <h1 className="text-2xl font-bold text-primary dark:text-white">Inspections</h1>
+        <p className="mt-1 text-muted-foreground">
           {pendingCount} pending · {scheduledCount} scheduled. Dates land here after Majestic confirms them.
         </p>
         <div className="mt-8">

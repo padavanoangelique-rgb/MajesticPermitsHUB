@@ -18,8 +18,8 @@ export function AdminKpiTiles({
       value: inReview,
       href: "/admin?stage=Under+review",
       Icon: Search,
-      accent: "text-[#156cdd] dark:text-[#b6ff2a]",
-      ring: "bg-[#156cdd]/10 dark:bg-[#b6ff2a]/15",
+      accent: "text-primary dark:text-primary",
+      ring: "bg-primary/10 dark:bg-primary/15",
     },
     {
       label: "Approved",
@@ -29,23 +29,23 @@ export function AdminKpiTiles({
         encodeURIComponent("Approved — ready to build"),
       Icon: CheckCircle2,
       accent: "text-emerald-600 dark:text-emerald-400",
-      ring: "bg-emerald-50 dark:bg-emerald-950/40",
+      ring: "bg-emerald-950/40 dark:bg-emerald-950/40",
     },
     {
       label: "Needs inspection",
       value: needsInspection,
       href: "/admin",
       Icon: ClipboardCheck,
-      accent: "text-[#156cdd] dark:text-[#b6ff2a]",
-      ring: "bg-amber-50 dark:bg-amber-950/40",
+      accent: "text-primary dark:text-primary",
+      ring: "bg-amber-950/30 dark:bg-amber-950/40",
     },
     {
       label: "Needs follow-up",
       value: needsFollowUp,
       href: "/admin",
       Icon: AlertCircle,
-      accent: "text-red-600 dark:text-red-400",
-      ring: "bg-red-50 dark:bg-red-950/40",
+      accent: "text-red-200 dark:text-red-400",
+      ring: "bg-red-950/30 dark:bg-red-950/40",
     },
   ];
 
@@ -55,16 +55,16 @@ export function AdminKpiTiles({
         <Link
           key={label}
           href={href}
-          className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-[#090909]"
+          className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition hover:border-border hover:shadow-sm dark:border-border dark:bg-card"
         >
           <div className={"flex h-11 w-11 items-center justify-center rounded-xl " + ring}>
             <Icon className={"h-5 w-5 " + accent} />
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
               {label}
             </p>
-            <p className="mt-0.5 text-2xl font-bold text-[#156cdd] dark:text-[#b6ff2a]">
+            <p className="mt-0.5 text-2xl font-bold text-primary dark:text-primary">
               {value}
             </p>
           </div>

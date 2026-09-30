@@ -48,14 +48,14 @@ export function JobDocUpload({ jobId }: { jobId: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="mt-4 space-y-3 border-t border-slate-100 pt-4 dark:border-slate-800">
-      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+    <form onSubmit={submit} className="mt-4 space-y-3 border-t border-border pt-4 dark:border-border">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Upload to Majestic
       </p>
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+        className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background dark:text-white"
       >
         {CATEGORIES.map(([value, label]) => (
           <option key={value} value={value}>
@@ -68,17 +68,17 @@ export function JobDocUpload({ jobId }: { jobId: string }) {
         multiple
         accept=".pdf,.png,.jpg,.jpeg,.heic,.webp,.doc,.docx,.xls,.xlsx"
         onChange={(e) => setFiles(Array.from(e.target.files || []).slice(0, 5))}
-        className="block w-full text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-[#156cdd] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white"
+        className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white"
       />
       {files.length > 0 && (
-        <p className="text-xs text-slate-500">{files.length} selected (max 5, 8MB each)</p>
+        <p className="text-xs text-muted-foreground">{files.length} selected (max 5, 8MB each)</p>
       )}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-red-200">{error}</p>}
       {ok && <p className="text-xs text-green-600">{ok}</p>}
       <button
         type="submit"
         disabled={busy || !files.length}
-        className="rounded-lg bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+        className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
       >
         {busy ? "Uploading…" : "Upload files"}
       </button>

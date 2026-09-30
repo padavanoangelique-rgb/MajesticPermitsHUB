@@ -9,7 +9,7 @@ export function LeadForm({ tone = "light" }: { tone?: "light" | "dark" }) {
   const dark = tone === "dark";
 
   const inputClass = dark
-    ? "mt-1.5 w-full rounded-xl border border-white/10 bg-[#070d18] px-4 py-3 text-base text-white outline-none ring-[#156cdd]/40 placeholder:text-white/35 focus:ring-2"
+    ? "mt-1.5 w-full rounded-xl border border-white/10 bg-background px-4 py-3 text-base text-white outline-none ring-primary/40 placeholder:text-white/35 focus:ring-2"
     : "mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-3 text-base text-foreground outline-none ring-primary/30 placeholder:text-muted-foreground focus:ring-2";
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -50,7 +50,7 @@ export function LeadForm({ tone = "light" }: { tone?: "light" | "dark" }) {
 
   if (status === "done") {
     return (
-      <div className={dark ? "rounded-3xl border border-white/10 bg-[#10182a] p-8" : "rounded-3xl border border-primary/30 bg-primary/5 p-8 sm:p-10"}>
+      <div className={dark ? "rounded-3xl border border-white/10 bg-card p-8" : "rounded-3xl border border-primary/30 bg-primary/5 p-8 sm:p-10"}>
         <h3 className={dark ? "text-2xl font-semibold text-white" : "text-2xl font-semibold text-foreground"}>We have it.</h3>
         <p className={dark ? "mt-3 text-base leading-relaxed text-white/70" : "mt-3 text-base leading-relaxed text-muted-foreground"}>
           Thanks. Your project is in our queue. We will reach you at the phone
@@ -60,7 +60,7 @@ export function LeadForm({ tone = "light" }: { tone?: "light" | "dark" }) {
         <button
           type="button"
           onClick={() => setStatus("idle")}
-          className="mt-6 text-sm font-semibold text-[#7eb6ff]"
+          className="mt-6 text-sm font-semibold text-accent"
         >
           Send another project
         </button>
@@ -73,29 +73,29 @@ export function LeadForm({ tone = "light" }: { tone?: "light" | "dark" }) {
       onSubmit={onSubmit}
       className={
         dark
-          ? "relative rounded-3xl border border-white/10 bg-[#10182a] p-6 sm:p-8"
+          ? "relative rounded-3xl border border-white/10 bg-card p-6 sm:p-8"
           : "relative rounded-3xl border border-border bg-card p-6 shadow-soft sm:p-8"
       }
     >
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="block text-sm font-medium">
-          Full name <span className="text-[#7eb6ff]">*</span>
+          Full name <span className="text-accent">*</span>
           <input name="fullName" required autoComplete="name" className={inputClass} />
         </label>
         <label className="block text-sm font-medium">
-          Phone <span className="text-[#7eb6ff]">*</span>
+          Phone <span className="text-accent">*</span>
           <input name="phone" type="tel" required autoComplete="tel" className={inputClass} />
         </label>
         <label className="block text-sm font-medium">
-          Email <span className="text-[#7eb6ff]">*</span>
+          Email <span className="text-accent">*</span>
           <input name="email" type="email" required autoComplete="email" className={inputClass} />
         </label>
         <label className="block text-sm font-medium sm:col-span-2">
-          Property address <span className="text-[#7eb6ff]">*</span>
+          Property address <span className="text-accent">*</span>
           <input name="propertyAddress" required autoComplete="street-address" className={inputClass} />
         </label>
         <label className="block text-sm font-medium">
-          Project type <span className="text-[#7eb6ff]">*</span>
+          Project type <span className="text-accent">*</span>
           <select name="projectType" required className={inputClass} defaultValue="">
             <option value="" disabled>
               Select one
@@ -108,7 +108,7 @@ export function LeadForm({ tone = "light" }: { tone?: "light" | "dark" }) {
           </select>
         </label>
         <label className="block text-sm font-medium">
-          Brand <span className="text-[#7eb6ff]">*</span>
+          Brand <span className="text-accent">*</span>
           <select name="brand" required className={inputClass} defaultValue="Majestic Permits">
             {PUBLIC_FORM_BRANDS.map((brand) => (
               <option key={brand} value={brand}>
@@ -139,7 +139,7 @@ export function LeadForm({ tone = "light" }: { tone?: "light" | "dark" }) {
       <button
         type="submit"
         disabled={status === "sending"}
-        className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#156cdd] px-6 py-3 text-base font-semibold text-white transition hover:bg-[#1d7cf0] disabled:opacity-60"
+        className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-6 py-3 text-base font-semibold text-white transition hover:bg-primary disabled:opacity-60"
       >
         {status === "sending" ? "Sending…" : "Start your project"}
       </button>

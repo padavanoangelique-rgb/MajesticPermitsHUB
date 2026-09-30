@@ -46,7 +46,7 @@ export function AssignContractorForm({
         <select
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+          className="flex-1 rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground dark:border-border dark:bg-background dark:text-white"
         >
           <option value="">Not assigned (homeowner-only job)</option>
           {contractors.map((c) => (
@@ -58,14 +58,14 @@ export function AssignContractorForm({
         <button
           onClick={save}
           disabled={saving}
-          className="rounded-xl bg-[#e2ba00] px-4 py-2 text-sm font-semibold text-[#156cdd] hover:bg-[#E0C878] disabled:opacity-60 dark:bg-[#9CE824] dark:hover:bg-[#85c91c]"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-primary disabled:opacity-60 dark:bg-primary dark:hover:bg-primary"
         >
           {saving ? "Saving..." : "Save"}
         </button>
       </div>
       {saved && <p className="text-xs text-green-600">Saved.</p>}
-      {error && <p className="text-xs text-red-600">{error}</p>}
-      <p className="text-xs text-slate-500">
+      {error && <p className="text-xs text-red-200">{error}</p>}
+      <p className="text-xs text-muted-foreground">
         Assigning a contractor is what makes this job appear in their dashboard.
       </p>
     </div>

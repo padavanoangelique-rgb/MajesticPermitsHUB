@@ -47,14 +47,14 @@ export function QuoteActions({
   return (
     <div className="mt-8 space-y-4">
       <div>
-        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">
+        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {label}
         </label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Full name"
-          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+          className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground dark:border-border dark:bg-background dark:text-white"
           disabled={mode !== "idle"}
         />
       </div>
@@ -64,7 +64,7 @@ export function QuoteActions({
           type="button"
           onClick={() => submit("approve")}
           disabled={mode !== "idle"}
-          className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary disabled:opacity-60"
         >
           {mode === "approving" ? "Approving..." : "Approve this quote"}
         </button>
@@ -72,19 +72,19 @@ export function QuoteActions({
           type="button"
           onClick={() => submit("decline")}
           disabled={mode !== "idle"}
-          className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 dark:border-slate-600 dark:bg-transparent dark:text-slate-200"
+          className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-secondary disabled:opacity-60 dark:border-border dark:bg-transparent dark:text-foreground"
         >
           {mode === "declining" ? "Declining..." : "Decline"}
         </button>
       </div>
 
       {error && (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+        <p className="rounded-xl bg-red-950/30 px-3 py-2 text-sm text-red-200 dark:bg-red-900/20 dark:text-red-400">
           {error}
         </p>
       )}
 
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-muted-foreground">
         By approving you confirm the scope and price above. We'll send a copy of
         this decision to Majestic Permits automatically.
       </p>

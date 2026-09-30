@@ -109,15 +109,15 @@ export default async function TrackPage({ params }: PageProps) {
     const closer = isPermitCloserJob(job);
 
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
+      <div className="min-h-screen bg-background">
         <BrandHeader brand={brandName} />
 
         <main className="mx-auto max-w-3xl px-4 pb-20 pt-8 sm:px-6">
           <div className="mb-8 text-center">
-            <p className="text-sm font-medium uppercase tracking-wider text-slate-500">
+            <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
               Project status
             </p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#156cdd] dark:text-white sm:text-4xl">
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-primary dark:text-white sm:text-4xl">
               {job.property_address || "Your Project"}
             </h1>
           </div>
@@ -142,21 +142,21 @@ export default async function TrackPage({ params }: PageProps) {
           />
 
           {inspections && inspections.length > 0 && (
-            <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+            <section className="mt-10 rounded-2xl border border-border bg-card p-6 dark:border-border dark:bg-card">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 Inspections
               </h2>
-              <ul className="mt-3 divide-y divide-slate-100 dark:divide-slate-700">
+              <ul className="mt-3 divide-y divide-border dark:divide-border">
                 {inspections.map((i: any) => (
                   <li
                     key={i.slot}
                     className="flex items-center justify-between py-3"
                   >
                     <div>
-                      <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
+                      <p className="text-sm font-semibold text-primary dark:text-white">
                         {i.inspection_type || `Inspection ${i.slot}`}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-muted-foreground">
                         {i.scheduled_date
                           ? `Scheduled ${format(new Date(i.scheduled_date), "MMM d, yyyy")}`
                           : i.result_date
@@ -164,7 +164,7 @@ export default async function TrackPage({ params }: PageProps) {
                             : ""}
                       </p>
                     </div>
-                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                    <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-foreground dark:bg-secondary dark:text-foreground">
                       {INSPECTION_STATUS_LABEL[i.status] ?? i.status}
                     </span>
                   </li>
@@ -174,16 +174,16 @@ export default async function TrackPage({ params }: PageProps) {
           )}
 
           {sharedDocs && sharedDocs.length > 0 && (
-            <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+            <section className="mt-6 rounded-2xl border border-border bg-card p-6 dark:border-border dark:bg-card">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 Documents
               </h2>
-              <ul className="mt-3 divide-y divide-slate-100 dark:divide-slate-700">
+              <ul className="mt-3 divide-y divide-border dark:divide-border">
                 {sharedDocs.map((d: any) => (
                   <li key={d.id} className="py-3">
                     <a
                       href={`/api/track/${token}/documents/${d.id}`}
-                      className="text-sm font-medium text-[#156cdd] hover:underline dark:text-white"
+                      className="text-sm font-medium text-primary hover:underline dark:text-white"
                     >
                       {d.label || d.file_name}
                     </a>
@@ -213,18 +213,18 @@ export default async function TrackPage({ params }: PageProps) {
 
 function InvalidLink() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-[#020202]">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-3xl font-bold text-[#156cdd] dark:text-white">
+        <h1 className="text-3xl font-bold text-primary dark:text-white">
           This link isn't valid
         </h1>
-        <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
+        <p className="mt-4 text-lg text-muted-foreground dark:text-muted-foreground">
           The tracking link you used may have expired or been typed incorrectly.
           Please contact Majestic Permits for a new link.
         </p>
         <a
           href="mailto:hello@majesticpermits.com"
-          className="mt-8 inline-flex rounded-2xl bg-[#156cdd] px-6 py-3 text-sm font-semibold text-white"
+          className="mt-8 inline-flex rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white"
         >
           Email us
         </a>
@@ -235,12 +235,12 @@ function InvalidLink() {
 
 function DisabledLink() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 dark:bg-[#020202]">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-3xl font-bold text-[#156cdd] dark:text-white">
+        <h1 className="text-3xl font-bold text-primary dark:text-white">
           Sharing has been paused
         </h1>
-        <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
+        <p className="mt-4 text-lg text-muted-foreground dark:text-muted-foreground">
           The person who shared this link has turned off homeowner access for
           the moment. Please reach out to your contractor or Majestic Permits
           for the latest status.

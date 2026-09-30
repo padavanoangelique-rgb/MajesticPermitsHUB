@@ -163,7 +163,7 @@ export function JurisdictionForm({
     <div className="mt-3 space-y-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">
             Jurisdiction
           </label>
           <input
@@ -171,7 +171,7 @@ export function JurisdictionForm({
             value={jurisdiction}
             onChange={(e) => setJurisdiction(e.target.value)}
             placeholder="Village of Wellington"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+            className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground dark:border-border dark:bg-background dark:text-white"
           />
           <datalist id="jurisdiction-list">
             {directory.map((row) => (
@@ -180,20 +180,20 @@ export function JurisdictionForm({
           </datalist>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">
             Building dept. portal URL
           </label>
           <input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://wellingtonfl.gov/permits"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+            className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground dark:border-border dark:bg-background dark:text-white"
           />
         </div>
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-500">
+        <label className="mb-1 block text-xs font-medium text-muted-foreground">
           Send to contact
         </label>
         <select
@@ -204,7 +204,7 @@ export function JurisdictionForm({
             const match = contacts.find((row) => row.email === next);
             if (match) setJurisdiction(match.name);
           }}
-          className="mb-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+          className="mb-2 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground dark:border-border dark:bg-background dark:text-white"
         >
           <option value="">Select a saved contact…</option>
           {contacts.map((row) => (
@@ -218,13 +218,13 @@ export function JurisdictionForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="or type permits@city.gov"
-          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+          className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground dark:border-border dark:bg-background dark:text-white"
         />
       </div>
 
       {showAdd && (
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-[#111]">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <div className="rounded-2xl border border-border bg-secondary p-4 dark:border-border dark:bg-secondary">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             New building department contact
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -232,33 +232,33 @@ export function JurisdictionForm({
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="City / department name"
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+              className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background dark:text-white"
             />
             <input
               type="email"
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
               placeholder="permits@city.gov"
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+              className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background dark:text-white"
             />
             <input
               value={newPortal}
               onChange={(e) => setNewPortal(e.target.value)}
               placeholder="Portal URL (optional)"
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm sm:col-span-2 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+              className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm sm:col-span-2 dark:border-border dark:bg-background dark:text-white"
             />
           </div>
         </div>
       )}
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-500">
+        <label className="mb-1 block text-xs font-medium text-muted-foreground">
           Attach from this job
         </label>
         <select
           value={docId}
           onChange={(e) => setDocId(e.target.value)}
-          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+          className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground dark:border-border dark:bg-background dark:text-white"
         >
           <option value="">
             {documents.length ? "Choose a file…" : "Upload a NOC on this job first"}
@@ -273,13 +273,13 @@ export function JurisdictionForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-500">
+        <label className="mb-1 block text-xs font-medium text-muted-foreground">
           NOC status
         </label>
         <select
           value={noc}
           onChange={(e) => setNoc(e.target.value)}
-          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+          className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground dark:border-border dark:bg-background dark:text-white"
         >
           <option value="None">None</option>
           <option value="Pending">Pending</option>
@@ -288,7 +288,7 @@ export function JurisdictionForm({
         </select>
       </div>
 
-      <p className="rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:bg-[#111] dark:text-slate-300">
+      <p className="rounded-xl bg-secondary px-3 py-2 text-xs text-muted-foreground dark:bg-secondary dark:text-muted-foreground">
         Email preview: Please see attached NOC for permit Number{" "}
         <strong>{permitNumber || "(add permit # on this job)"}</strong>.
         {contractorEmail ? ` CC ${contractorEmail} and angelique@majesticpermits.com.` : " CC angelique@majesticpermits.com."}
@@ -298,7 +298,7 @@ export function JurisdictionForm({
         <button
           onClick={save}
           disabled={saving}
-          className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary disabled:opacity-60"
         >
           {saving ? "Saving..." : "Save"}
         </button>
@@ -306,7 +306,7 @@ export function JurisdictionForm({
           type="button"
           onClick={() => (showAdd ? addContact() : setShowAdd(true))}
           disabled={adding || (showAdd && !(newName || jurisdiction) && !(newEmail || email))}
-          className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50 disabled:opacity-60 dark:border-slate-600 dark:bg-[#111] dark:text-white"
+          className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-secondary disabled:opacity-60 dark:border-border dark:bg-secondary dark:text-white"
         >
           {adding ? "Adding..." : showAdd ? "Save contact" : "Add contact"}
         </button>
@@ -314,7 +314,7 @@ export function JurisdictionForm({
           type="button"
           onClick={sendNoc}
           disabled={sending || !email.includes("@") || !docId}
-          className="rounded-xl bg-[#e2ba00] px-4 py-2 text-sm font-semibold text-[#0B1F3A] hover:bg-[#c9a227] disabled:opacity-60"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary disabled:opacity-60"
         >
           {sending ? "Sending..." : "Send NOC"}
         </button>
@@ -323,13 +323,13 @@ export function JurisdictionForm({
             href={url}
             target="_blank"
             rel="noreferrer"
-            className="text-sm font-medium text-[#156cdd] hover:underline dark:text-[#9CE824]"
+            className="text-sm font-medium text-primary hover:underline dark:text-primary"
           >
             Open portal ↗
           </a>
         )}
         {ok && <span className="text-xs text-green-600">{ok}</span>}
-        {error && <span className="text-xs text-red-600">{error}</span>}
+        {error && <span className="text-xs text-red-200">{error}</span>}
       </div>
     </div>
   );

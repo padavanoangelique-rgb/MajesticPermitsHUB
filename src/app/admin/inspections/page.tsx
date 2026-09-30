@@ -150,43 +150,43 @@ export default async function InspectionsPage({
   const done = rows.filter((r) => !pending.includes(r) && !scheduled.includes(r));
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
+    <div className="min-h-screen bg-background">
       <main className={embed ? "px-4 py-6 sm:px-6" : "mx-auto max-w-6xl px-4 py-10 sm:px-6"}>
-        <h1 className="text-2xl font-bold text-[#156cdd] dark:text-[#b6ff2a]">
+        <h1 className="text-2xl font-bold text-primary dark:text-primary">
           Inspection calendar
         </h1>
-        <p className="mt-1 text-slate-500">
+        <p className="mt-1 text-muted-foreground">
           {pending.length} pending · {scheduled.length} scheduled · record pass/fail to close
         </p>
 
         <InspectionsCalendar requests={rows} />
 
-        <h2 className="mt-12 text-lg font-semibold text-[#156cdd] dark:text-[#b6ff2a]">
+        <h2 className="mt-12 text-lg font-semibold text-primary dark:text-primary">
           Pending queue
         </h2>
         <div className="mt-4 space-y-4">
           {pending.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center dark:border-slate-700 dark:bg-[#090909]">
-              <p className="text-slate-500">No pending requests</p>
+            <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center dark:border-border dark:bg-card">
+              <p className="text-muted-foreground">No pending requests</p>
             </div>
           )}
           {pending.map((req) => (
-            <div key={req.id} className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]">
+            <div key={req.id} className="rounded-2xl border border-border bg-card p-6 dark:border-border dark:bg-card">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="font-semibold text-[#156cdd] dark:text-[#b6ff2a]">
+                  <p className="font-semibold text-primary dark:text-primary">
                     {req.property_address || "Unknown address"}
                   </p>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {req.homeowner_name} · {req.contractor_name || req.requested_by}
                     {req.preferred_date ? ` · ${String(req.preferred_date).slice(0, 10)}` : ""}
                   </p>
                   <p className="mt-3">
-                    <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800">
+                    <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-200">
                       {req.inspection_type}
                     </span>
                   </p>
-                  {req.notes && <p className="mt-3 text-sm text-slate-600">{req.notes}</p>}
+                  {req.notes && <p className="mt-3 text-sm text-muted-foreground">{req.notes}</p>}
                 </div>
                 <div className="flex gap-2">
                   <MarkHandledButton
@@ -201,23 +201,23 @@ export default async function InspectionsPage({
           ))}
         </div>
 
-        <h2 className="mt-12 text-lg font-semibold text-[#156cdd] dark:text-[#b6ff2a]">
+        <h2 className="mt-12 text-lg font-semibold text-primary dark:text-primary">
           Scheduled — waiting on result
         </h2>
         <div className="mt-4 space-y-4">
           {scheduled.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-[#090909]">
-              <p className="text-slate-500">Nothing on the calendar waiting for a result</p>
+            <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center dark:border-border dark:bg-card">
+              <p className="text-muted-foreground">Nothing on the calendar waiting for a result</p>
             </div>
           )}
           {scheduled.map((req) => (
-            <div key={req.id} className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]">
+            <div key={req.id} className="rounded-2xl border border-border bg-card p-6 dark:border-border dark:bg-card">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="font-semibold text-[#156cdd] dark:text-[#b6ff2a]">
+                  <p className="font-semibold text-primary dark:text-primary">
                     {req.property_address || "Unknown address"}
                   </p>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {req.inspection_type}
                     {req.preferred_date ? ` · ${req.preferred_date}` : ""}
                     {" · "}{req.contractor_name || req.requested_by}
@@ -235,15 +235,15 @@ export default async function InspectionsPage({
 
         {done.length > 0 && (
           <div className="mt-12">
-            <h2 className="text-lg font-semibold text-slate-500">Results</h2>
+            <h2 className="text-lg font-semibold text-muted-foreground">Results</h2>
             <div className="mt-4 space-y-3">
               {done.map((req) => (
-                <div key={req.id} className="rounded-xl border border-slate-100 bg-white/60 px-5 py-4 text-sm dark:border-slate-800 dark:bg-[#090909]/60">
+                <div key={req.id} className="rounded-xl border border-border bg-card/80 px-5 py-4 text-sm dark:border-border dark:bg-card/60">
                   <span className="font-medium">{req.property_address}</span>
-                  <span className="mx-2 text-slate-400">·</span>
+                  <span className="mx-2 text-muted-foreground">·</span>
                   <span>{req.inspection_type}</span>
-                  <span className="mx-2 text-slate-400">·</span>
-                  <span className="capitalize text-slate-500">{req.status}</span>
+                  <span className="mx-2 text-muted-foreground">·</span>
+                  <span className="capitalize text-muted-foreground">{req.status}</span>
                 </div>
               ))}
             </div>

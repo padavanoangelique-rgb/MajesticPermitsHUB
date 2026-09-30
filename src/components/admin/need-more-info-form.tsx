@@ -39,7 +39,7 @@ export function NeedMoreInfoForm({
 
   if (!contractorEmail) {
     return (
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-muted-foreground">
         Assign a contractor with an email first. Then this button emails them a
         link back to the job.
       </p>
@@ -48,7 +48,7 @@ export function NeedMoreInfoForm({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-slate-600 dark:text-slate-300">
+      <p className="text-sm text-muted-foreground dark:text-muted-foreground">
         Sends to {contractorName || "the contractor"} at {contractorEmail}. The
         email includes an <strong>Attach here</strong> button to their Hub job.
       </p>
@@ -58,8 +58,8 @@ export function NeedMoreInfoForm({
           onClick={() => setKind("attachment")}
           className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
             kind === "attachment"
-              ? "bg-[#156cdd] text-white"
-              : "border border-slate-200 dark:border-slate-700"
+              ? "bg-primary text-white"
+              : "border border-border dark:border-border"
           }`}
         >
           Attachment needed
@@ -69,8 +69,8 @@ export function NeedMoreInfoForm({
           onClick={() => setKind("note")}
           className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
             kind === "note"
-              ? "bg-[#156cdd] text-white"
-              : "border border-slate-200 dark:border-slate-700"
+              ? "bg-primary text-white"
+              : "border border-border dark:border-border"
           }`}
         >
           Note needed
@@ -85,15 +85,15 @@ export function NeedMoreInfoForm({
             ? "e.g. Please upload the signed NOC and product approval."
             : "e.g. Confirm the existing window sizes before we submit."
         }
-        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+        className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background dark:text-white"
       />
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-red-200">{error}</p>}
       {ok && <p className="text-xs text-green-600">{ok}</p>}
       <button
         type="button"
         onClick={send}
         disabled={busy || !message.trim()}
-        className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+        className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
       >
         {busy ? "Sending…" : "Need more information"}
       </button>

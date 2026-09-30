@@ -68,31 +68,31 @@ export default function NewJobPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#090909]">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card dark:border-border dark:bg-card">
         <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4 sm:px-6">
-          <Link href="/admin" className="text-sm font-medium text-slate-500 hover:text-[#156cdd]">
+          <Link href="/admin" className="text-sm font-medium text-muted-foreground hover:text-primary">
             ← Back to jobs
           </Link>
-          <p className="text-sm font-semibold text-[#156cdd] dark:text-white">New Job</p>
+          <p className="text-sm font-semibold text-primary dark:text-white">New Job</p>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <h1 className="text-2xl font-bold text-[#156cdd] dark:text-white">Create new job</h1>
+        <h1 className="text-2xl font-bold text-primary dark:text-white">Create new job</h1>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-sm font-medium">Client type</label>
-              <select name="client_type" required className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]">
+              <select name="client_type" required className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card">
                 <option value="homeowner">Homeowner</option>
                 <option value="contractor">Contractor</option>
               </select>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium">Brand</label>
-              <select name="brand" required className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]">
+              <select name="brand" required className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card">
                 <option value="Majestic Permits">Majestic Permits</option>
                 <option value="The Permit Closer">The Permit Closer</option>
               </select>
@@ -101,7 +101,7 @@ export default function NewJobPage() {
 
           <div>
             <label className="mb-1.5 block text-sm font-medium">Assign to contractor</label>
-            <select name="contractor_id" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]">
+            <select name="contractor_id" className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card">
               <option value="">Not assigned (homeowner-only job)</option>
               {contractors.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -109,64 +109,64 @@ export default function NewJobPage() {
                 </option>
               ))}
             </select>
-            <p className="mt-1.5 text-xs text-slate-500">
+            <p className="mt-1.5 text-xs text-muted-foreground">
               Assigning a contractor makes this job show up in their dashboard.
             </p>
           </div>
 
           <div>
             <label className="mb-1.5 block text-sm font-medium">Property address *</label>
-            <input name="property_address" required className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]" placeholder="123 Main St, Miami, FL" />
+            <input name="property_address" required className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card" placeholder="123 Main St, Miami, FL" />
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-sm font-medium">Homeowner name</label>
-              <input name="homeowner_name" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]" />
+              <input name="homeowner_name" className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card" />
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium">Homeowner email</label>
-              <input name="homeowner_email" type="email" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]" />
+              <input name="homeowner_email" type="email" className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card" />
             </div>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-sm font-medium">Phone</label>
-              <input name="homeowner_phone" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]" />
+              <input name="homeowner_phone" className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card" />
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium">Trade type</label>
-              <input name="trade_type" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]" placeholder="Windows, Roofing, etc." />
+              <input name="trade_type" className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card" placeholder="Windows, Roofing, etc." />
             </div>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-sm font-medium">Jurisdiction</label>
-              <input name="jurisdiction" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]" placeholder="City of Hialeah" />
+              <input name="jurisdiction" className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card" placeholder="City of Hialeah" />
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium">Building dept. portal URL</label>
-              <input name="building_dept_url" type="url" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]" placeholder="https://hialeahfl.gov/permits" />
+              <input name="building_dept_url" type="url" className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card" placeholder="https://hialeahfl.gov/permits" />
             </div>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-sm font-medium">Permit number</label>
-              <input name="permit_number" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]" />
+              <input name="permit_number" className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card" />
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium">Permit ETA</label>
-              <input name="permit_eta" type="date" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]" />
+              <input name="permit_eta" type="date" className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card" />
             </div>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-sm font-medium">Stage</label>
-              <select name="stage" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]">
+              <select name="stage" className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card">
                 <option>Getting your project ready</option>
                 <option>Submitted to the city</option>
                 <option>Under review</option>
@@ -179,7 +179,7 @@ export default function NewJobPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium">Sub status</label>
-              <select name="sub_status" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]">
+              <select name="sub_status" className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card">
                 <option>Need to Submit</option>
                 <option>In Review</option>
                 <option>Approved</option>
@@ -191,22 +191,22 @@ export default function NewJobPage() {
 
           <div>
             <label className="mb-1.5 block text-sm font-medium">Next step</label>
-            <input name="next_step" className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]" placeholder="What happens next..." />
+            <input name="next_step" className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card" placeholder="What happens next..." />
           </div>
 
           <div>
             <label className="mb-1.5 block text-sm font-medium">Notes (visible to homeowner)</label>
-            <textarea name="notes" rows={3} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]" />
+            <textarea name="notes" rows={3} className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card" />
           </div>
 
           {error && (
-            <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
+            <p className="rounded-xl bg-red-950/30 px-4 py-3 text-sm text-red-200">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-[#156cdd] py-3.5 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
+            className="w-full rounded-xl bg-primary py-3.5 text-sm font-semibold text-white hover:bg-primary disabled:opacity-60"
           >
             {loading ? "Creating..." : "Create job + tracking link"}
           </button>

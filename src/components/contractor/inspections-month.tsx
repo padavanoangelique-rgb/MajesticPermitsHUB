@@ -28,9 +28,9 @@ export type CalendarEvent = {
 };
 
 const KIND_CLASS: Record<CalendarEvent["kind"], string> = {
-  pending: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
-  scheduled: "bg-[#156cdd]/15 text-[#156cdd] dark:bg-[#9CE824]/20 dark:text-[#9CE824]",
-  result: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+  pending: "bg-amber-100 text-amber-200 dark:bg-amber-900/40 dark:text-amber-200",
+  scheduled: "bg-primary/15 text-primary dark:bg-primary/20 dark:text-primary",
+  result: "bg-secondary text-muted-foreground dark:bg-secondary dark:text-muted-foreground",
 };
 
 export function InspectionsMonth({ events }: { events: CalendarEvent[] }) {
@@ -59,29 +59,29 @@ export function InspectionsMonth({ events }: { events: CalendarEvent[] }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-[#090909]">
+      <div className="rounded-2xl border border-border bg-card p-4 dark:border-border dark:bg-card">
         <div className="mb-3 flex items-center justify-between">
           <button
             type="button"
             onClick={() => setCursor((d) => addMonths(d, -1))}
-            className="rounded-lg border border-slate-200 px-3 py-1 text-sm dark:border-slate-600"
+            className="rounded-lg border border-border px-3 py-1 text-sm dark:border-border"
           >
             Prev
           </button>
-          <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
+          <p className="text-sm font-semibold text-primary dark:text-white">
             {format(cursor, "MMMM yyyy")}
           </p>
           <button
             type="button"
             onClick={() => setCursor((d) => addMonths(d, 1))}
-            className="rounded-lg border border-slate-200 px-3 py-1 text-sm dark:border-slate-600"
+            className="rounded-lg border border-border px-3 py-1 text-sm dark:border-border"
           >
             Next
           </button>
         </div>
         <div className="grid grid-cols-7 gap-1">
           {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
-            <div key={`${d}-${i}`} className="py-1 text-center text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+            <div key={`${d}-${i}`} className="py-1 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               {d}
             </div>
           ))}
@@ -97,10 +97,10 @@ export function InspectionsMonth({ events }: { events: CalendarEvent[] }) {
                 className={
                   "min-h-[72px] rounded-xl border p-1 text-left " +
                   (on
-                    ? "border-[#156cdd] bg-[#156cdd]/5 dark:border-[#9CE824] dark:bg-[#9CE824]/10 "
-                    : "border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/40 ") +
+                    ? "border-primary bg-primary/5 dark:border-primary dark:bg-primary/10 "
+                    : "border-transparent hover:bg-secondary dark:hover:bg-secondary/40 ") +
                   (isSameMonth(day, cursor) ? "" : "opacity-40 ") +
-                  (isSameDay(day, new Date()) && !on ? "ring-1 ring-inset ring-[#156cdd]/30 " : "")
+                  (isSameDay(day, new Date()) && !on ? "ring-1 ring-inset ring-primary/30 " : "")
                 }
               >
                 <span className="block text-xs font-semibold">{format(day, "d")}</span>
@@ -118,29 +118,29 @@ export function InspectionsMonth({ events }: { events: CalendarEvent[] }) {
             );
           })}
         </div>
-        <div className="mt-3 flex flex-wrap gap-3 text-[11px] text-slate-500">
-          <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-800">Pending request</span>
-          <span className="rounded bg-[#156cdd]/15 px-2 py-0.5 text-[#156cdd]">Scheduled by Majestic</span>
-          <span className="rounded bg-slate-100 px-2 py-0.5">Result on file</span>
+        <div className="mt-3 flex flex-wrap gap-3 text-[11px] text-muted-foreground">
+          <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-200">Pending request</span>
+          <span className="rounded bg-primary/15 px-2 py-0.5 text-primary">Scheduled by Majestic</span>
+          <span className="rounded bg-secondary px-2 py-0.5">Result on file</span>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-[#090909]">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <div className="rounded-2xl border border-border bg-card p-5 dark:border-border dark:bg-card">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {format(new Date(selected + "T12:00:00"), "EEEE, MMM d")}
         </p>
         {selectedEvents.length === 0 ? (
-          <p className="mt-4 text-sm text-slate-500">Nothing on this day.</p>
+          <p className="mt-4 text-sm text-muted-foreground">Nothing on this day.</p>
         ) : (
           <ul className="mt-4 space-y-4">
             {selectedEvents.map((ev) => (
-              <li key={ev.id} className="rounded-xl border border-slate-100 p-3 dark:border-slate-800">
-                <p className="text-sm font-semibold text-[#156cdd] dark:text-white">{ev.title}</p>
-                <p className="text-xs text-slate-500">{ev.address}</p>
-                <p className="mt-1 text-xs capitalize text-slate-500">{ev.kind} · {ev.status.replace(/_/g, " ")}</p>
+              <li key={ev.id} className="rounded-xl border border-border p-3 dark:border-border">
+                <p className="text-sm font-semibold text-primary dark:text-white">{ev.title}</p>
+                <p className="text-xs text-muted-foreground">{ev.address}</p>
+                <p className="mt-1 text-xs capitalize text-muted-foreground">{ev.kind} · {ev.status.replace(/_/g, " ")}</p>
                 <a
                   href={`/dashboard/projects/${ev.jobId}`}
-                  className="mt-2 inline-block text-xs font-medium text-[#156cdd] underline"
+                  className="mt-2 inline-block text-xs font-medium text-primary underline"
                 >
                   Open job
                 </a>

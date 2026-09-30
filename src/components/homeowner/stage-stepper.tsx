@@ -22,7 +22,7 @@ export function StageStepper({ stages, currentIndex }: StageStepperProps) {
       <div className="hidden sm:block">
         <div className="relative flex justify-between">
           {/* Progress line */}
-          <div className="absolute left-0 top-5 h-0.5 w-full bg-slate-200 dark:bg-slate-700" />
+          <div className="absolute left-0 top-5 h-0.5 w-full bg-secondary dark:bg-secondary" />
           <motion.div
             className="absolute left-0 top-5 h-0.5 bg-primary"
             initial={{ width: "0%" }}
@@ -51,7 +51,7 @@ export function StageStepper({ stages, currentIndex }: StageStepperProps) {
                       "border-primary bg-background text-primary ring-4 ring-primary/30",
                     !isCompleted &&
                       !isCurrent &&
-                      "border-slate-300 bg-white text-slate-400 dark:border-slate-600 dark:bg-surface-dark"
+                      "border-border bg-card text-muted-foreground dark:border-border dark:bg-surface-dark"
                   )}
                 >
                   {isCompleted ? (
@@ -94,7 +94,7 @@ export function StageStepper({ stages, currentIndex }: StageStepperProps) {
                       "border-primary bg-background text-primary ring-4 ring-primary/30",
                     !isCompleted &&
                       !isCurrent &&
-                      "border-slate-300 text-slate-400"
+                      "border-border text-muted-foreground"
                   )}
                 >
                   {isCompleted ? (
@@ -107,7 +107,7 @@ export function StageStepper({ stages, currentIndex }: StageStepperProps) {
                   <div
                     className={cn(
                       "w-0.5 flex-1 min-h-[28px]",
-                      isCompleted ? "bg-primary" : "bg-slate-200"
+                      isCompleted ? "bg-primary" : "bg-secondary"
                     )}
                   />
                 )}

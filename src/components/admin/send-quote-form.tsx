@@ -81,8 +81,8 @@ export function SendQuoteForm({
           disabled={!hasContractor}
           className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
             billTo === "contractor"
-              ? "bg-[#156cdd] text-white"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-40 dark:bg-slate-700 dark:text-slate-200"
+              ? "bg-primary text-white"
+              : "bg-secondary text-foreground hover:bg-secondary disabled:opacity-40 dark:bg-secondary dark:text-foreground"
           }`}
         >
           Bill contractor
@@ -92,8 +92,8 @@ export function SendQuoteForm({
           onClick={() => setBillTo("homeowner")}
           className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
             billTo === "homeowner"
-              ? "bg-[#156cdd] text-white"
-              : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200"
+              ? "bg-primary text-white"
+              : "bg-secondary text-foreground hover:bg-secondary dark:bg-secondary dark:text-foreground"
           }`}
         >
           Bill homeowner
@@ -102,7 +102,7 @@ export function SendQuoteForm({
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-slate-500">
+          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
             Amount (USD)
           </label>
           <input
@@ -113,24 +113,24 @@ export function SendQuoteForm({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="750.00"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+            className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background dark:text-white"
           />
         </div>
         <div className="sm:col-span-2">
-          <label className="mb-1.5 block text-xs font-medium text-slate-500">
+          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
             What it covers
           </label>
           <input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Permit application + city fees"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+            className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background dark:text-white"
           />
         </div>
       </div>
 
       <div>
-        <label className="mb-1.5 block text-xs font-medium text-slate-500">
+        <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
           Permit receipts (attached to the invoice email)
         </label>
         <input
@@ -138,10 +138,10 @@ export function SendQuoteForm({
           multiple
           accept=".pdf,.png,.jpg,.jpeg,.webp"
           onChange={(e) => setReceipts(Array.from(e.target.files || []).slice(0, 5))}
-          className="block w-full text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-[#156cdd] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white"
+          className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white"
         />
         {receipts.length > 0 && (
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             {receipts.map((f) => f.name).join(", ")}
           </p>
         )}
@@ -149,7 +149,7 @@ export function SendQuoteForm({
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-slate-500">
+          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
             Expires in (days)
           </label>
           <input
@@ -158,15 +158,15 @@ export function SendQuoteForm({
             max="180"
             value={expiresInDays}
             onChange={(e) => setExpiresInDays(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+            className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background dark:text-white"
           />
         </div>
-        <label className="mt-6 flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300 sm:col-span-2">
+        <label className="mt-6 flex items-center gap-2 text-xs font-medium text-muted-foreground dark:text-muted-foreground sm:col-span-2">
           <input
             type="checkbox"
             checked={sendEmail}
             onChange={(e) => setSendEmail(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300"
+            className="h-4 w-4 rounded border-border"
           />
           Email the quote / invoice now
         </label>
@@ -175,7 +175,7 @@ export function SendQuoteForm({
       <button
         type="submit"
         disabled={loading}
-        className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+        className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
       >
         {loading
           ? "Creating…"
@@ -185,11 +185,11 @@ export function SendQuoteForm({
       </button>
 
       {error && (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+        <p className="rounded-xl bg-red-950/30 px-3 py-2 text-sm text-red-200">{error}</p>
       )}
 
       {(payUrl || approvalUrl) && (
-        <div className="space-y-2 rounded-xl bg-green-50 px-3 py-2 text-sm text-green-800">
+        <div className="space-y-2 rounded-xl bg-emerald-950/30 px-3 py-2 text-sm text-emerald-200">
           <p className="font-medium">
             Quote created{sendEmail && emailed ? " and emailed" : ""}.
           </p>

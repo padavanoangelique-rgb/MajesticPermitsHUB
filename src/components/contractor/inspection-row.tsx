@@ -169,18 +169,18 @@ export function InspectionRow({
         }
       >
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
+          <p className="text-sm font-semibold text-primary dark:text-white">
             Inspection {i.slot}
             {i.inspection_type ? ` · ${i.inspection_type}` : ""}
           </p>
-          <p className="text-xs text-slate-500">{subline}</p>
+          <p className="text-xs text-muted-foreground">{subline}</p>
           {localPhone && (
-            <p className="mt-0.5 text-xs text-slate-500">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               On-site {formatPhone(localPhone)}
             </p>
           )}
           {canOpen && !open && (
-            <p className="mt-0.5 text-xs text-slate-400">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               {isPendingRequest
                 ? "Click to edit, cancel, or change the date"
                 : "Click to pick a date and request"}
@@ -190,8 +190,8 @@ export function InspectionRow({
         <span
           className={
             EDITABLE_STATUSES.has(localStatus)
-              ? "rounded-full bg-[#156cdd]/10 px-2.5 py-1 text-xs font-semibold text-[#156cdd] dark:bg-[#9CE824]/15 dark:text-[#9CE824]"
-              : "rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+              ? "rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary dark:bg-primary/15 dark:text-primary"
+              : "rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-foreground dark:bg-secondary dark:text-foreground"
           }
         >
           {loading ? "Saving..." : STATUS_LABEL[localStatus] ?? localStatus}
@@ -200,10 +200,10 @@ export function InspectionRow({
 
       {canOpen && open && (
         <div
-          className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/40"
+          className="mt-3 rounded-xl border border-border bg-secondary p-3 dark:border-border dark:bg-secondary/40"
           onClick={(e) => e.stopPropagation()}
         >
-          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             Requested date
           </label>
           <InspectionDateCalendar
@@ -213,7 +213,7 @@ export function InspectionRow({
             disabled={loading}
           />
 
-          <label className="mb-1.5 mt-4 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <label className="mb-1.5 mt-4 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             On-site contact number
           </label>
           <input
@@ -224,14 +224,14 @@ export function InspectionRow({
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             disabled={loading}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+            className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground dark:border-border dark:bg-background dark:text-white"
           />
-          <p className="mt-1.5 text-[11px] text-slate-400">
+          <p className="mt-1.5 text-[11px] text-muted-foreground">
             Who the inspector should call on site.
           </p>
 
           {error && (
-            <p className="mt-2 rounded-lg bg-red-50 px-2 py-1 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-300">
+            <p className="mt-2 rounded-lg bg-red-950/30 px-2 py-1 text-xs text-red-200 dark:bg-red-900/20 dark:text-red-300">
               {error}
             </p>
           )}
@@ -243,7 +243,7 @@ export function InspectionRow({
                   type="button"
                   onClick={() => submit("edit")}
                   disabled={loading || !selectedDate}
-                  className="rounded-lg bg-[#156cdd] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
+                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary disabled:opacity-60"
                 >
                   {loading ? "Saving..." : "Save changes"}
                 </button>
@@ -251,7 +251,7 @@ export function InspectionRow({
                   type="button"
                   onClick={() => submit("cancel")}
                   disabled={loading}
-                  className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-60 dark:border-red-900 dark:text-red-300"
+                  className="rounded-lg border border-red-800/40 px-3 py-1.5 text-xs font-semibold text-red-200 hover:bg-red-950/30 disabled:opacity-60 dark:border-red-900 dark:text-red-300"
                 >
                   Cancel request
                 </button>
@@ -261,7 +261,7 @@ export function InspectionRow({
                 type="button"
                 onClick={() => submit("request")}
                 disabled={loading || !selectedDate}
-                className="rounded-lg bg-[#156cdd] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
+                className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary disabled:opacity-60"
               >
                 {loading ? "Sending..." : "Request inspection"}
               </button>
@@ -270,7 +270,7 @@ export function InspectionRow({
               type="button"
               onClick={() => setOpen(false)}
               disabled={loading}
-              className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary dark:hover:bg-secondary"
             >
               Close
             </button>
@@ -279,7 +279,7 @@ export function InspectionRow({
       )}
 
       {canReport && (
-        <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/40">
+        <div className="mt-3 rounded-xl border border-border bg-secondary p-3 dark:border-border dark:bg-secondary/40">
           <ContractorResultForm
             inspectionId={i.id}
             isFinal={isFinalInspection(i)}
@@ -288,7 +288,7 @@ export function InspectionRow({
       )}
 
       {i.correction_notes && (
-        <p className="mt-1 px-1 text-xs text-slate-500">
+        <p className="mt-1 px-1 text-xs text-muted-foreground">
           Notes: {i.correction_notes}
         </p>
       )}

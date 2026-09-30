@@ -35,7 +35,7 @@ export function DashboardViewSwitch({
   ];
 
   return (
-    <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-[#090909]">
+    <div className="inline-flex rounded-xl border border-border bg-card p-1 dark:border-border dark:bg-card">
       {options.map((opt) => {
         const active = view === opt.value;
         return (
@@ -46,8 +46,8 @@ export function DashboardViewSwitch({
             className={
               "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors " +
               (active
-                ? "bg-[#156cdd] text-white"
-                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200")
+                ? "bg-primary text-white"
+                : "text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground")
             }
           >
             <opt.Icon className="h-4 w-4" />

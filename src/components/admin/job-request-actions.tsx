@@ -37,7 +37,7 @@ export function JobRequestActions({ id }: { id: string }) {
           type="button"
           disabled={busy}
           onClick={() => act("approve")}
-          className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary disabled:opacity-60"
         >
           {busy ? "Saving…" : "Approve + add job"}
         </button>
@@ -45,12 +45,12 @@ export function JobRequestActions({ id }: { id: string }) {
           type="button"
           disabled={busy}
           onClick={() => act("decline")}
-          className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 disabled:opacity-60 dark:border-slate-700"
+          className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-muted-foreground disabled:opacity-60 dark:border-border"
         >
           Decline
         </button>
       </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-red-200">{error}</p>}
     </div>
   );
 }

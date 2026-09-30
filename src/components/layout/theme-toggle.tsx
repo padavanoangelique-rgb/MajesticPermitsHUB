@@ -29,14 +29,14 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800"
+      className="rounded-full p-2 text-muted-foreground transition hover:bg-secondary dark:hover:bg-secondary"
       aria-label="Toggle theme"
       title={theme === "dark" ? "Switch to white + blue" : "Switch to black + lime"}
     >
       {theme === "dark" ? (
-        <Sun className="h-5 w-5 text-[#b6ff2a]" />
+        <Sun className="h-5 w-5 text-primary" />
       ) : (
-        <Moon className="h-5 w-5 text-[#156cdd]" />
+        <Moon className="h-5 w-5 text-primary" />
       )}
     </button>
   );

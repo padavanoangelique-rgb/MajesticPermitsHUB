@@ -52,7 +52,7 @@ export function DeleteJobButton({
           setTyped("");
           setError(null);
         }}
-        className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-3 py-1.5 text-sm font-medium text-red-600 hover:border-red-300 hover:bg-red-50 dark:border-red-900/50 dark:bg-transparent dark:hover:bg-red-950/30"
+        className="inline-flex items-center gap-2 rounded-xl border border-red-800/40 bg-card px-3 py-1.5 text-sm font-medium text-red-200 hover:border-red-300 hover:bg-red-950/30 dark:border-red-900/50 dark:bg-transparent dark:hover:bg-red-950/30"
       >
         <Trash2 className="h-4 w-4" />
         Delete job
@@ -60,27 +60,27 @@ export function DeleteJobButton({
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4"
           onClick={() => !deleting && setOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-[#090909]"
+            className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl dark:border-border dark:bg-card"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-semibold text-[#156cdd] dark:text-white">
+            <h2 className="text-lg font-semibold text-primary dark:text-white">
               Delete this job permanently?
             </h2>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            <p className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground">
               This will also delete every document, inspection slot, quote,
               homeowner link, and history entry attached to it. This cannot be
               undone.
             </p>
 
-            <div className="mt-4 rounded-xl bg-slate-50 p-3 text-sm dark:bg-slate-800/50">
-              <p className="text-slate-500 dark:text-slate-400">
+            <div className="mt-4 rounded-xl bg-secondary p-3 text-sm dark:bg-secondary/50">
+              <p className="text-muted-foreground dark:text-muted-foreground">
                 Type the property address to confirm:
               </p>
-              <p className="mt-1 font-semibold text-[#156cdd] dark:text-white">
+              <p className="mt-1 font-semibold text-primary dark:text-white">
                 {propertyAddress}
               </p>
             </div>
@@ -91,11 +91,11 @@ export function DeleteJobButton({
               onChange={(e) => setTyped(e.target.value)}
               placeholder="Retype the address"
               disabled={deleting}
-              className="mt-3 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              className="mt-3 w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-border disabled:opacity-60 dark:border-border dark:bg-background dark:text-foreground"
             />
 
             {error && (
-              <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+              <p className="mt-3 text-sm text-red-200 dark:text-red-400">
                 {error}
               </p>
             )}
@@ -105,7 +105,7 @@ export function DeleteJobButton({
                 type="button"
                 onClick={() => setOpen(false)}
                 disabled={deleting}
-                className="rounded-xl px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-60 dark:text-slate-300 dark:hover:bg-slate-800"
+                className="rounded-xl px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary disabled:opacity-60 dark:text-muted-foreground dark:hover:bg-secondary"
               >
                 Cancel
               </button>

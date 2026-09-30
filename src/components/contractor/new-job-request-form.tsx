@@ -51,15 +51,15 @@ export function NewJobRequestForm() {
 
   if (done) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-[#090909]">
-        <p className="text-lg font-semibold text-[#156cdd] dark:text-white">Request sent</p>
-        <p className="mt-2 text-sm text-slate-500">
+      <div className="rounded-2xl border border-border bg-card p-8 text-center dark:border-border dark:bg-card">
+        <p className="text-lg font-semibold text-primary dark:text-white">Request sent</p>
+        <p className="mt-2 text-sm text-muted-foreground">
           Majestic has the address and documents. You will see the job here after it is approved.
         </p>
         <button
           type="button"
           onClick={() => router.push("/dashboard")}
-          className="mt-6 rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white"
+          className="mt-6 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white"
         >
           Back to projects
         </button>
@@ -75,7 +75,7 @@ export function NewJobRequestForm() {
           name="property_address"
           required
           placeholder="123 Main St, Miami, FL"
-          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]"
+          className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card"
         />
       </div>
       <div className="grid gap-5 sm:grid-cols-2">
@@ -83,7 +83,7 @@ export function NewJobRequestForm() {
           <label className="mb-1.5 block text-sm font-medium">Trade</label>
           <select
             name="trade_type"
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]"
+            className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card"
           >
             <option value="">Select trade</option>
             {TRADES.map((t) => (
@@ -96,7 +96,7 @@ export function NewJobRequestForm() {
           <input
             name="jurisdiction"
             placeholder="Pembroke Pines"
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]"
+            className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card"
           />
         </div>
       </div>
@@ -105,7 +105,7 @@ export function NewJobRequestForm() {
           <label className="mb-1.5 block text-sm font-medium">Homeowner name</label>
           <input
             name="homeowner_name"
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]"
+            className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card"
           />
         </div>
         <div>
@@ -113,7 +113,7 @@ export function NewJobRequestForm() {
           <input
             name="homeowner_phone"
             type="tel"
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]"
+            className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card"
           />
         </div>
       </div>
@@ -122,7 +122,7 @@ export function NewJobRequestForm() {
         <input
           name="homeowner_email"
           type="email"
-          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]"
+          className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card"
         />
       </div>
       <div>
@@ -131,7 +131,7 @@ export function NewJobRequestForm() {
           name="notes"
           rows={3}
           placeholder="Scope, existing permit #, HOA, anything we should know."
-          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-600 dark:bg-[#090909]"
+          className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm dark:border-border dark:bg-card"
         />
       </div>
       <div>
@@ -141,10 +141,10 @@ export function NewJobRequestForm() {
           multiple
           accept=".pdf,.png,.jpg,.jpeg,.heic,.webp,.doc,.docx,.xls,.xlsx"
           onChange={(e) => onFiles(e.target.files)}
-          className="block w-full text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-[#156cdd] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white"
+          className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white"
         />
         {files.length > 0 && (
-          <ul className="mt-2 space-y-1 text-xs text-slate-500">
+          <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
             {files.map((file, idx) => (
               <li key={`${file.name}-${idx}`} className="flex items-center justify-between">
                 <span className="truncate">{file.name}</span>
@@ -159,19 +159,19 @@ export function NewJobRequestForm() {
             ))}
           </ul>
         )}
-        <p className="mt-1.5 text-[11px] text-slate-400">
+        <p className="mt-1.5 text-[11px] text-muted-foreground">
           Plans, NOC, product approvals, photos. PDF or image, 8MB each.
         </p>
       </div>
       {error && (
-        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-300">
+        <p className="rounded-xl bg-red-950/30 px-4 py-3 text-sm text-red-200 dark:bg-red-900/20 dark:text-red-300">
           {error}
         </p>
       )}
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-xl bg-[#156cdd] py-3.5 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
+        className="w-full rounded-xl bg-primary py-3.5 text-sm font-semibold text-white hover:bg-primary disabled:opacity-60"
       >
         {loading ? "Sending…" : "Send job request"}
       </button>

@@ -3,55 +3,53 @@
 @tailwind utilities;
 
 /*
- * Majestic Permits unified design system.
- * Light  = white + blue (#156cdd)
- * Dark   = black + lime (#b6ff2a)
- * No navy. No gold.
+ * Majestic palette: deep navy, electric blue, violet.
+ * Same colors in light and dark so every view matches.
  */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 4%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 4%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 4%;
-    --primary: 215 74% 47%;
+    --background: 226 48% 5%;
+    --foreground: 220 40% 96%;
+    --card: 224 42% 11%;
+    --card-foreground: 220 40% 96%;
+    --popover: 224 42% 11%;
+    --popover-foreground: 220 40% 96%;
+    --primary: 226 100% 67%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 95%;
-    --secondary-foreground: 0 0% 4%;
-    --muted: 0 0% 95%;
-    --muted-foreground: 0 0% 35%;
-    --accent: 0 0% 95%;
-    --accent-foreground: 0 0% 4%;
-    --destructive: 0 84% 60%;
+    --secondary: 225 36% 15%;
+    --secondary-foreground: 220 30% 94%;
+    --muted: 225 32% 16%;
+    --muted-foreground: 222 18% 72%;
+    --accent: 262 95% 76%;
+    --accent-foreground: 226 48% 8%;
+    --destructive: 0 72% 58%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 87%;
-    --input: 0 0% 87%;
-    --ring: 215 74% 47%;
+    --border: 224 28% 22%;
+    --input: 226 42% 8%;
+    --ring: 258 90% 70%;
     --radius: 1rem;
   }
 
   .dark {
-    --background: 0 0% 2%;
-    --foreground: 60 20% 95%;
-    --card: 0 0% 7%;
-    --card-foreground: 60 20% 95%;
-    --popover: 0 0% 7%;
-    --popover-foreground: 60 20% 95%;
-    --primary: 84 100% 58%;
-    --primary-foreground: 0 0% 4%;
-    --secondary: 0 0% 9%;
-    --secondary-foreground: 60 20% 95%;
-    --muted: 0 0% 9%;
-    --muted-foreground: 90 6% 60%;
-    --accent: 84 100% 70%;
-    --accent-foreground: 0 0% 4%;
-    --destructive: 0 62% 50%;
+    --background: 226 48% 5%;
+    --foreground: 220 40% 96%;
+    --card: 224 42% 11%;
+    --card-foreground: 220 40% 96%;
+    --popover: 224 42% 11%;
+    --popover-foreground: 220 40% 96%;
+    --primary: 226 100% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 225 36% 15%;
+    --secondary-foreground: 220 30% 94%;
+    --muted: 225 32% 16%;
+    --muted-foreground: 222 18% 72%;
+    --accent: 262 95% 76%;
+    --accent-foreground: 226 48% 8%;
+    --destructive: 0 72% 58%;
     --destructive-foreground: 0 0% 100%;
-    --border: 84 40% 18%;
-    --input: 0 0% 16%;
-    --ring: 84 100% 58%;
+    --border: 224 28% 22%;
+    --input: 226 42% 8%;
+    --ring: 258 90% 70%;
   }
 }
 
@@ -61,9 +59,22 @@
   }
   html {
     font-size: 17px;
+    color-scheme: dark;
   }
   body {
     @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  .bg-primary {
+    background-image: linear-gradient(105deg, #3d6cff 0%, #7a4dff 100%);
+  }
+  .text-majestic {
+    background-image: linear-gradient(100deg, #8eb6ff 0%, #c4b5ff 55%, #8b6cff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 }
 

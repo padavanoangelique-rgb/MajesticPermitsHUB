@@ -54,11 +54,11 @@ export function MarkHandledButton({
       <button
         onClick={handle}
         disabled={loading}
-        className="rounded-xl bg-[#156cdd] px-3 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-50 dark:bg-[#b6ff2a] dark:text-black"
+        className="rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary disabled:opacity-50 dark:bg-primary dark:text-primary-foreground"
       >
         {loading ? "..." : label}
       </button>
-      {msg && <span className="text-[11px] text-slate-500">{msg}</span>}
+      {msg && <span className="text-[11px] text-muted-foreground">{msg}</span>}
     </div>
   );
 }

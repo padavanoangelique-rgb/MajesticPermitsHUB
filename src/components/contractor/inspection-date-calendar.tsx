@@ -45,18 +45,18 @@ export function InspectionDateCalendar({
           type="button"
           disabled={disabled}
           onClick={() => setCursor((d) => addMonths(d, -1))}
-          className="rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-600"
+          className="rounded-lg border border-border px-2 py-1 text-xs dark:border-border"
         >
           Prev
         </button>
-        <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
+        <p className="text-sm font-semibold text-primary dark:text-white">
           {format(cursor, "MMMM yyyy")}
         </p>
         <button
           type="button"
           disabled={disabled}
           onClick={() => setCursor((d) => addMonths(d, 1))}
-          className="rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-600"
+          className="rounded-lg border border-border px-2 py-1 text-xs dark:border-border"
         >
           Next
         </button>
@@ -66,7 +66,7 @@ export function InspectionDateCalendar({
         {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
           <div
             key={`${d}-${i}`}
-            className="py-1 text-center text-[10px] font-semibold uppercase tracking-wide text-slate-400"
+            className="py-1 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"
           >
             {d}
           </div>
@@ -85,12 +85,12 @@ export function InspectionDateCalendar({
               className={
                 "h-9 rounded-lg text-xs font-medium " +
                 (selected
-                  ? "bg-[#156cdd] text-white dark:bg-[#9CE824] dark:text-black "
+                  ? "bg-primary text-white dark:bg-primary dark:text-primary-foreground "
                   : canPick
-                    ? "bg-white text-slate-800 hover:bg-[#156cdd]/10 dark:bg-[#020202] dark:text-white "
-                    : "text-slate-300 dark:text-slate-600 ") +
+                    ? "bg-card text-foreground hover:bg-primary/10 dark:bg-background dark:text-white "
+                    : "text-muted-foreground dark:text-muted-foreground ") +
                 (isSameMonth(day, cursor) ? "" : "opacity-40 ") +
-                (isSameDay(day, new Date()) && !selected ? "ring-1 ring-inset ring-[#156cdd]/40 " : "") +
+                (isSameDay(day, new Date()) && !selected ? "ring-1 ring-inset ring-primary/40 " : "") +
                 (weekend && !canPick ? "cursor-not-allowed " : "")
               }
             >
@@ -99,7 +99,7 @@ export function InspectionDateCalendar({
           );
         })}
       </div>
-      <p className="mt-2 text-[11px] text-slate-400">
+      <p className="mt-2 text-[11px] text-muted-foreground">
         Weekdays only. Earliest date follows the noon cutoff and skips weekends.
       </p>
     </div>

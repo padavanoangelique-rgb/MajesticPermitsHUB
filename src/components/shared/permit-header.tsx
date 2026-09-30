@@ -35,23 +35,23 @@ export function PermitHeader({
 
   if (variant === "compact") {
     return (
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <span>
-          <span className="font-medium text-slate-700 dark:text-slate-200">
+          <span className="font-medium text-foreground dark:text-foreground">
             Permit
           </span>{" "}
           {permitDisplay}
         </span>
         <span aria-hidden="true">·</span>
         <span>
-          <span className="font-medium text-slate-700 dark:text-slate-200">
+          <span className="font-medium text-foreground dark:text-foreground">
             Submitted
           </span>{" "}
           {submittedDisplay}
         </span>
         <span aria-hidden="true">·</span>
         <span>
-          <span className="font-medium text-slate-700 dark:text-slate-200">
+          <span className="font-medium text-foreground dark:text-foreground">
             ETA
           </span>{" "}
           {etaDisplay}
@@ -61,7 +61,7 @@ export function PermitHeader({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-3 dark:border-slate-700 dark:bg-[#090909]">
+    <div className="grid grid-cols-1 gap-3 rounded-2xl border border-border bg-card p-4 sm:grid-cols-3 dark:border-border dark:bg-card">
       <Cell label="Permit #" value={permitDisplay} />
       <Cell label="Submitted" value={submittedDisplay} />
       <Cell label="Permit ETA" value={etaDisplay} highlight />
@@ -80,15 +80,15 @@ function Cell({
 }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
       <p
         className={
           "mt-1 text-sm font-semibold " +
           (highlight
-            ? "text-[#e2ba00] dark:text-[#9CE824]"
-            : "text-[#156cdd] dark:text-white")
+            ? "text-primary dark:text-primary"
+            : "text-primary dark:text-white")
         }
       >
         {value}

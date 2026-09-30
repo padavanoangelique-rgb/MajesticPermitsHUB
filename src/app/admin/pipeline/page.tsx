@@ -43,26 +43,26 @@ export default async function AdminPipelinePage() {
   }));
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#090909]">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card dark:border-border dark:bg-card">
         <div className="mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
           <Link href="/admin" className="flex items-center gap-3">
             <Logo size={36} />
-            <span className="font-semibold text-[#156cdd] dark:text-white">
+            <span className="font-semibold text-primary dark:text-white">
               Majestic Permits Admin
             </span>
           </Link>
           <nav className="flex items-center gap-6">
             <Link
               href="/admin"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-[#090909] dark:text-slate-200"
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground hover:border-border dark:border-border dark:bg-card dark:text-foreground"
             >
               <List className="h-4 w-4" />
               Table view
             </Link>
             <Link
               href="/admin/new"
-              className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8]"
+              className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary"
             >
               + New Job
             </Link>
@@ -70,7 +70,7 @@ export default async function AdminPipelinePage() {
             <form action="/auth/signout" method="post">
               <button
                 type="submit"
-                className="text-sm font-medium text-slate-500 hover:text-[#156cdd] dark:text-slate-400"
+                className="text-sm font-medium text-muted-foreground hover:text-primary dark:text-muted-foreground"
               >
                 Sign out
               </button>
@@ -81,10 +81,10 @@ export default async function AdminPipelinePage() {
 
       <main className="mx-auto max-w-screen-2xl px-4 py-10 sm:px-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#156cdd] dark:text-white">
+          <h1 className="text-2xl font-bold text-primary dark:text-white">
             Pipeline
           </h1>
-          <p className="mt-1 text-slate-500">
+          <p className="mt-1 text-muted-foreground">
             Drag a job card between stages to bump it. Click a card to open the
             job.
           </p>

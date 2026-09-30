@@ -24,7 +24,7 @@ export function CurrentStageCard({
   permitEta,
 }: CurrentStageCardProps) {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-soft dark:border-slate-800 dark:bg-surface-dark sm:p-10">
+    <div className="rounded-3xl border border-border bg-card p-8 shadow-soft dark:border-border dark:bg-surface-dark sm:p-10">
       <p className="text-sm font-semibold uppercase tracking-wider text-primary">
         Stage {stageNumber} of {totalStages}
       </p>
@@ -33,11 +33,11 @@ export function CurrentStageCard({
         {stage.title}
       </h2>
 
-      <p className="mt-5 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
+      <p className="mt-5 text-lg leading-relaxed text-muted-foreground dark:text-muted-foreground">
         {stage.description}
       </p>
 
-      <div className="mt-8 space-y-4 border-t border-slate-100 pt-6 dark:border-slate-800">
+      <div className="mt-8 space-y-4 border-t border-border pt-6 dark:border-border">
         <div>
           <p className="text-sm font-medium text-muted-foreground">
             What happens next

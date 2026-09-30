@@ -50,7 +50,7 @@ export function HomeownerShareControls({
     <div className="space-y-4">
       {link && (
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <code className="flex-1 truncate rounded-lg bg-slate-100 px-3 py-2 text-sm dark:bg-slate-800">
+          <code className="flex-1 truncate rounded-lg bg-secondary px-3 py-2 text-sm dark:bg-secondary">
             {url}
           </code>
           <button
@@ -58,7 +58,7 @@ export function HomeownerShareControls({
               navigator.clipboard.writeText(url);
               setMsg("Copied");
             }}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-secondary dark:border-border dark:hover:bg-secondary"
           >
             Copy link
           </button>
@@ -66,7 +66,7 @@ export function HomeownerShareControls({
       )}
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+        <label className="inline-flex items-center gap-2 text-sm text-muted-foreground dark:text-muted-foreground">
           <input
             type="checkbox"
             defaultChecked={link?.enabled ?? true}
@@ -75,7 +75,7 @@ export function HomeownerShareControls({
           Homeowner link enabled
         </label>
         <label className="block">
-          <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             Expires (optional)
           </span>
           <input
@@ -84,12 +84,12 @@ export function HomeownerShareControls({
             onBlur={(e) =>
               patch({ expires_at: e.currentTarget.value || null })
             }
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+            className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background"
           />
         </label>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         <button
           onClick={() => {
             if (
@@ -101,7 +101,7 @@ export function HomeownerShareControls({
             }
           }}
           disabled={busy}
-          className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+          className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-secondary dark:border-border dark:hover:bg-secondary"
         >
           Regenerate link
         </button>
@@ -116,7 +116,7 @@ export function HomeownerShareControls({
             )}
           </>
         )}
-        {msg && <span className="text-slate-500">{msg}</span>}
+        {msg && <span className="text-muted-foreground">{msg}</span>}
       </div>
     </div>
   );

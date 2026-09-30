@@ -94,26 +94,26 @@ export function InspectionSlotForm({
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5"
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-secondary dark:hover:bg-white/5"
       >
         <div className="flex min-w-0 items-center gap-3">
-          <span className="shrink-0 text-sm font-semibold text-[#156cdd] dark:text-white">
+          <span className="shrink-0 text-sm font-semibold text-primary dark:text-white">
             Inspection {slot.slot}
           </span>
-          <span className="truncate text-sm text-slate-500 dark:text-slate-400">
+          <span className="truncate text-sm text-muted-foreground dark:text-muted-foreground">
             {defaultType}
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-3">
           {summary && (
-            <span className="hidden text-xs text-slate-500 dark:text-slate-400 sm:inline">
+            <span className="hidden text-xs text-muted-foreground dark:text-muted-foreground sm:inline">
               {summary}
             </span>
           )}
           <StatusPill status={slot.status} />
           <ChevronDown
             className={
-              "h-4 w-4 text-slate-400 transition-transform " +
+              "h-4 w-4 text-muted-foreground transition-transform " +
               (open ? "rotate-180" : "")
             }
           />
@@ -123,7 +123,7 @@ export function InspectionSlotForm({
       {open && (
         <form
           action={save}
-          className="border-t border-slate-200 px-4 py-4 dark:border-slate-700"
+          className="border-t border-border px-4 py-4 dark:border-border"
         >
           <div className="grid gap-3 sm:grid-cols-3">
             <Field label="Type">
@@ -189,7 +189,7 @@ export function InspectionSlotForm({
               />
             </Field>
             <Field label="" className="sm:col-span-3">
-              <label className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+              <label className="inline-flex items-center gap-2 text-sm text-muted-foreground dark:text-muted-foreground">
                 <input
                   type="checkbox"
                   name="visible_to_homeowner"
@@ -204,27 +204,22 @@ export function InspectionSlotForm({
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             >
               {saving ? "Saving…" : "Save inspection"}
             </button>
-            {msg && <span className="text-xs text-slate-500">{msg}</span>}
+            {msg && <span className="text-xs text-muted-foreground">{msg}</span>}
           </div>
 
           <style jsx>{`
             :global(.input) {
               width: 100%;
               border-radius: 0.5rem;
-              border: 1px solid rgb(226 232 240);
-              background: #fff;
+              border: 1px solid hsl(224 28% 22%);
+              background: hsl(226 42% 8%);
               padding: 0.5rem 0.75rem;
               font-size: 0.875rem;
-              color: #0f172a;
-            }
-            :global(.dark .input) {
-              background: #0f172a;
-              border-color: rgb(51 65 85);
-              color: #e2e8f0;
+              color: hsl(220 40% 96%);
             }
           `}</style>
         </form>
@@ -259,7 +254,7 @@ function Field({
   return (
     <label className={"block " + className}>
       {label && (
-        <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+        <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           {label}
         </span>
       )}
@@ -270,22 +265,22 @@ function Field({
 
 function StatusPill({ status }: { status: string }) {
   const map: Record<string, string> = {
-    passed: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+    passed: "bg-green-100 text-emerald-200 dark:bg-green-900/30 dark:text-green-300",
     failed: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
     scheduled: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-    requested: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+    requested: "bg-amber-100 text-amber-200 dark:bg-amber-900/30 dark:text-amber-300",
     reinspection_scheduled:
       "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
     reinspection_requested:
-      "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+      "bg-amber-100 text-amber-200 dark:bg-amber-900/30 dark:text-amber-300",
     partial_pass:
-      "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-    cancelled: "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200",
-    closed: "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200",
+      "bg-amber-100 text-amber-200 dark:bg-amber-900/30 dark:text-amber-300",
+    cancelled: "bg-secondary text-foreground dark:bg-secondary dark:text-foreground",
+    closed: "bg-secondary text-foreground dark:bg-secondary dark:text-foreground",
     not_required:
-      "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300",
+      "bg-secondary text-muted-foreground dark:bg-secondary dark:text-muted-foreground",
     not_requested:
-      "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300",
+      "bg-secondary text-muted-foreground dark:bg-secondary dark:text-muted-foreground",
   };
   const label =
     STATUS_OPTIONS.find((o) => o.value === status)?.label ?? status;

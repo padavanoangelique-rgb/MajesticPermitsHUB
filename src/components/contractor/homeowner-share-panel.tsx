@@ -40,14 +40,14 @@ export function HomeownerSharePanel({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-slate-600 dark:text-slate-300">
+      <p className="text-sm text-muted-foreground dark:text-muted-foreground">
         Share this status page with the homeowner. It is branded as{" "}
         <strong>{brandName}</strong>. Type the contact you want to send it to —
         nothing is filled in automatically.
       </p>
       {url ? (
         <div className="flex flex-col gap-2 sm:flex-row">
-          <code className="flex-1 truncate rounded-lg bg-slate-100 px-3 py-2 text-xs dark:bg-slate-800">
+          <code className="flex-1 truncate rounded-lg bg-secondary px-3 py-2 text-xs dark:bg-secondary">
             {url}
           </code>
           <button
@@ -56,13 +56,13 @@ export function HomeownerSharePanel({
               navigator.clipboard.writeText(url);
               setMsg("Copied");
             }}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium dark:border-slate-700"
+            className="rounded-xl border border-border px-3 py-2 text-sm font-medium dark:border-border"
           >
             Copy link
           </button>
         </div>
       ) : (
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-muted-foreground">
           Send below and a tracking link will be created.
         </p>
       )}
@@ -72,8 +72,8 @@ export function HomeownerSharePanel({
           onClick={() => setChannel("email")}
           className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
             channel === "email"
-              ? "bg-[#156cdd] text-white"
-              : "border border-slate-200 dark:border-slate-700"
+              ? "bg-primary text-white"
+              : "border border-border dark:border-border"
           }`}
         >
           Email
@@ -83,8 +83,8 @@ export function HomeownerSharePanel({
           onClick={() => setChannel("sms")}
           className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
             channel === "sms"
-              ? "bg-[#156cdd] text-white"
-              : "border border-slate-200 dark:border-slate-700"
+              ? "bg-primary text-white"
+              : "border border-border dark:border-border"
           }`}
         >
           Text
@@ -94,7 +94,7 @@ export function HomeownerSharePanel({
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Recipient name (optional)"
-        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+        className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background dark:text-white"
       />
       {channel === "email" ? (
         <input
@@ -102,7 +102,7 @@ export function HomeownerSharePanel({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="homeowner@email.com"
-          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background dark:text-white"
         />
       ) : (
         <input
@@ -110,16 +110,16 @@ export function HomeownerSharePanel({
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="(561) 555-1212"
-          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background dark:text-white"
         />
       )}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-red-200">{error}</p>}
       {msg && <p className="text-xs text-green-600">{msg}</p>}
       <button
         type="button"
         onClick={send}
         disabled={busy}
-        className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+        className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
       >
         {busy ? "Sending…" : channel === "sms" ? "Send text" : "Send email"}
       </button>

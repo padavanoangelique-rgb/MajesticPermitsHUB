@@ -101,17 +101,17 @@ export default async function ContractorProjectPage({ params }: PageProps) {
     : "";
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#020202]">
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#090909]">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card dark:border-border dark:bg-card">
         <div className="mx-auto flex h-16 max-w-3xl items-center px-4 sm:px-6">
-          <Link href="/dashboard" className="text-sm text-slate-500 hover:text-[#156cdd]">
+          <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-primary">
             ← All projects
           </Link>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <h1 className="text-2xl font-bold text-[#156cdd] dark:text-white">
+        <h1 className="text-2xl font-bold text-primary dark:text-white">
           {job.property_address}
         </h1>
 
@@ -128,18 +128,18 @@ export default async function ContractorProjectPage({ params }: PageProps) {
         </div>
 
         <Section title="Current stage">
-          <p className="text-xl font-semibold text-[#156cdd] dark:text-white">
+          <p className="text-xl font-semibold text-primary dark:text-white">
             {job.stage}
           </p>
           {job.next_step && (
-            <p className="mt-4 text-slate-600 dark:text-slate-300">
+            <p className="mt-4 text-muted-foreground dark:text-muted-foreground">
               <span className="font-medium">Next: </span>
               {job.next_step}
             </p>
           )}
           {job.notes && (
-            <div className="mt-6 rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
-              <p className="text-sm font-medium text-slate-500">Notes</p>
+            <div className="mt-6 rounded-xl bg-secondary p-4 dark:bg-secondary">
+              <p className="text-sm font-medium text-muted-foreground">Notes</p>
               <p className="mt-1">{job.notes}</p>
             </div>
           )}
@@ -147,11 +147,11 @@ export default async function ContractorProjectPage({ params }: PageProps) {
 
         <Section title="Inspections">
           {(inspections || []).length === 0 ? (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               No inspections on file yet.
             </p>
           ) : (
-            <ul className="divide-y divide-slate-100 dark:divide-slate-700">
+            <ul className="divide-y divide-border dark:divide-border">
               {(inspections || []).map((insp: any) => (
                 <InspectionRow
                   key={insp.id}
@@ -172,16 +172,16 @@ export default async function ContractorProjectPage({ params }: PageProps) {
 
         <Section title="Documents">
           {(docs || []).length === 0 ? (
-            <p className="text-sm text-slate-500">No documents available yet.</p>
+            <p className="text-sm text-muted-foreground">No documents available yet.</p>
           ) : (
-            <ul className="divide-y divide-slate-100 dark:divide-slate-700">
+            <ul className="divide-y divide-border dark:divide-border">
               {(docs || []).map((d: any) => (
                 <li key={d.id} className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
+                    <p className="text-sm font-semibold text-primary dark:text-white">
                       {d.label || d.file_name}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       {categoryLabel(d.category)} ·{" "}
                       {format(new Date(d.created_at), "MMM d, yyyy")}
                     </p>
@@ -196,19 +196,19 @@ export default async function ContractorProjectPage({ params }: PageProps) {
 
         <Section title="Invoices & payments">
           {(quotes || []).length === 0 ? (
-            <p className="text-sm text-slate-500">No invoices for this job.</p>
+            <p className="text-sm text-muted-foreground">No invoices for this job.</p>
           ) : (
-            <ul className="divide-y divide-slate-100 dark:divide-slate-700">
+            <ul className="divide-y divide-border dark:divide-border">
               {(quotes || []).map((q: any) => (
                 <li key={q.id} className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-sm font-semibold text-[#156cdd] dark:text-white">
+                    <p className="text-sm font-semibold text-primary dark:text-white">
                       ${Number(q.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </p>
                     {q.description && (
-                      <p className="text-xs text-slate-500">{q.description}</p>
+                      <p className="text-xs text-muted-foreground">{q.description}</p>
                     )}
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-muted-foreground">
                       {format(new Date(q.created_at), "MMM d, yyyy")}
                     </p>
                   </div>
@@ -216,12 +216,12 @@ export default async function ContractorProjectPage({ params }: PageProps) {
                     <span
                       className={
                         q.paid_at || q.approved_at
-                          ? "rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                          ? "rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-emerald-200 dark:bg-green-900/30 dark:text-green-300"
                           : q.declined_at
                           ? "rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300"
                           : q.expires_at && new Date(q.expires_at) < new Date()
-                          ? "rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
-                          : "rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                          ? "rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-200 dark:bg-amber-900/30 dark:text-amber-300"
+                          : "rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-foreground dark:bg-secondary dark:text-foreground"
                       }
                     >
                       {q.paid_at
@@ -240,7 +240,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
                       !q.declined_at && (
                         <a
                           href={`/quote/${q.approval_token}`}
-                          className="text-[11px] font-semibold text-[#156cdd] underline hover:opacity-80 dark:text-white"
+                          className="text-[11px] font-semibold text-primary underline hover:opacity-80 dark:text-white"
                         >
                           Review & approve
                         </a>
@@ -272,8 +272,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-[#090909]">
-      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-500">
+    <section className="mt-6 rounded-2xl border border-border bg-card p-6 dark:border-border dark:bg-card">
+      <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
         {title}
       </h2>
       {children}

@@ -56,8 +56,8 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-[#020202]">
-      <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-[#090909]">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-sm dark:border-border dark:bg-card">
         <div className="mb-8 text-center">
           <Image
             src="/icons/icon-512.png"
@@ -67,10 +67,10 @@ function LoginForm() {
             priority
             className="mx-auto rounded-2xl"
           />
-          <h1 className="mt-4 text-2xl font-bold text-[#156cdd] dark:text-white">
+          <h1 className="mt-4 text-2xl font-bold text-primary dark:text-white">
             Contractor Login
           </h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-muted-foreground">
             Sign in to view your projects
           </p>
         </div>
@@ -79,7 +79,7 @@ function LoginForm() {
           <div>
             <label
               htmlFor="email"
-              className="mb-1.5 block text-sm font-medium text-[#156cdd] dark:text-white"
+              className="mb-1.5 block text-sm font-medium text-primary dark:text-white"
             >
               Email
             </label>
@@ -91,14 +91,14 @@ function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#156cdd] focus:ring-2 focus:ring-[#156cdd]/20 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-border dark:bg-background dark:text-white"
               placeholder="you@company.com"
             />
           </div>
           <div>
             <label
               htmlFor="password"
-              className="mb-1.5 block text-sm font-medium text-[#156cdd] dark:text-white"
+              className="mb-1.5 block text-sm font-medium text-primary dark:text-white"
             >
               Password
             </label>
@@ -110,7 +110,7 @@ function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-[#156cdd] focus:ring-2 focus:ring-[#156cdd]/20 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-border dark:bg-background dark:text-white"
               placeholder="••••••••"
             />
           </div>
@@ -118,7 +118,7 @@ function LoginForm() {
           {error && (
             <p
               role="alert"
-              className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400"
+              className="rounded-xl bg-red-950/30 px-4 py-3 text-sm text-red-200 dark:bg-red-900/20 dark:text-red-400"
             >
               {error}
             </p>
@@ -127,17 +127,17 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-[#156cdd] py-3 text-sm font-semibold text-white transition hover:bg-[#1157b8] disabled:opacity-60"
+            className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white transition hover:bg-primary disabled:opacity-60"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-6 text-center text-sm text-muted-foreground">
           Need an account?{" "}
           <a
             href="mailto:hello@majesticpermits.com"
-            className="text-[#156cdd] underline dark:text-[#9CE824]"
+            className="text-primary underline dark:text-primary"
           >
             Contact us
           </a>
@@ -149,7 +149,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-50 dark:bg-[#020202]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
       <LoginForm />
     </Suspense>
   );

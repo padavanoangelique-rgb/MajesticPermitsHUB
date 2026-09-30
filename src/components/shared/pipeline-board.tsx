@@ -110,7 +110,7 @@ export function PipelineBoard({
   return (
     <div>
       {error && (
-        <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+        <div className="mb-3 rounded-xl border border-red-800/40 bg-red-950/30 px-4 py-2 text-sm text-red-200 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
           {error}
         </div>
       )}
@@ -125,8 +125,8 @@ export function PipelineBoard({
               className={
                 "flex w-72 shrink-0 flex-col rounded-2xl border p-3 transition " +
                 (isDropTarget
-                  ? "border-[#156cdd] bg-[#156cdd]/5 dark:border-[#9CE824] dark:bg-[#9CE824]/10"
-                  : "border-slate-200 bg-slate-50/50 dark:border-slate-700 dark:bg-slate-900/40")
+                  ? "border-primary bg-primary/5 dark:border-primary dark:bg-primary/10"
+                  : "border-border bg-secondary/50 dark:border-border dark:bg-background/40")
               }
               onDragOver={(e) => {
                 if (!canDrag) return;
@@ -144,11 +144,11 @@ export function PipelineBoard({
             >
               <div className="mb-3 flex items-center justify-between px-1">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                     {stage.short}
                   </p>
                 </div>
-                <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <span className="rounded-full bg-card px-2 py-0.5 text-xs font-semibold text-muted-foreground dark:bg-secondary dark:text-muted-foreground">
                   {items.length}
                 </span>
               </div>
@@ -164,7 +164,7 @@ export function PipelineBoard({
                   />
                 ))}
                 {items.length === 0 && (
-                  <div className="rounded-lg border border-dashed border-slate-200 py-6 text-center text-xs text-slate-400 dark:border-slate-700">
+                  <div className="rounded-lg border border-dashed border-border py-6 text-center text-xs text-muted-foreground dark:border-border">
                     No jobs
                   </div>
                 )}
@@ -174,12 +174,12 @@ export function PipelineBoard({
         })}
 
         {columns.unknown.length > 0 && (
-          <div className="flex w-72 shrink-0 flex-col rounded-2xl border border-amber-200 bg-amber-50/70 p-3 dark:border-amber-900/50 dark:bg-amber-950/20">
+          <div className="flex w-72 shrink-0 flex-col rounded-2xl border border-amber-800/40 bg-amber-950/20 p-3 dark:border-amber-900/50 dark:bg-amber-950/20">
             <div className="mb-3 flex items-center justify-between px-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+              <p className="text-xs font-semibold uppercase tracking-wider text-amber-200 dark:text-amber-400">
                 Other / legacy
               </p>
-              <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-slate-800 dark:text-amber-300">
+              <span className="rounded-full bg-card px-2 py-0.5 text-xs font-semibold text-amber-200 dark:bg-secondary dark:text-amber-300">
                 {columns.unknown.length}
               </span>
             </div>
@@ -222,27 +222,27 @@ function PipelineCard({
         e.dataTransfer.effectAllowed = "move";
       }}
       className={
-        "block rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-300 hover:shadow-md dark:border-slate-700 dark:bg-[#090909] " +
+        "block rounded-xl border border-border bg-card p-3 shadow-sm transition hover:border-border hover:shadow-md dark:border-border dark:bg-card " +
         (saving ? "opacity-60" : "") +
         (draggable ? " cursor-grab active:cursor-grabbing" : "")
       }
     >
-      <p className="line-clamp-2 text-sm font-semibold text-[#156cdd] dark:text-white">
+      <p className="line-clamp-2 text-sm font-semibold text-primary dark:text-white">
         {job.property_address}
       </p>
       <div className="mt-1 flex flex-wrap gap-1.5 text-[11px]">
         {job.contractor_label && (
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          <span className="rounded-full bg-secondary px-2 py-0.5 text-muted-foreground dark:bg-secondary dark:text-muted-foreground">
             {job.contractor_label}
           </span>
         )}
         {job.sub_status && (
-          <span className="rounded-full bg-[#156cdd]/5 px-2 py-0.5 text-[#156cdd] dark:bg-[#9CE824]/15 dark:text-[#9CE824]">
+          <span className="rounded-full bg-primary/5 px-2 py-0.5 text-primary dark:bg-primary/15 dark:text-primary">
             {job.sub_status}
           </span>
         )}
       </div>
-      <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+      <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
         <span>{job.permit_number || "No permit #"}</span>
         {job.permit_eta && (
           <span>ETA {format(new Date(job.permit_eta), "MMM d")}</span>

@@ -40,7 +40,7 @@ export function HomeownerNoteForm({
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-muted-foreground">
         Shown to the homeowner on their tracking link. Keep it plain-language.
         No fees, contractor billing, or internal detail.
       </p>
@@ -49,14 +49,14 @@ export function HomeownerNoteForm({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Optional message for the homeowner (leave blank for none)"
-        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-[#020202] dark:text-white"
+        className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground dark:border-border dark:bg-background dark:text-white"
       />
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={save}
           disabled={saving}
-          className="rounded-xl bg-[#156cdd] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60"
+          className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary disabled:opacity-60"
         >
           {saving ? "Saving..." : "Save homeowner note"}
         </button>
@@ -66,7 +66,7 @@ export function HomeownerNoteForm({
           </span>
         )}
         {error && (
-          <span className="text-xs text-red-600 dark:text-red-400">
+          <span className="text-xs text-red-200 dark:text-red-400">
             {error}
           </span>
         )}

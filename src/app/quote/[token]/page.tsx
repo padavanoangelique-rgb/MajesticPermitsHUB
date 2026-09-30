@@ -27,10 +27,10 @@ export default async function QuoteApprovalPage({ params }: PageProps) {
   if (!quote) {
     return (
       <main className="mx-auto max-w-2xl px-6 py-24 text-center">
-        <h1 className="text-2xl font-semibold text-[#156cdd]">
+        <h1 className="text-2xl font-semibold text-primary">
           Quote not found
         </h1>
-        <p className="mt-3 text-slate-600">
+        <p className="mt-3 text-muted-foreground">
           This approval link is invalid or has been revoked. Please contact the
           Majestic Permits team if you believe this is a mistake.
         </p>
@@ -60,66 +60,66 @@ export default async function QuoteApprovalPage({ params }: PageProps) {
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-12">
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-[#020202]">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <div className="rounded-2xl border border-border bg-card p-8 shadow-sm dark:border-border dark:bg-background">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {job?.brand || "Majestic Permits"} · Quote for review
         </p>
-        <h1 className="mt-1 text-2xl font-semibold text-[#156cdd] dark:text-white">
+        <h1 className="mt-1 text-2xl font-semibold text-primary dark:text-white">
           ${amountFormatted}
         </h1>
         {quote.description && (
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+          <p className="mt-1 text-sm text-muted-foreground dark:text-muted-foreground">
             {quote.description}
           </p>
         )}
 
         <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-xs uppercase tracking-wide text-slate-500">
+            <dt className="text-xs uppercase tracking-wide text-muted-foreground">
               Billed to
             </dt>
-            <dd className="mt-0.5 font-medium text-slate-800 dark:text-slate-100">
+            <dd className="mt-0.5 font-medium text-foreground dark:text-foreground">
               {BILL_TO_LABEL[quote.bill_to] || "Homeowner"}
             </dd>
           </div>
           {job?.property_address && (
             <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground">
                 Property
               </dt>
-              <dd className="mt-0.5 font-medium text-slate-800 dark:text-slate-100">
+              <dd className="mt-0.5 font-medium text-foreground dark:text-foreground">
                 {job.property_address}
               </dd>
             </div>
           )}
           {job?.permit_number && (
             <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground">
                 Permit #
               </dt>
-              <dd className="mt-0.5 font-medium text-slate-800 dark:text-slate-100">
+              <dd className="mt-0.5 font-medium text-foreground dark:text-foreground">
                 {job.permit_number}
               </dd>
             </div>
           )}
           <div>
-            <dt className="text-xs uppercase tracking-wide text-slate-500">
+            <dt className="text-xs uppercase tracking-wide text-muted-foreground">
               Issued
             </dt>
-            <dd className="mt-0.5 font-medium text-slate-800 dark:text-slate-100">
+            <dd className="mt-0.5 font-medium text-foreground dark:text-foreground">
               {format(new Date(quote.created_at), "MMMM d, yyyy")}
             </dd>
           </div>
           {quote.expires_at && (
             <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground">
                 Expires
               </dt>
               <dd
                 className={`mt-0.5 font-medium ${
                   isExpired
-                    ? "text-red-600 dark:text-red-400"
-                    : "text-slate-800 dark:text-slate-100"
+                    ? "text-red-200 dark:text-red-400"
+                    : "text-foreground dark:text-foreground"
                 }`}
               >
                 {format(new Date(quote.expires_at), "MMMM d, yyyy")}
@@ -129,10 +129,10 @@ export default async function QuoteApprovalPage({ params }: PageProps) {
           )}
           {quote.version > 1 && (
             <div>
-              <dt className="text-xs uppercase tracking-wide text-slate-500">
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground">
                 Version
               </dt>
-              <dd className="mt-0.5 font-medium text-slate-800 dark:text-slate-100">
+              <dd className="mt-0.5 font-medium text-foreground dark:text-foreground">
                 v{quote.version}
               </dd>
             </div>
@@ -140,14 +140,14 @@ export default async function QuoteApprovalPage({ params }: PageProps) {
         </dl>
 
         {isPaid && (
-          <div className="mt-8 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-300">
+          <div className="mt-8 rounded-xl bg-emerald-950/30 px-4 py-3 text-sm text-emerald-200 dark:bg-green-900/20 dark:text-green-300">
             <p className="font-semibold">Paid</p>
             <p>This quote has already been paid. Thank you.</p>
           </div>
         )}
 
         {!isPaid && isApproved && (
-          <div className="mt-8 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-300">
+          <div className="mt-8 rounded-xl bg-emerald-950/30 px-4 py-3 text-sm text-emerald-200 dark:bg-green-900/20 dark:text-green-300">
             <p className="font-semibold">
               Approved{quote.approved_by_name ? ` by ${quote.approved_by_name}` : ""}
             </p>
@@ -163,7 +163,7 @@ export default async function QuoteApprovalPage({ params }: PageProps) {
         )}
 
         {!isPaid && !isApproved && isDeclined && (
-          <div className="mt-8 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+          <div className="mt-8 rounded-xl bg-secondary px-4 py-3 text-sm text-foreground dark:bg-secondary dark:text-foreground">
             <p className="font-semibold">Declined</p>
             <p>
               This quote was declined
@@ -176,7 +176,7 @@ export default async function QuoteApprovalPage({ params }: PageProps) {
         )}
 
         {!isFinal && isExpired && (
-          <div className="mt-8 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+          <div className="mt-8 rounded-xl bg-amber-950/30 px-4 py-3 text-sm text-amber-200 dark:bg-amber-900/20 dark:text-amber-300">
             <p className="font-semibold">This quote has expired</p>
             <p>Contact us to have a new quote issued.</p>
           </div>
@@ -187,7 +187,7 @@ export default async function QuoteApprovalPage({ params }: PageProps) {
         )}
       </div>
 
-      <p className="mt-6 text-center text-xs text-slate-500">
+      <p className="mt-6 text-center text-xs text-muted-foreground">
         Majestic Permits · questions? Reply to the email that sent you this
         link.
       </p>

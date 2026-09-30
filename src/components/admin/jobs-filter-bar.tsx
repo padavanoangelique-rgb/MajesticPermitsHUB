@@ -95,7 +95,7 @@ export function JobsFilterBar({
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-[#090909]">
+      <div className="inline-flex rounded-xl border border-border bg-card p-1 dark:border-border dark:bg-card">
         {[
           { value: "all", label: "All" },
           { value: "contractor", label: "Contractors" },
@@ -108,8 +108,8 @@ export function JobsFilterBar({
             className={
               "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors " +
               (type === opt.value
-                ? "bg-[#156cdd] text-white"
-                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200")
+                ? "bg-primary text-white"
+                : "text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground")
             }
           >
             {opt.label}
@@ -123,22 +123,22 @@ export function JobsFilterBar({
             type="button"
             onClick={() => setOpenMenu((m) => (m === "contractor" ? null : "contractor"))}
             aria-expanded={openMenu === "contractor"}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-[#090909] dark:text-slate-300"
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground hover:border-border dark:border-border dark:bg-card dark:text-muted-foreground"
           >
             Contractor
             {selectedContractorIds.length > 0 && (
-              <span className="rounded-full bg-[#156cdd] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+              <span className="rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-semibold text-white">
                 {selectedContractorIds.length}
               </span>
             )}
           </button>
           {openMenu === "contractor" && (
-            <div className="absolute left-0 z-10 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-[#090909]">
+            <div className="absolute left-0 z-10 mt-2 w-64 rounded-xl border border-border bg-card p-2 shadow-lg dark:border-border dark:bg-card">
               <div className="max-h-64 overflow-y-auto">
                 {contractors.map((c) => (
                   <label
                     key={c.id}
-                    className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/50"
+                    className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground hover:bg-secondary dark:text-foreground dark:hover:bg-secondary/50"
                   >
                     <input
                       type="checkbox"
@@ -153,7 +153,7 @@ export function JobsFilterBar({
                 <button
                   type="button"
                   onClick={clearContractors}
-                  className="mt-1 w-full rounded-lg px-2 py-1.5 text-left text-xs font-medium text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+                  className="mt-1 w-full rounded-lg px-2 py-1.5 text-left text-xs font-medium text-muted-foreground hover:bg-secondary dark:text-muted-foreground dark:hover:bg-secondary/50"
                 >
                   Clear selection
                 </button>
@@ -168,22 +168,22 @@ export function JobsFilterBar({
           type="button"
           onClick={() => setOpenMenu((m) => (m === "stage" ? null : "stage"))}
           aria-expanded={openMenu === "stage"}
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-[#090909] dark:text-slate-300"
+          className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground hover:border-border dark:border-border dark:bg-card dark:text-muted-foreground"
         >
           Stage
           {selectedStages.length > 0 && (
-            <span className="rounded-full bg-[#156cdd] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+            <span className="rounded-full bg-primary px-1.5 py-0.5 text-[11px] font-semibold text-white">
               {selectedStages.length}
             </span>
           )}
         </button>
         {openMenu === "stage" && (
-          <div className="absolute left-0 z-10 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-700 dark:bg-[#090909]">
+          <div className="absolute left-0 z-10 mt-2 w-60 rounded-xl border border-border bg-card p-2 shadow-lg dark:border-border dark:bg-card">
             <div className="max-h-64 overflow-y-auto">
               {stages.map((s) => (
                 <label
                   key={s.title}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/50"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-foreground hover:bg-secondary dark:text-foreground dark:hover:bg-secondary/50"
                 >
                   <input
                     type="checkbox"
@@ -198,7 +198,7 @@ export function JobsFilterBar({
               <button
                 type="button"
                 onClick={clearStages}
-                className="mt-1 w-full rounded-lg px-2 py-1.5 text-left text-xs font-medium text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"
+                className="mt-1 w-full rounded-lg px-2 py-1.5 text-left text-xs font-medium text-muted-foreground hover:bg-secondary dark:text-muted-foreground dark:hover:bg-secondary/50"
               >
                 Clear selection
               </button>
@@ -211,7 +211,7 @@ export function JobsFilterBar({
         <button
           type="button"
           onClick={() => router.push(pathname)}
-          className="text-xs font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          className="text-xs font-medium text-muted-foreground hover:text-muted-foreground dark:hover:text-foreground"
         >
           Reset filters
         </button>

@@ -9,7 +9,7 @@ export function DocDownload({ id, label }: { id: string; label: string }) {
         if (j.url) window.open(j.url, "_blank");
         else alert(j.error || "Download unavailable");
       }}
-      className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+      className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-secondary dark:border-border dark:hover:bg-secondary"
     >
       {label}
     </button>

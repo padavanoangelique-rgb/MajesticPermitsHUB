@@ -78,36 +78,36 @@ export function NotificationBell() {
     <div className="relative" ref={containerRef}>
       <button
         onClick={togglePanel}
-        className="relative rounded-full p-2 text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800"
+        className="relative rounded-full p-2 text-muted-foreground transition hover:bg-secondary dark:hover:bg-secondary"
         aria-label="Notifications"
       >
         <Bell className="h-5 w-5" />
         {unread > 0 && (
-          <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+          <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-950/300 px-1 text-[10px] font-semibold text-white">
             {unread > 9 ? "9+" : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-[#090909]">
-          <div className="border-b border-slate-100 px-4 py-2.5 text-sm font-semibold text-[#0A0A0A] dark:border-slate-800 dark:text-white">
+        <div className="absolute right-0 z-20 mt-2 w-80 rounded-xl border border-border bg-card shadow-lg dark:border-border dark:bg-card">
+          <div className="border-b border-border px-4 py-2.5 text-sm font-semibold text-foreground dark:border-border dark:text-white">
             Notifications
           </div>
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-slate-500">
+              <p className="px-4 py-6 text-center text-sm text-muted-foreground">
                 No notifications yet.
               </p>
             ) : (
-              <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+              <ul className="divide-y divide-border dark:divide-border">
                 {notifications.map((n) => (
                   <li key={n.id} className="px-4 py-3">
                     <Link href={hrefFor(n)} className="block" onClick={() => setOpen(false)}>
-                      <p className="text-sm text-slate-700 dark:text-slate-200">
+                      <p className="text-sm text-foreground dark:text-foreground">
                         {n.message}
                       </p>
-                      <p className="mt-0.5 text-xs text-slate-400">
+                      <p className="mt-0.5 text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(n.created_at), {
                           addSuffix: true,
                         })}

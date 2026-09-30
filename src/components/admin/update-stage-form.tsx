@@ -36,7 +36,7 @@ export function UpdateStageForm({
         <select
           value={stage}
           onChange={(e) => setStage(e.target.value)}
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202]"
+          className="rounded-xl border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background"
         >
           <option>Getting your project ready</option>
           <option>Submitted to the city</option>
@@ -50,7 +50,7 @@ export function UpdateStageForm({
         <select
           value={subStatus}
           onChange={(e) => setSubStatus(e.target.value)}
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-[#020202]"
+          className="rounded-xl border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background"
         >
           <option>Need to Submit</option>
           <option>In Review</option>
@@ -62,7 +62,7 @@ export function UpdateStageForm({
       <button
         onClick={handleUpdate}
         disabled={loading}
-        className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1157b8] disabled:opacity-60 dark:bg-[#b6ff2a] dark:text-black dark:hover:bg-[#d4ff6a]"
+        className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary disabled:opacity-60 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary"
       >
         {loading ? "Saving..." : "Update stage"}
       </button>

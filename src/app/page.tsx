@@ -50,18 +50,18 @@ const PHOTOS = [
 
 export default function LandingPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#05070d] text-white">
+    <div className="relative min-h-screen overflow-hidden bg-background text-white">
       <img
         src="/work/miami-glass-tower-dusk.jpg"
         alt=""
         className="pointer-events-none absolute -right-[8%] top-0 hidden h-[720px] w-[58%] object-cover opacity-40 sm:block"
       />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#05070d]/30 via-[#05070d]/75 to-[#05070d]" />
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-full bg-gradient-to-r from-[#05070d] via-[#05070d]/88 to-transparent sm:w-[72%]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/30 via-background/75 to-background" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-full bg-gradient-to-r from-background via-background/88 to-transparent sm:w-[72%]" />
 
       <header className="relative z-20 mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-5 sm:px-6">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#156cdd] text-sm font-bold">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold">
             M
           </span>
           <span className="text-lg font-semibold tracking-tight">Majestic Permits</span>
@@ -88,9 +88,9 @@ export default function LandingPage() {
               Permits. Handled. South Florida.
             </p>
             <h1 className="mt-4 max-w-xl text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
-              File a <span className="text-[#4da3ff]">complete</span> permit package.
+              File a <span className="text-majestic">complete</span> permit package.
             </h1>
-            <div className="mt-5 h-1 w-16 rounded-full bg-[#156cdd]" />
+            <div className="mt-5 h-1 w-16 rounded-full bg-primary" />
             <p className="mt-5 max-w-md text-base leading-relaxed text-white/75 sm:text-lg">
               Windows, doors, roofing, renovations, and expired-permit close-outs
               in Miami-Dade, Broward, and Palm Beach. We build the package, file
@@ -99,7 +99,7 @@ export default function LandingPage() {
           </div>
           <div className="max-w-xs justify-self-start lg:justify-self-end lg:pb-6">
             <p className="flex items-start gap-3 text-sm leading-relaxed text-white/85">
-              <BadgeCheck className="mt-0.5 h-6 w-6 shrink-0 text-[#4da3ff]" />
+              <BadgeCheck className="mt-0.5 h-6 w-6 shrink-0 text-accent" />
               <span>
                 City-specific filing.
                 <br />
@@ -112,11 +112,11 @@ export default function LandingPage() {
         </section>
 
         <section className="mx-auto grid max-w-6xl gap-4 px-4 py-8 sm:px-6 lg:grid-cols-[0.86fr_1.14fr]">
-          <div className="rounded-3xl border border-white/10 bg-[#0c1424]/90 p-6 backdrop-blur-sm sm:p-7">
+          <div className="rounded-3xl border border-white/10 bg-card/90 p-6 backdrop-blur-sm sm:p-7">
             <div className="flex items-start gap-3">
-              <ShieldCheck className="h-8 w-8 text-[#4da3ff]" />
+              <ShieldCheck className="h-8 w-8 text-accent" />
               <div>
-                <p className="text-sm font-semibold uppercase tracking-wide text-[#7eb6ff]">
+                <p className="text-sm font-semibold uppercase tracking-wide text-accent">
                   The package
                 </p>
                 <p className="text-sm text-white/60">Everything the department needs. Done in order.</p>
@@ -125,7 +125,7 @@ export default function LandingPage() {
             <ul className="mt-6 space-y-4">
               {PACKAGE.map(([title, body]) => (
                 <li key={title} className="flex gap-3">
-                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-[#4da3ff]" />
+                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
                   <div>
                     <p className="font-semibold">{title}</p>
                     <p className="text-sm text-white/60">{body}</p>
@@ -138,18 +138,18 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-[#0b1220]/95 p-4 shadow-2xl backdrop-blur-sm sm:p-5">
+          <div className="rounded-3xl border border-white/10 bg-card/95 p-4 shadow-2xl backdrop-blur-sm sm:p-5">
             <div className="flex items-center justify-between border-b border-white/10 px-2 pb-3">
               <p className="text-sm font-semibold">Permit status</p>
               <p className="text-xs text-white/45">Example · not a live job</p>
             </div>
-            <div className="mt-4 rounded-2xl border border-white/10 bg-[#10192c] p-4">
+            <div className="mt-4 rounded-2xl border border-white/10 bg-secondary p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-lg font-semibold">Window replacement</p>
                   <p className="text-sm text-white/55">Broward · impact openings</p>
                 </div>
-                <span className="rounded-full bg-[#156cdd]/20 px-3 py-1 text-xs font-semibold text-[#9cc7ff]">
+                <span className="rounded-full bg-primary/20 px-3 py-1 text-xs font-semibold text-accent">
                   Getting ready
                 </span>
               </div>
@@ -159,7 +159,7 @@ export default function LandingPage() {
                     <span
                       className={
                         index === 0
-                          ? "flex h-6 w-6 items-center justify-center rounded-full bg-[#156cdd] text-xs font-bold"
+                          ? "flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold"
                           : "flex h-6 w-6 items-center justify-center rounded-full border border-white/15 text-xs text-white/50"
                       }
                     >
@@ -172,7 +172,7 @@ export default function LandingPage() {
             </div>
             <a
               href="#start"
-              className="mt-4 flex min-h-12 items-center justify-center rounded-xl bg-[#156cdd] text-sm font-semibold text-white hover:bg-[#1d7cf0]"
+              className="mt-4 flex min-h-12 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-white hover:bg-primary"
             >
               Start your project
             </a>
@@ -189,9 +189,9 @@ export default function LandingPage() {
             ].map(([Icon, title, body]) => {
               const ItemIcon = Icon as typeof Clock3;
               return (
-                <div key={title as string} className="bg-[#0c1424] p-5">
+                <div key={title as string} className="bg-card p-5">
                   <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/80">
-                    <ItemIcon className="h-4 w-4 text-[#4da3ff]" />
+                    <ItemIcon className="h-4 w-4 text-accent" />
                     {title as string}
                   </p>
                   <p className="mt-2 text-sm leading-relaxed text-white/60">{body as string}</p>
@@ -230,11 +230,11 @@ export default function LandingPage() {
               If we already have your email or phone, it opens a job on that account.
             </p>
             <p className="mt-6 text-sm text-white/70">
-              <a className="font-semibold text-[#9cc7ff]" href={`tel:${PUBLIC_PHONE_TEL}`}>
+              <a className="font-semibold text-accent" href={`tel:${PUBLIC_PHONE_TEL}`}>
                 {PUBLIC_PHONE_DISPLAY}
               </a>
               <span className="mx-2 text-white/30">·</span>
-              <a className="font-semibold text-[#9cc7ff]" href={`mailto:${PUBLIC_HELLO}`}>
+              <a className="font-semibold text-accent" href={`mailto:${PUBLIC_HELLO}`}>
                 {PUBLIC_HELLO}
               </a>
             </p>
@@ -249,7 +249,7 @@ export default function LandingPage() {
               <li key={area.slug}>
                 <Link
                   href={`/areas/${area.slug}`}
-                  className="inline-flex rounded-full border border-white/10 px-3 py-1.5 text-sm text-white/75 hover:border-[#156cdd] hover:text-white"
+                  className="inline-flex rounded-full border border-white/10 px-3 py-1.5 text-sm text-white/75 hover:border-primary hover:text-white"
                 >
                   {area.city}
                 </Link>

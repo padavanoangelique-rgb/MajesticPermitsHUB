@@ -100,13 +100,13 @@ export function JobDocuments({
       <form onSubmit={onUpload} className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="block sm:col-span-1">
-            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Category
             </span>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background"
             >
               {CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -116,18 +116,18 @@ export function JobDocuments({
             </select>
           </label>
           <label className="block sm:col-span-2">
-            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               File
             </span>
             <input
               type="file"
               name="file"
               required
-              className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-[#156cdd] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+              className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
             />
           </label>
         </div>
-        <label className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+        <label className="inline-flex items-center gap-2 text-sm text-muted-foreground dark:text-muted-foreground">
           <input
             type="checkbox"
             checked={shareWithHomeowner}
@@ -139,24 +139,24 @@ export function JobDocuments({
           <button
             type="submit"
             disabled={busy}
-            className="rounded-xl bg-[#156cdd] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
             {busy ? "Uploading…" : "Upload document"}
           </button>
-          {msg && <span className="text-xs text-slate-500">{msg}</span>}
+          {msg && <span className="text-xs text-muted-foreground">{msg}</span>}
         </div>
       </form>
 
       <div className="mt-6 space-y-6">
         {grouped.map((group) => (
           <section key={group.value}>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {group.label}
             </h3>
             {group.docs.length === 0 ? (
-              <p className="mt-2 text-sm text-slate-400">No files yet.</p>
+              <p className="mt-2 text-sm text-muted-foreground">No files yet.</p>
             ) : (
-              <ul className="mt-2 divide-y divide-slate-100 dark:divide-slate-700">
+              <ul className="mt-2 divide-y divide-border dark:divide-border">
                 {group.docs.map((d) => (
                   <li
                     key={d.id}
@@ -165,16 +165,16 @@ export function JobDocuments({
                     <div className="min-w-0">
                       <button
                         onClick={() => download(d)}
-                        className="truncate text-sm font-medium text-[#156cdd] hover:underline dark:text-white"
+                        className="truncate text-sm font-medium text-primary hover:underline dark:text-white"
                       >
                         {d.file_name}
                       </button>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-muted-foreground">
                         {format(new Date(d.created_at), "MMM d, yyyy")}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <label className="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+                      <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground dark:text-muted-foreground">
                         <input
                           type="checkbox"
                           checked={d.visible_to_homeowner}
@@ -184,7 +184,7 @@ export function JobDocuments({
                       </label>
                       <button
                         onClick={() => remove(d)}
-                        className="text-xs text-red-600 hover:underline"
+                        className="text-xs text-red-200 hover:underline"
                       >
                         Delete
                       </button>
