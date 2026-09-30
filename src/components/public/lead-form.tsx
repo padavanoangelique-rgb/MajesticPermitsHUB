@@ -9,8 +9,8 @@ const COPY: Record<
   { button: string; done: string; company?: boolean; address?: boolean; message?: boolean }
 > = {
   "more-info": {
-    button: "Register your company",
-    done: "We have your email. We will write you about registration. A new permit is requested inside the hub after you are onboarded.",
+    button: "Request more info",
+    done: "We have your email. We'll write back with how the desk works. This did not open a permit.",
     company: true,
   },
   "permit-report": {

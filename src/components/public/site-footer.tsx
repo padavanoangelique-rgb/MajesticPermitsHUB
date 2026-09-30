@@ -41,7 +41,7 @@ export function SiteFooter() {
             Contact
           </Link>
           <Link href="/#info" className="font-semibold text-primary">
-            Register your company
+            Request more info
           </Link>
         </nav>
 

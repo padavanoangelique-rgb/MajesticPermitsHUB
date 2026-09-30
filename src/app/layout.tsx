@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s | Majestic Permits",
   },
   description:
-    "Majestic is the permitting team on the job. Oversight, updates, inspections, and tracking for windows, doors, roofing, and renovations. Register your company.",
+    "Majestic is the permitting team on the job. Oversight, updates, inspections, and tracking for windows, doors, roofing, and renovations. Ask for more info.",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Outsourced permitting team in Miami-Dade, Broward, and Palm Beach",
     description:
-      "Complete oversight, contractor updates, customer updates, inspections, and tracking. Register your company.",
+      "Complete oversight, contractor updates, customer updates, inspections, and tracking. Ask for more info.",
     siteName: "Majestic Permits",
     type: "website",
     images: ["/icons/icon-512.png"],

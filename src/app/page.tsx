@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     absolute: "Majestic Permits | The outsourced permitting team",
   },
   description:
-    "Majestic is the permitting team on your jobs. Complete oversight, contractor updates, customer updates, inspections, and tracking in Miami-Dade, Broward, and Palm Beach. Register your company. New permits are requested inside the hub.",
+    "Majestic is the permitting team on your jobs. Complete oversight, contractor updates, customer updates, inspections, and tracking in Miami-Dade, Broward, and Palm Beach. Ask for more info. New permits are requested inside the hub.",
   alternates: { canonical: "https://majesticpermits.com" },
 };
 
@@ -159,9 +159,9 @@ export default function LandingPage() {
             </p>
           </div>
           <div id="info">
-            <h2 className="text-lg font-semibold">Register your company</h2>
+            <h2 className="text-lg font-semibold">Request more info</h2>
             <p className="mb-3 mt-1 text-sm text-muted-foreground">
-              Name and email. Company if you have one. We onboard you as a client. After that, your crew requests permits inside the hub. This page does not open a permit.
+              Name and email. Company if you want. We'll write back. This is not a signup, and it does not open a permit.
             </p>
             <InquiryForm intent="more-info" />
           </div>
@@ -228,7 +228,7 @@ export default function LandingPage() {
               href="#info"
               className="mt-4 flex min-h-12 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:bg-primary"
             >
-              Register your company
+              Request more info
             </a>
           </div>
         </section>
@@ -258,13 +258,13 @@ export default function LandingPage() {
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <h2 className="text-3xl font-bold tracking-tight">The team on the job</h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Register the company once. We run the permits. You get the oversight, the updates, and the tracking without adding staff.
+            Ask for more info. If it fits, we onboard the company and your crew requests permits inside the hub. You get the oversight, the updates, and the tracking without adding staff.
           </p>
           <div className="mt-8 grid gap-4 lg:grid-cols-2">
             <div className="rounded-3xl border border-border bg-card p-6">
               <h3 className="text-xl font-semibold">Your login</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                After registration, Client Login is the desk. Every job, the inspection dates, and the customer link live there. A weekly note lists what is still open.
+                Once you are a client, Client Login is the desk. Every job, the inspection dates, and the customer link live there. A weekly note lists what is still open.
               </p>
               <ul className="mt-5 space-y-4">
                 {CONTRACTOR_HUB.map(([title, body]) => (

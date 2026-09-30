@@ -17,11 +17,11 @@ export const PUBLIC_FAQS = [
   {
     question: "How do I track my permit?",
     answer:
-      "Contractors track every job in the hub after registration: stage, next step, documents, and inspections. Customers get a private link with no password, written so they are not calling the office. That page is not listed for search engines. Call or text (561) 888-3805 if a link is missing.",
+      "Contractors who are already clients track every job in the hub: stage, next step, documents, and inspections. Customers get a private link with no password, written so they are not calling the office. That page is not listed for search engines. Call or text (561) 888-3805 if a link is missing.",
   },
   {
     question: "What is the difference between Majestic Permits and The Permit Closer?",
     answer:
-      "Majestic Permits is the permitting team you outsource: the package, the filing, the inspections, the updates to you, and the updates to your customer. You register the company, then request new permits inside the hub. The Permit Closer is the letter side of an open or expired permit. Tracking for a Closer job still uses the Majestic link. One status page, no second login.",
+      "Majestic Permits is the permitting team you outsource: the package, the filing, the inspections, the updates to you, and the updates to your customer. Ask for more info first. New permits are requested inside the hub after we onboard the company. The Permit Closer is the letter side of an open or expired permit. Tracking for a Closer job still uses the Majestic link. One status page, no second login.",
   },
 ] as const;
