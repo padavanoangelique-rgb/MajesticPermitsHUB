@@ -5,12 +5,30 @@ import { isDeskEmbed } from "@/lib/desk-embed";
 
 export async function middleware(request: NextRequest) {
   const host = request.headers.get("host")?.split(":")[0] ?? "";
+  const forwarded = (request.headers.get("x-forwarded-host") ?? "")
+    .split(",")[0]
+    .trim()
+    .split(":")[0];
+  const path = request.nextUrl.pathname;
+
   if (host === "thepermitcloser.com" || host === "www.thepermitcloser.com") {
     return NextResponse.redirect("https://www.majesticpermits.com/permit-closer", 308);
   }
 
+  // The public address is majesticpermits.com. hub. is the same app, not a second site.
+  if (
+    host === "hub.majesticpermits.com" &&
+    forwarded !== "www.majesticpermits.com" &&
+    forwarded !== "majesticpermits.com" &&
+    !path.startsWith("/api")
+  ) {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    url.host = "www.majesticpermits.com";
+    return NextResponse.redirect(url, 308);
+  }
+
   const { response, user } = await updateSession(request);
-  const path = request.nextUrl.pathname;
   const desk = isDeskEmbed(request);
 
   if (desk) {
