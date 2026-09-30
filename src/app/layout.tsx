@@ -10,13 +10,20 @@ const inter = Inter({
   display: "swap",
 });
 
+function siteUrl() {
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+  if (!raw || raw.includes("vercel.app")) return "https://majesticpermits.com";
+  return raw;
+}
+
 export const metadata: Metadata = {
-  title: "Majestic Permits | We handle your permits. You build.",
+  metadataBase: new URL(siteUrl()),
+  title: {
+    default: "Permit expediting in Miami-Dade, Broward, and Palm Beach",
+    template: "%s | Majestic Permits",
+  },
   description:
-    "White-glove permitting service for contractors and homeowners across South Florida. From application to final inspection — we make it painless.",
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://majestic-permits-hub.vercel.app"
-  ),
+    "Permit expediting for windows, doors, roofing, and renovations in Miami-Dade, Broward, and Palm Beach. We prepare the package, file it, and track it through inspection.",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -27,9 +34,9 @@ export const metadata: Metadata = {
     apple: "/icons/apple-touch-icon.png",
   },
   openGraph: {
-    title: "Majestic Permits | We handle your permits. You build.",
+    title: "Permit expediting in Miami-Dade, Broward, and Palm Beach",
     description:
-      "White-glove permitting service for contractors and homeowners across South Florida. From application to final inspection — we make it painless.",
+      "Permit expediting for windows, doors, roofing, and renovations in Miami-Dade, Broward, and Palm Beach.",
     siteName: "Majestic Permits",
     type: "website",
     images: ["/icons/icon-512.png"],
@@ -38,7 +45,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "Majestic Permits",
     description:
-      "White-glove permitting for South Florida contractors and homeowners.",
+      "Permit expediting in Miami-Dade, Broward, and Palm Beach.",
     images: ["/icons/icon-512.png"],
   },
 };

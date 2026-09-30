@@ -25,11 +25,11 @@ export function CurrentStageCard({
 }: CurrentStageCardProps) {
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-soft dark:border-slate-800 dark:bg-surface-dark sm:p-10">
-      <p className="text-sm font-semibold uppercase tracking-wider text-gold">
+      <p className="text-sm font-semibold uppercase tracking-wider text-primary">
         Stage {stageNumber} of {totalStages}
       </p>
 
-      <h2 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-navy dark:text-white sm:text-4xl">
+      <h2 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
         {stage.title}
       </h2>
 
@@ -42,7 +42,7 @@ export function CurrentStageCard({
           <p className="text-sm font-medium text-muted-foreground">
             What happens next
           </p>
-          <p className="mt-1 text-base text-navy dark:text-white">
+          <p className="mt-1 text-base text-foreground">
             {nextStep || stage.next}
           </p>
         </div>
@@ -52,7 +52,7 @@ export function CurrentStageCard({
             <p className="text-sm font-medium text-muted-foreground">
               Estimated ready date
             </p>
-            <p className="mt-1 text-base font-medium text-gold">
+            <p className="mt-1 text-base font-medium text-primary">
               {format(new Date(permitEta), "MMMM d, yyyy")}
             </p>
           </div>
@@ -60,9 +60,9 @@ export function CurrentStageCard({
       </div>
 
       {customNote && (
-        <div className="mt-8 rounded-2xl border border-gold/30 bg-gold/5 p-5 dark:bg-gold/10">
-          <p className="text-sm font-medium text-gold">Note from Majestic Permits</p>
-          <p className="mt-2 text-base leading-relaxed text-navy dark:text-white">
+        <div className="mt-8 rounded-2xl border border-primary/30 bg-primary/5 p-5 dark:bg-primary/10">
+          <p className="text-sm font-medium text-primary">Note from Majestic Permits</p>
+          <p className="mt-2 text-base leading-relaxed text-foreground">
             {customNote}
           </p>
         </div>

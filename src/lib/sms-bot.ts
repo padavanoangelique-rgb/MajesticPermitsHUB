@@ -24,7 +24,7 @@ export async function handleInboundSms(from: string, rawBody: string) {
   }
 
   if (/^(1|status|track|where is my permit|permit status)$/.test(key) || key.includes("status")) {
-    return `To check a job, open your Hub link or email request@majesticpermits.com with the property address.
+    return `To check a job, open your Hub link or email hello@majesticpermits.com with the property address.
 If you want Angelique to look it up, text HUMAN and the address.`;
   }
 
@@ -42,7 +42,7 @@ Angelique will confirm.`;
 
   if (/^(4|docs|documents|paperwork)$/.test(key) || key.includes("document")) {
     return `Typical intake: contract or scope, survey or plans if you have them, owner name/phone/email, property address, and trade.
-Upload in the Hub or email request@majesticpermits.com.`;
+Upload in the Hub or email hello@majesticpermits.com.`;
   }
 
   if (/^(5|human|angelique|call me|office)$/.test(key) || key.includes("human")) {

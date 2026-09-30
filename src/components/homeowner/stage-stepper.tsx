@@ -24,7 +24,7 @@ export function StageStepper({ stages, currentIndex }: StageStepperProps) {
           {/* Progress line */}
           <div className="absolute left-0 top-5 h-0.5 w-full bg-slate-200 dark:bg-slate-700" />
           <motion.div
-            className="absolute left-0 top-5 h-0.5 bg-navy dark:bg-gold"
+            className="absolute left-0 top-5 h-0.5 bg-primary"
             initial={{ width: "0%" }}
             animate={{
               width: `${(currentIndex / (stages.length - 1)) * 100}%`,
@@ -46,9 +46,9 @@ export function StageStepper({ stages, currentIndex }: StageStepperProps) {
                   className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-semibold transition-all",
                     isCompleted &&
-                      "border-navy bg-navy text-white dark:border-gold dark:bg-gold dark:text-navy",
+                      "border-primary bg-primary text-primary-foreground",
                     isCurrent &&
-                      "border-gold bg-white text-navy ring-4 ring-gold/30 dark:bg-navy dark:text-gold",
+                      "border-primary bg-background text-primary ring-4 ring-primary/30",
                     !isCompleted &&
                       !isCurrent &&
                       "border-slate-300 bg-white text-slate-400 dark:border-slate-600 dark:bg-surface-dark"
@@ -64,7 +64,7 @@ export function StageStepper({ stages, currentIndex }: StageStepperProps) {
                   className={cn(
                     "mt-3 max-w-[90px] text-center text-xs font-medium leading-tight",
                     isCurrent
-                      ? "text-navy dark:text-gold"
+                      ? "text-primary"
                       : "text-muted-foreground"
                   )}
                 >
@@ -89,9 +89,9 @@ export function StageStepper({ stages, currentIndex }: StageStepperProps) {
                   className={cn(
                     "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold",
                     isCompleted &&
-                      "border-navy bg-navy text-white dark:border-gold dark:bg-gold dark:text-navy",
+                      "border-primary bg-primary text-primary-foreground",
                     isCurrent &&
-                      "border-gold bg-white text-navy ring-4 ring-gold/30",
+                      "border-primary bg-background text-primary ring-4 ring-primary/30",
                     !isCompleted &&
                       !isCurrent &&
                       "border-slate-300 text-slate-400"
@@ -107,7 +107,7 @@ export function StageStepper({ stages, currentIndex }: StageStepperProps) {
                   <div
                     className={cn(
                       "w-0.5 flex-1 min-h-[28px]",
-                      isCompleted ? "bg-navy dark:bg-gold" : "bg-slate-200"
+                      isCompleted ? "bg-primary" : "bg-slate-200"
                     )}
                   />
                 )}
@@ -117,7 +117,7 @@ export function StageStepper({ stages, currentIndex }: StageStepperProps) {
                   className={cn(
                     "font-medium",
                     isCurrent
-                      ? "text-lg text-navy dark:text-gold"
+                      ? "text-lg text-primary"
                       : "text-sm text-muted-foreground"
                   )}
                 >

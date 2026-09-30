@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
 import {
   FileCheck,
   Clock,
@@ -10,79 +9,42 @@ import {
   MapPin,
   Wrench,
 } from "lucide-react";
-
-const REQUEST_MAIL =
-  "mailto:request@majesticpermits.com?subject=New%20Permit%20Project";
+import { PublicShell } from "@/components/public/public-shell";
+import { LeadForm } from "@/components/public/lead-form";
+import { WorkGrid } from "@/components/public/work-grid";
+import { PUBLIC_AREAS } from "@/lib/public-areas";
+import { PUBLIC_POSTS } from "@/lib/public-posts";
+import { PUBLIC_HELLO, PUBLIC_PHONE_DISPLAY, PUBLIC_PHONE_TEL } from "@/lib/mailboxes";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-background">
-      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-background/90">
-        <div className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6">
-          <div className="flex items-center gap-3 justify-self-start">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-navy text-sm font-bold text-white">
-              M
-            </div>
-            <span className="text-lg font-semibold text-navy dark:text-white">
-              Majestic Permits
-            </span>
-          </div>
-
-          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 justify-self-center dark:text-slate-300 md:flex">
-            <a href="#how" className="hover:text-navy dark:hover:text-white">
-              How it Works
-            </a>
-            <a href="#who" className="hover:text-navy dark:hover:text-white">
-              Who it's for
-            </a>
-            <a href="#pricing" className="hover:text-navy dark:hover:text-white">
-              Pricing
-            </a>
-            <a href="#contact" className="hover:text-navy dark:hover:text-white">
-              Contact
-            </a>
-          </nav>
-
-          <div className="flex items-center gap-3 justify-self-end">
-            <ThemeToggle />
-            <Link
-              href="/login"
-              className="rounded-xl bg-navy px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-hover"
-            >
-              Client Login
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <section className="mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
-        <div className="text-center">
-          <span className="inline-flex items-center rounded-full border border-gold/30 bg-gold/10 px-4 py-1.5 text-sm font-medium text-gold">
-            South Florida's premier permit management
-          </span>
-
-          <h1 className="mt-8 text-5xl font-bold tracking-tight text-navy dark:text-white sm:text-6xl md:text-7xl">
+    <PublicShell>
+      <section className="mx-auto max-w-6xl px-4 pb-16 pt-12 sm:px-6 sm:pt-20">
+        <div className="max-w-3xl">
+          <p className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+            Miami-Dade · Broward · Palm Beach
+          </p>
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
             We handle your permits.
             <br />
             You build.
           </h1>
-
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-700 dark:text-slate-300 sm:text-xl">
-            Majestic Permits is a white-glove permitting service for contractors
-            and homeowners across South Florida. From application to final
-            inspection — we make it painless.
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+            Permit expediting for contractors and homeowners. Windows, doors,
+            roofing, renovations, and expired-permit close-outs. We build the
+            package, file it with the building department, and keep the status
+            in plain English.
           </p>
-
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a
-              href={REQUEST_MAIL}
-              className="rounded-2xl bg-navy px-8 py-4 text-base font-semibold text-white shadow-soft transition hover:bg-navy-hover"
+              href="#start"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-primary px-8 py-3 text-base font-semibold text-primary-foreground"
             >
               Start your project
             </a>
             <a
               href="#how"
-              className="rounded-2xl border border-slate-300 px-8 py-4 text-base font-semibold text-navy transition hover:bg-slate-50 dark:border-slate-600 dark:text-white dark:hover:bg-slate-800"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-border px-8 py-3 text-base font-semibold text-foreground"
             >
               See how it works
             </a>
@@ -90,195 +52,204 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="how" className="border-t border-slate-100 bg-surface-light py-20 dark:border-slate-800 dark:bg-background">
+      <section id="how" className="border-t border-border bg-secondary py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-center text-3xl font-bold tracking-tight text-navy dark:text-white sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             How it works
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-center text-lg text-slate-700 dark:text-slate-300">
-            Three simple steps. No jargon. No chasing the city.
+          <p className="mt-3 max-w-xl text-lg text-muted-foreground">
+            Three steps. No chasing the city yourself.
           </p>
-
-          <div className="mt-14 grid gap-8 sm:grid-cols-3">
+          <div className="mt-10 grid gap-6 sm:grid-cols-3">
             {[
               {
                 icon: FileCheck,
-                title: "1. Tell us about your project",
-                body: "A short intake. We collect what we need and prepare the package.",
+                title: "1. Tell us about the project",
+                body: "Address, trade, and what you already have. We tell you what the department still needs.",
               },
               {
                 icon: Clock,
-                title: "2. We handle the paperwork",
-                body: "Applications, corrections, follow-ups with the city — all of it.",
+                title: "2. We run the paperwork",
+                body: "Application, product approvals, corrections, and the follow-up the reviewer actually reads.",
               },
               {
                 icon: Link2,
-                title: "3. You track everything in real time",
-                body: "One private link. Big, clear status stages. Email updates when anything changes.",
+                title: "3. You track it on one link",
+                body: "A private page. Big status stages. Email when something changes. No password.",
               },
             ].map((item) => (
-              <div
-                key={item.title}
-                className="rounded-3xl border border-slate-200 bg-white p-8 dark:border-slate-700 dark:bg-surface-dark"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-navy/10 text-navy dark:bg-gold/10 dark:text-gold">
+              <div key={item.title} className="rounded-3xl border border-border bg-card p-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <item.icon className="h-6 w-6" />
                 </div>
-                <h3 className="mt-5 text-xl font-semibold text-navy dark:text-white">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-slate-700 dark:text-slate-300">
-                  {item.body}
-                </p>
+                <h3 className="mt-5 text-xl font-semibold text-foreground">{item.title}</h3>
+                <p className="mt-3 text-muted-foreground">{item.body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="who" className="py-20">
+      <section id="who" className="py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-center text-3xl font-bold tracking-tight text-navy dark:text-white sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Built for both sides of the job
           </h2>
-
-          <div className="mt-14 grid gap-8 md:grid-cols-2">
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 dark:border-slate-700 dark:bg-surface-dark">
-              <Building2 className="h-10 w-10 text-navy dark:text-gold" />
-              <h3 className="mt-5 text-2xl font-semibold text-navy dark:text-white">
-                Contractors
-              </h3>
-              <ul className="mt-4 space-y-3 text-slate-700 dark:text-slate-300">
-                <li>• Private portal for all your projects</li>
-                <li>• Real-time status and document access</li>
-                <li>• Inspection request button</li>
-                <li>• Quotes, invoices, and notifications</li>
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            <div className="rounded-3xl border border-border bg-card p-8">
+              <Building2 className="h-10 w-10 text-primary" />
+              <h3 className="mt-5 text-2xl font-semibold text-foreground">Contractors</h3>
+              <ul className="mt-4 space-y-3 text-muted-foreground">
+                <li>A portal for the jobs assigned to you</li>
+                <li>Status, documents, and inspection requests</li>
+                <li>Quotes and a weekly picture of what is open</li>
               </ul>
             </div>
-
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 dark:border-slate-700 dark:bg-surface-dark">
-              <Home className="h-10 w-10 text-navy dark:text-gold" />
-              <h3 className="mt-5 text-2xl font-semibold text-navy dark:text-white">
-                Homeowners
-              </h3>
-              <ul className="mt-4 space-y-3 text-slate-700 dark:text-slate-300">
-                <li>• No login or password required</li>
-                <li>• One private tracking link</li>
-                <li>• Plain-English stage explanations</li>
-                <li>• Automatic email updates</li>
+            <div className="rounded-3xl border border-border bg-card p-8">
+              <Home className="h-10 w-10 text-primary" />
+              <h3 className="mt-5 text-2xl font-semibold text-foreground">Homeowners</h3>
+              <ul className="mt-4 space-y-3 text-muted-foreground">
+                <li>No login</li>
+                <li>One private tracking link</li>
+                <li>Stage names a person can read</li>
               </ul>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="border-y border-slate-100 bg-surface-light py-10 dark:border-slate-800 dark:bg-background">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-8 px-4 text-sm font-medium text-slate-500 sm:gap-12">
+      <section className="border-y border-border bg-secondary py-8">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-10 gap-y-3 px-4 text-sm font-medium text-muted-foreground">
           <span className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-gold" /> Licensed & insured
+            <ShieldCheck className="h-4 w-4 text-primary" /> Licensed & insured
           </span>
           <span className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-gold" /> Miami-Dade · Broward · Palm Beach
+            <MapPin className="h-4 w-4 text-primary" /> Miami-Dade · Broward · Palm Beach
           </span>
           <span className="flex items-center gap-2">
-            <Wrench className="h-4 w-4 text-gold" /> Windows · Doors · Roofing · Renovations
+            <Wrench className="h-4 w-4 text-primary" /> Windows · Doors · Roofing · Renovations
           </span>
         </div>
       </section>
 
-      <section id="pricing" className="py-20">
+      <section id="areas" className="py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-center text-3xl font-bold tracking-tight text-navy dark:text-white sm:text-4xl">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                Areas we serve
+              </h2>
+              <p className="mt-3 max-w-xl text-muted-foreground">
+                Each city runs a different portal and a different checklist. These are the departments we write about and file with most.
+              </p>
+            </div>
+            <Link href="/areas" className="text-sm font-semibold text-primary">
+              All cities
+            </Link>
+          </div>
+          <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {PUBLIC_AREAS.map((area) => (
+              <li key={area.slug}>
+                <Link
+                  href={`/areas/${area.slug}`}
+                  className="block rounded-2xl border border-border px-4 py-3 text-sm font-medium text-foreground hover:border-primary hover:text-primary"
+                >
+                  {area.city}
+                  <span className="mt-1 block text-xs font-normal text-muted-foreground">
+                    {area.county}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section id="work" className="border-t border-border bg-secondary py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            From the job file
+          </h2>
+          <p className="mt-3 max-w-2xl text-muted-foreground">
+            Approvals, sealed plans, and finished openings. Real files go here as they are ready to show. Nothing stock.
+          </p>
+          <div className="mt-8">
+            <WorkGrid />
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" className="py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Simple pricing
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-center text-lg text-slate-700 dark:text-slate-300">
-            Clear upfront fees. No surprises.
+          <p className="mt-3 max-w-xl text-muted-foreground">
+            A quote after we see the scope. City fees stay city fees.
           </p>
-
-          <div className="mt-14 grid gap-8 md:grid-cols-2">
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 dark:border-slate-700 dark:bg-surface-dark">
-              <h3 className="text-xl font-semibold text-navy dark:text-white">
-                Per-permit
-              </h3>
-              <p className="mt-3 text-slate-700 dark:text-slate-300">
-                Flat fee quoted upfront for each permit application. Ideal for
-                one-off or occasional projects.
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            <div className="rounded-3xl border border-border bg-card p-8">
+              <h3 className="text-xl font-semibold text-foreground">Per permit</h3>
+              <p className="mt-3 text-muted-foreground">
+                A fee quoted up front for one application. The right fit for a single house or an occasional project.
               </p>
-              <a
-                href={REQUEST_MAIL}
-                className="mt-6 inline-flex rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-white hover:bg-navy-hover"
-              >
+              <a href="#start" className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">
                 Get a quote
               </a>
             </div>
-
-            <div className="rounded-3xl border border-gold/40 bg-gold/5 p-8 dark:bg-gold/10">
-              <h3 className="text-xl font-semibold text-navy dark:text-white">
-                Retainer
-              </h3>
-              <p className="mt-3 text-slate-700 dark:text-slate-300">
-                Monthly plan for contractors with ongoing volume. Priority
-                handling and consolidated reporting.
+            <div className="rounded-3xl border border-primary/40 bg-primary/5 p-8">
+              <h3 className="text-xl font-semibold text-foreground">Retainer</h3>
+              <p className="mt-3 text-muted-foreground">
+                For contractors with a steady queue. Priority handling and one report instead of a thread of texts.
               </p>
-              <a
-                href={REQUEST_MAIL}
-                className="mt-6 inline-flex rounded-xl border border-navy px-5 py-2.5 text-sm font-semibold text-navy hover:bg-navy hover:text-white dark:border-gold dark:text-gold dark:hover:bg-gold dark:hover:text-navy"
-              >
-                Contact for pricing
+              <a href="#start" className="mt-6 inline-flex min-h-11 items-center rounded-xl border border-primary px-5 py-2.5 text-sm font-semibold text-primary">
+                Ask about a retainer
               </a>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-navy py-20">
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
-          <div className="mx-auto mb-6 h-1 w-16 rounded-full bg-gold" />
-          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
-            Ready to stop chasing permits?
-          </h2>
-          <p className="mt-5 text-lg text-slate-300">
-            Tell us about your next project. We'll take it from there.
-          </p>
-          <a
-            href={REQUEST_MAIL}
-            className="mt-10 inline-flex rounded-2xl bg-white px-8 py-4 text-base font-semibold text-navy transition hover:bg-slate-100"
-          >
-            Start your project
-          </a>
+      <section className="border-t border-border py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">From the desk</h2>
+          <ul className="mt-6 divide-y divide-border">
+            {PUBLIC_POSTS.map((post) => (
+              <li key={post.slug} className="py-4">
+                <Link href={`/blog/${post.slug}`} className="text-lg font-semibold text-foreground hover:text-primary">
+                  {post.title}
+                </Link>
+                <p className="mt-1 text-sm text-muted-foreground">{post.description}</p>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      <footer id="contact" className="border-t border-slate-200 bg-white py-12 dark:border-slate-800 dark:bg-background">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="flex flex-col items-start justify-between gap-8 sm:flex-row">
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-navy text-sm font-bold text-white">
-                  M
-                </div>
-                <span className="text-lg font-semibold text-navy dark:text-white">
-                  Majestic Permits
-                </span>
-              </div>
-              <p className="mt-3 max-w-xs text-sm text-slate-500">
-                White-glove permitting for South Florida contractors and
-                homeowners.
-              </p>
-            </div>
-
-            <div className="text-sm text-slate-500">
-              <p>
-                <a href={REQUEST_MAIL}>request@majesticpermits.com</a>
-              </p>
-              <p className="mt-1">
-                <a href="tel:+15618883805">(561) 888-3805</a>
-              </p>
-              <p className="mt-4">© {new Date().getFullYear()} Majestic Permits</p>
-            </div>
+      <section id="start" className="border-t border-border bg-secondary py-16">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr]">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              Start your project
+            </h2>
+            <p className="mt-4 text-muted-foreground">
+              New inquiries become a lead. If we already have your email or phone, this opens a job on that account instead of a second profile.
+            </p>
+            <p className="mt-6 text-sm text-muted-foreground">
+              Or call{" "}
+              <a className="font-semibold text-primary" href={`tel:${PUBLIC_PHONE_TEL}`}>
+                {PUBLIC_PHONE_DISPLAY}
+              </a>{" "}
+              or email{" "}
+              <a className="font-semibold text-primary" href={`mailto:${PUBLIC_HELLO}`}>
+                {PUBLIC_HELLO}
+              </a>
+              .
+            </p>
           </div>
+          <LeadForm />
         </div>
-      </footer>
-    </div>
+      </section>
+    </PublicShell>
   );
 }
