@@ -145,7 +145,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
           )}
         </Section>
 
-        <Section title="Inspections">
+        <Section title="Inspections" id="inspections">
           {(inspections || []).length === 0 ? (
             <p className="text-sm text-muted-foreground">
               No inspections on file yet.
@@ -266,13 +266,15 @@ export default async function ContractorProjectPage({ params }: PageProps) {
 
 function Section({
   title,
+  id,
   children,
 }: {
   title: string;
+  id?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-6 rounded-2xl border border-border bg-card p-6 dark:border-border dark:bg-card">
+    <section id={id} className="mt-6 rounded-2xl border border-border bg-card/90 p-6 dark:border-border dark:bg-card/80">
       <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
         {title}
       </h2>

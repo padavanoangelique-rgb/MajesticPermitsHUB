@@ -61,9 +61,15 @@ export default async function DashboardPage() {
   }));
   const bucketedIds = new Set(bucketed.flatMap((b) => b.items.map((j: any) => j.id)));
   const other = jobs.filter((j: any) => !bucketedIds.has(j.id));
+  const displayOrder = ["needs_inspection", "in_review", "approved", "getting_ready", "permit_closed"];
+  const ordered = displayOrder
+    .map((key) => bucketed.find((bucket) => bucket.key === key))
+    .filter((bucket): bucket is (typeof bucketed)[number] => Boolean(bucket));
+  const reviewCount = ordered.find((bucket) => bucket.key === "in_review")?.items.length ?? 0;
+  const inspectionCount = ordered.find((bucket) => bucket.key === "needs_inspection")?.items.length ?? 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <header className="border-b border-border bg-card dark:border-border dark:bg-card">
         <div className="mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
@@ -117,6 +123,19 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <a href="#in_review" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-violet-600/30 to-indigo-950/40 px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">Pending review</p>
+            <p className="mt-1 text-3xl font-bold text-white">{reviewCount}</p>
+            <p className="mt-1 text-sm text-violet-100/80">Submitted, in review, or waiting on a correction.</p>
+          </a>
+          <a href="#needs_inspection" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-indigo-600/30 to-violet-950/40 px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">Needs inspection</p>
+            <p className="mt-1 text-3xl font-bold text-white">{inspectionCount}</p>
+            <p className="mt-1 text-sm text-violet-100/80">Approved jobs that still need a visit requested.</p>
+          </a>
+        </div>
+
         {pendingJobRequests.length > 0 && (
           <div className="mt-6 rounded-2xl border border-amber-800/40 bg-amber-950/30 px-5 py-4 dark:border-amber-900/40 dark:bg-amber-950/20">
             <p className="text-sm font-semibold text-amber-200 dark:text-amber-200">
@@ -145,13 +164,15 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="mt-8 space-y-6">
-            {bucketed.map(
+            {ordered.map(
               (bucket) =>
                 bucket.items.length > 0 && (
                   <StageSection
                     key={bucket.key}
-                    title={bucket.label}
+                    id={bucket.key}
+                    title={bucket.key === "in_review" ? "Pending review" : bucket.label}
                     items={bucket.items}
+                    askInspection={bucket.key === "approved" || bucket.key === "needs_inspection"}
                   />
                 )
             )}
@@ -166,13 +187,17 @@ export default async function DashboardPage() {
 }
 
 function StageSection({
+  id,
   title,
   items,
   accent = "blue",
+  askInspection = false,
 }: {
+  id?: string;
   title: string;
   items: any[];
   accent?: "blue" | "amber";
+  askInspection?: boolean;
 }) {
   const accentPill =
     accent === "amber"
@@ -180,7 +205,7 @@ function StageSection({
       : "bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary";
 
   return (
-    <section className="rounded-2xl border border-border bg-card dark:border-border dark:bg-card">
+    <section id={id} className="rounded-2xl border border-violet-400/20 bg-card/90 dark:border-violet-400/20 dark:bg-card/75">
       <header className="flex items-center gap-3 border-b border-border px-5 py-3 dark:border-border">
         <span
           className={
@@ -196,10 +221,10 @@ function StageSection({
       </header>
       <ul className="divide-y divide-border dark:divide-border">
         {items.map((job) => (
-          <li key={job.id}>
+          <li key={job.id} className="flex flex-wrap items-center gap-3 px-5 py-4">
             <Link
               href={`/dashboard/projects/${job.id}`}
-              className="flex flex-wrap items-center gap-4 px-5 py-4 transition hover:bg-secondary dark:hover:bg-secondary/40"
+              className="flex min-w-0 flex-1 flex-wrap items-center gap-4 rounded-xl transition hover:bg-secondary/70 dark:hover:bg-secondary/40"
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-primary dark:text-white">
@@ -239,6 +264,14 @@ function StageSection({
                 ) : null}
               </div>
             </Link>
+            {askInspection && (
+              <Link
+                href={`/dashboard/projects/${job.id}#inspections`}
+                className="rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-white"
+              >
+                Request inspection
+              </Link>
+            )}
           </li>
         ))}
       </ul>
