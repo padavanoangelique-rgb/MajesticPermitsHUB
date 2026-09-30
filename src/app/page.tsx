@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   },
   description:
     "Majestic is the permitting team on your jobs. Complete oversight, contractor updates, customer updates, inspections, and tracking in Miami-Dade, Broward, and Palm Beach. Ask for more info. New permits are requested inside the hub.",
-  alternates: { canonical: "https://majesticpermits.com" },
+  alternates: { canonical: "https://www.majesticpermits.com" },
 };
 
 const PACKAGE = [
@@ -83,7 +83,7 @@ export default function LandingPage() {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
     name: "Majestic Permits",
-    url: "https://majesticpermits.com",
+    url: "https://www.majesticpermits.com",
     telephone: "+1-561-888-3805",
     email: PUBLIC_HELLO,
     areaServed: ["Miami-Dade County", "Broward County", "Palm Beach County"],

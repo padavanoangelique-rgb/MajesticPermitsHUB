@@ -4,6 +4,11 @@ import { isAdminEmail } from "@/lib/admin";
 import { isDeskEmbed } from "@/lib/desk-embed";
 
 export async function middleware(request: NextRequest) {
+  const host = request.headers.get("host")?.split(":")[0] ?? "";
+  if (host === "thepermitcloser.com" || host === "www.thepermitcloser.com") {
+    return NextResponse.redirect("https://www.majesticpermits.com/permit-closer", 308);
+  }
+
   const { response, user } = await updateSession(request);
   const path = request.nextUrl.pathname;
   const desk = isDeskEmbed(request);

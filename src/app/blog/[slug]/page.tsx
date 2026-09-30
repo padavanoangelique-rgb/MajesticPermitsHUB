@@ -61,10 +61,10 @@ export default function BlogPostPage({ params }: { params: Params }) {
             </Link>
           )}
           <Link
-            href="/#start"
+            href="/#info"
             className="inline-flex min-h-12 items-center rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
           >
-            Start a project
+            Request more info
           </Link>
         </div>
       </article>

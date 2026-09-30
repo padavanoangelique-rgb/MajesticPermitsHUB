@@ -11,9 +11,7 @@ const inter = Inter({
 });
 
 function siteUrl() {
-  const raw = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
-  if (!raw || raw.includes("vercel.app")) return "https://majesticpermits.com";
-  return raw;
+  return "https://www.majesticpermits.com";
 }
 
 export const metadata: Metadata = {

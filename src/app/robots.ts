@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/admin", "/dashboard", "/login", "/api", "/track"],
     },
-    sitemap: "https://majesticpermits.com/sitemap.xml",
+    sitemap: "https://www.majesticpermits.com/sitemap.xml",
   };
 }

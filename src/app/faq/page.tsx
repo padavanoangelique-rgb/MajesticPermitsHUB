@@ -7,11 +7,23 @@ export const metadata: Metadata = {
   title: "Permit questions",
   description:
     "Answers on service area, expediting cost, Florida window and door permits, tracking, and The Permit Closer.",
+  alternates: { canonical: "https://www.majesticpermits.com/faq" },
 };
 
 export default function FaqPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: PUBLIC_FAQS.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
+  };
+
   return (
     <PublicShell>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
         <h1 className="text-4xl font-bold tracking-tight text-foreground">Questions</h1>
         <p className="mt-4 text-lg text-muted-foreground">
@@ -26,10 +38,10 @@ export default function FaqPage() {
           ))}
         </div>
         <Link
-          href="/#start"
+          href="/#info"
           className="mt-10 inline-flex min-h-12 items-center rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
         >
-          Start a project
+          Request more info
         </Link>
       </main>
     </PublicShell>

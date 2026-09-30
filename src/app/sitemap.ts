@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { allAreas } from "@/lib/public-areas";
 import { PUBLIC_POSTS } from "@/lib/public-posts";
 
-const SITE = "https://majesticpermits.com";
+const SITE = "https://www.majesticpermits.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
