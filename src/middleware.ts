@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { isAdminEmail } from "@/lib/admin";
-import { isDeskEmbed } from "@/lib/desk-embed";
 
 export async function middleware(request: NextRequest) {
   const host = request.headers.get("host")?.split(":")[0] ?? "";
@@ -11,23 +10,15 @@ export async function middleware(request: NextRequest) {
 
   const { response, user } = await updateSession(request);
   const path = request.nextUrl.pathname;
-  const desk = isDeskEmbed(request);
-
-  if (desk) {
-    response.cookies.set("mp_desk", "1", {
-      path: "/",
-      maxAge: 60 * 60 * 12,
-      sameSite: "none",
-      secure: true,
-    });
-  }
-
   const isAdminArea = path === "/admin" || path.startsWith("/admin/");
   const isAdminApi = path.startsWith("/api/admin");
   const isContractorArea = path === "/dashboard" || path.startsWith("/dashboard/");
 
   if (isAdminApi) {
-    if (desk) return response;
+    if (!["GET", "HEAD", "OPTIONS"].includes(request.method) && request.headers.get("origin") !== request.nextUrl.origin) {
+      return NextResponse.json({error: "Invalid origin"}, {status: 403});
+    }
+
     if (!user) {
       return NextResponse.json({ error: "Not signed in" }, { status: 401 });
     }
@@ -38,7 +29,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!user && (isAdminArea || isContractorArea)) {
-    if (desk && isAdminArea) return response;
+
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", path);
