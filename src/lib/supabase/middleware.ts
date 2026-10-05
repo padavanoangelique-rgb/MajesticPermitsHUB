@@ -24,17 +24,21 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({ name, value, ...options, ...embedCookieOptions });
+          request.cookies.set(name, value);
+          const pendingCookies = response.cookies.getAll();
           response = NextResponse.next({
             request: { headers: request.headers },
           });
+          pendingCookies.forEach(cookie => response.cookies.set(cookie));
           response.cookies.set({ name, value, ...options, ...embedCookieOptions });
         },
         remove(name: string, options: CookieOptions) {
-          request.cookies.set({ name, value: "", ...options, ...embedCookieOptions, maxAge: 0 });
+          request.cookies.set(name, "");
+          const pendingCookies = response.cookies.getAll();
           response = NextResponse.next({
             request: { headers: request.headers },
           });
+          pendingCookies.forEach(cookie => response.cookies.set(cookie));
           response.cookies.set({ name, value: "", ...options, ...embedCookieOptions, maxAge: 0 });
         },
       },
