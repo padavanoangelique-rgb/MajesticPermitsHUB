@@ -56,7 +56,7 @@ export async function GET(request: Request) {
           .order(sortColumn, { ascending: true })
           .range(offset, offset + pageSize - 1);
         if (pageError || !page) throw new Error("Cannot read " + table + " records");
-        rows.push(...(page as T[]));
+        rows.push(...(page as unknown as T[]));
         if (page.length < pageSize) break;
       }
       return rows;
