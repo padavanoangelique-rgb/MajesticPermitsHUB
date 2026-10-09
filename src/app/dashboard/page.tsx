@@ -255,6 +255,7 @@ function StageSection({
                 {job.sub_status ? ` · ${job.sub_status}` : ""}
               </p>
             </Link>
+            <Link href={`/dashboard/projects/${job.id}#documents`} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border px-4 py-3 text-sm font-semibold">Documents</Link>
             <Link
               href={`/dashboard/projects/${job.id}#inspections`}
               className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white sm:w-auto"

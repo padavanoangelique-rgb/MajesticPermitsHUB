@@ -7,7 +7,7 @@ const BUCKET = "job-documents";
 
 /** Generate a short-lived signed URL to view/download a job document. */
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: { id: string } }
 ) {
   const supabase = createServiceClient();
@@ -22,7 +22,7 @@ export async function GET(
   const { data: signed, error: sErr } = await supabase.storage
     .from(BUCKET)
     .createSignedUrl(row.storage_path, 60 * 10, {
-      download: row.file_name,
+      download: new URL(req.url).searchParams.get("view") === "1" ? false : row.file_name,
     });
   if (sErr || !signed?.signedUrl) {
     return NextResponse.json(

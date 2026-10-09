@@ -71,10 +71,10 @@ export default async function JobDetailPage({ params }: PageProps) {
     .eq("job_id", job.id)
     .order("slot", { ascending: true });
 
-  const { data: documents } = await supabase
+  const { data: documents, error: documentsError } = await supabase
     .from("job_documents")
     .select(
-      "id, category, label, file_name, visible_to_homeowner, visible_to_contractor, created_at"
+      "id, category, label, file_name, storage_path, visible_to_homeowner, visible_to_contractor, created_at"
     )
     .eq("job_id", job.id)
     .order("created_at", { ascending: false });
@@ -275,7 +275,8 @@ export default async function JobDetailPage({ params }: PageProps) {
           </dl>
         </Section>
 
-        <Section title="Documents">
+        <Section title="Shared job documents">
+          {documentsError && <p role="alert" className="mb-3 text-sm text-destructive">Documents could not be loaded. Refresh to try again.</p>}
           <JobDocuments jobId={job.id} documents={documents || []} />
         </Section>
 

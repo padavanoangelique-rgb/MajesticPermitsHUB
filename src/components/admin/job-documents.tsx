@@ -1,201 +1,66 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
+import { JobDocumentUpload } from "@/components/job-document-upload";
+import { DocDownload } from "@/components/contractor/doc-download";
+import { DOCUMENT_CATEGORIES, documentSource } from "@/lib/job-document-files";
 
 export interface JobDocument {
   id: string;
   category: string;
   label: string | null;
   file_name: string;
+  storage_path?: string;
   visible_to_homeowner: boolean;
   visible_to_contractor: boolean;
   created_at: string;
 }
 
-const CATEGORIES: Array<{ value: string; label: string }> = [
-  { value: "intake", label: "Intake documents" },
-  { value: "submitted_package", label: "Submitted package" },
-  { value: "corrections", label: "Corrections / revisions" },
-  { value: "approved_permit", label: "Approved permit" },
-  { value: "inspections", label: "Inspections" },
-  { value: "closeout", label: "Closeout documents" },
-  { value: "other", label: "Other" },
-];
-
-export function JobDocuments({
-  jobId,
-  documents,
-}: {
-  jobId: string;
-  documents: JobDocument[];
-}) {
+export function JobDocuments({ jobId, documents }: { jobId: string; documents: JobDocument[] }) {
   const router = useRouter();
-  const [category, setCategory] = useState("approved_permit");
-  const [shareWithHomeowner, setShareWithHomeowner] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-
-  async function onUpload(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const fileInput = form.elements.namedItem("file") as HTMLInputElement;
-    if (!fileInput.files?.[0]) return;
-
-    const fd = new FormData();
-    fd.append("job_id", jobId);
-    fd.append("category", category);
-    fd.append("visible_to_homeowner", shareWithHomeowner ? "true" : "false");
-    fd.append("file", fileInput.files[0]);
-
-    setBusy(true);
-    setMsg(null);
-    const res = await fetch("/api/admin/documents", {
-      method: "POST",
-      body: fd,
-    });
-    setBusy(false);
-    if (res.ok) {
-      form.reset();
-      setShareWithHomeowner(false);
-      setMsg("Uploaded");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  async function change(doc: JobDocument, field?: "visible_to_homeowner" | "visible_to_contractor") {
+    if (!field && !confirm(`Delete ${doc.file_name}? This removes it from the job for everyone.`)) return;
+    setBusy(doc.id);
+    setError("");
+    try {
+      const response = await fetch(`/api/admin/documents/${doc.id}`, field ? {
+        method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ [field]: !doc[field] }),
+      } : { method: "DELETE" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Document could not be updated");
       router.refresh();
-    } else {
-      const j = await res.json().catch(() => ({}));
-      setMsg(j.error || "Upload failed");
-    }
+    } catch (err) { setError(err instanceof Error ? err.message : "Document could not be updated"); }
+    finally { setBusy(null); }
   }
+  const groups = DOCUMENT_CATEGORIES.map(category => ({ ...category, docs: documents.filter(doc => doc.category === category.value) }));
+  const unknown = documents.filter(doc => !DOCUMENT_CATEGORIES.some(category => category.value === doc.category));
+  if (unknown.length) groups.push({ value: "legacy", label: "Other job files", docs: unknown });
 
-  async function toggleShare(doc: JobDocument) {
-    await fetch(`/api/admin/documents/${doc.id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        visible_to_homeowner: !doc.visible_to_homeowner,
-      }),
-    });
-    router.refresh();
-  }
-
-  async function remove(doc: JobDocument) {
-    if (!confirm(`Delete ${doc.file_name}?`)) return;
-    await fetch(`/api/admin/documents/${doc.id}`, { method: "DELETE" });
-    router.refresh();
-  }
-
-  async function download(doc: JobDocument) {
-    const res = await fetch(`/api/admin/documents/${doc.id}/signed-url`);
-    const j = await res.json();
-    if (j.url) window.open(j.url, "_blank");
-  }
-
-  const grouped = CATEGORIES.map((c) => ({
-    ...c,
-    docs: documents.filter((d) => d.category === c.value),
-  }));
-
-  return (
-    <div>
-      <form onSubmit={onUpload} className="space-y-3">
-        <div className="grid gap-3 sm:grid-cols-3">
-          <label className="block sm:col-span-1">
-            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Category
-            </span>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background"
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block sm:col-span-2">
-            <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              File
-            </span>
-            <input
-              type="file"
-              name="file"
-              required
-              className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
-            />
-          </label>
+  return <div className="space-y-5">
+    <p className="text-sm text-muted-foreground">You and the assigned contractor exchange files here. New uploads are shared with the contractor; homeowner sharing is optional.</p>
+    <JobDocumentUpload jobId={jobId} admin />
+    {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+    <p className="text-sm font-semibold">{documents.length} document{documents.length === 1 ? "" : "s"}</p>
+    {groups.filter(group => group.docs.length).map(group => <section key={group.value}>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{group.label}</h3>
+      <ul className="mt-2 divide-y divide-border">{group.docs.map(doc => <li key={doc.id} className="space-y-3 py-4">
+        <div className="min-w-0">
+          <p className="break-all text-sm font-semibold">{doc.label || doc.file_name}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{documentSource(doc.storage_path)} · {format(new Date(doc.created_at), "MMM d, yyyy h:mm a")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{doc.visible_to_contractor ? "Shared with contractor" : "Hidden from contractor"}</p>
         </div>
-        <label className="inline-flex items-center gap-2 text-sm text-muted-foreground dark:text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={shareWithHomeowner}
-            onChange={(e) => setShareWithHomeowner(e.target.checked)}
-          />
-          Share with homeowner immediately
-        </label>
-        <div className="flex items-center gap-3">
-          <button
-            type="submit"
-            disabled={busy}
-            className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            {busy ? "Uploading…" : "Upload document"}
-          </button>
-          {msg && <span className="text-xs text-muted-foreground">{msg}</span>}
+        <div className="flex flex-wrap items-center gap-3">
+          <DocDownload id={doc.id} admin view label="View" />
+          <DocDownload id={doc.id} admin label="Download" />
+          <label className="inline-flex items-center gap-2 text-xs"><input type="checkbox" disabled={busy !== null} checked={doc.visible_to_contractor} onChange={() => change(doc, "visible_to_contractor")} />Share with contractor</label>
+          <label className="inline-flex items-center gap-2 text-xs"><input type="checkbox" disabled={busy !== null} checked={doc.visible_to_homeowner} onChange={() => change(doc, "visible_to_homeowner")} />Share with homeowner</label>
+          <button type="button" disabled={busy !== null} onClick={() => change(doc)} className="text-xs text-destructive">Delete</button>
         </div>
-      </form>
-
-      <div className="mt-6 space-y-6">
-        {grouped.map((group) => (
-          <section key={group.value}>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {group.label}
-            </h3>
-            {group.docs.length === 0 ? (
-              <p className="mt-2 text-sm text-muted-foreground">No files yet.</p>
-            ) : (
-              <ul className="mt-2 divide-y divide-border dark:divide-border">
-                {group.docs.map((d) => (
-                  <li
-                    key={d.id}
-                    className="flex flex-wrap items-center justify-between gap-3 py-2"
-                  >
-                    <div className="min-w-0">
-                      <button
-                        onClick={() => download(d)}
-                        className="truncate text-sm font-medium text-primary hover:underline dark:text-white"
-                      >
-                        {d.file_name}
-                      </button>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(d.created_at), "MMM d, yyyy")}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground dark:text-muted-foreground">
-                        <input
-                          type="checkbox"
-                          checked={d.visible_to_homeowner}
-                          onChange={() => toggleShare(d)}
-                        />
-                        Share with homeowner
-                      </label>
-                      <button
-                        onClick={() => remove(d)}
-                        className="text-xs text-red-200 hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        ))}
-      </div>
-    </div>
-  );
+      </li>)}</ul>
+    </section>)}
+    {!documents.length && <p className="text-sm text-muted-foreground">No documents yet. Upload the first file above.</p>}
+  </div>;
 }

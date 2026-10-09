@@ -10,6 +10,7 @@ import { StageStepper } from "@/components/homeowner/stage-stepper";
 import { PermitHeader } from "@/components/shared/permit-header";
 import { DocDownload } from "@/components/contractor/doc-download";
 import { InspectionRow } from "@/components/contractor/inspection-row";
+import { documentSource } from "@/lib/job-document-files";
 import { JobDocUpload } from "@/components/contractor/job-doc-upload";
 import { HomeownerSharePanel } from "@/components/contractor/homeowner-share-panel";
 import { requireUser } from "@/lib/auth-guard";
@@ -46,7 +47,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
   const dateOptions = upcomingInspectionDates(10);
   const brandName = publicTrackBrand(job, contractor);
 
-  const [{ data: inspections }, { data: docs }, { data: quotes }, { data: pendingReqs }, { data: link }] =
+  const [{ data: inspections }, { data: docs, error: docsError }, { data: quotes }, { data: pendingReqs }, { data: link }] =
     await Promise.all([
       service
         .from("job_inspections")
@@ -57,7 +58,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
         .order("slot", { ascending: true }),
       service
         .from("job_documents")
-        .select("id, category, label, file_name, created_at, visible_to_contractor")
+        .select("id, category, label, file_name, storage_path, created_at, visible_to_contractor")
         .eq("job_id", job.id)
         .eq("visible_to_contractor", true)
         .order("created_at", { ascending: false }),
@@ -173,28 +174,29 @@ export default async function ContractorProjectPage({ params }: PageProps) {
           )}
         </Section>
 
-        <Section title="Documents">
-          {(docs || []).length === 0 ? (
+        <Section title="Shared job documents" id="documents">
+          <p className="mb-4 text-sm text-muted-foreground">Upload documents for Majestic and view files Majestic shares with your company. Files remain available after the job closes.</p>
+          <JobDocUpload jobId={job.id} />
+          {docsError ? <p role="alert" className="mt-4 text-sm text-destructive">Documents could not be loaded. Use Refresh documents to try again.</p> : (docs || []).length === 0 ? (
             <p className="text-sm text-muted-foreground">No documents available yet.</p>
           ) : (
-            <ul className="divide-y divide-border dark:divide-border">
+            <ul className="mt-4 divide-y divide-border dark:divide-border">
               {(docs || []).map((d: any) => (
-                <li key={d.id} className="flex items-center justify-between py-3">
+                <li key={d.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                   <div>
                     <p className="text-sm font-semibold text-primary dark:text-white">
-                      {d.label || d.file_name}
+                      <span className="break-all">{d.label || d.file_name}</span>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {categoryLabel(d.category)} ·{" "}
+                      {documentSource(d.storage_path)} · {categoryLabel(d.category)} ·{" "}
                       {format(new Date(d.created_at), "MMM d, yyyy")}
                     </p>
                   </div>
-                  <DocDownload id={d.id} label="Download" />
+                  <div className="flex gap-2"><DocDownload id={d.id} view label="View" /><DocDownload id={d.id} label="Download" /></div>
                 </li>
               ))}
             </ul>
           )}
-          {!permitClosed && <JobDocUpload jobId={job.id} />}
         </Section>
 
         <Section title="Invoices & payments">
@@ -203,7 +205,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
           ) : (
             <ul className="divide-y divide-border dark:divide-border">
               {(quotes || []).map((q: any) => (
-                <li key={q.id} className="flex items-center justify-between py-3">
+                <li key={q.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                   <div>
                     <p className="text-sm font-semibold text-primary dark:text-white">
                       ${Number(q.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}

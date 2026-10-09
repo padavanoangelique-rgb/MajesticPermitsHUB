@@ -12,7 +12,7 @@ const BUCKET = "job-documents";
  * contractor profile AND the document is visible to contractors.
  */
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: { id: string } }
 ) {
   const supabase = createClient();
@@ -54,7 +54,7 @@ export async function GET(
 
   const { data: signed, error } = await service.storage
     .from(BUCKET)
-    .createSignedUrl(doc.storage_path, 60 * 10, { download: doc.file_name });
+    .createSignedUrl(doc.storage_path, 60 * 10, { download: new URL(req.url).searchParams.get("view") === "1" ? false : doc.file_name });
   if (error || !signed?.signedUrl) {
     return NextResponse.json(
       { error: error?.message || "Signing failed" },

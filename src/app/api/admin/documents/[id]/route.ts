@@ -27,11 +27,14 @@ export async function PATCH(
     }
 
     const supabase = createServiceClient();
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from("job_documents")
       .update(patch)
-      .eq("id", params.id);
+      .eq("id", params.id)
+      .select("id")
+      .maybeSingle();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    if (!updated) return NextResponse.json({ error: "Document not found" }, { status: 404 });
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     return NextResponse.json(
@@ -47,14 +50,17 @@ export async function DELETE(
 ) {
   try {
     const supabase = createServiceClient();
-    const { data: row } = await supabase
+    const { data: row, error: lookupError } = await supabase
       .from("job_documents")
       .select("storage_path")
       .eq("id", params.id)
       .maybeSingle();
 
-    if (row?.storage_path) {
-      await supabase.storage.from(BUCKET).remove([row.storage_path]);
+    if (lookupError) return NextResponse.json({ error: lookupError.message }, { status: 500 });
+    if (!row) return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    if (row.storage_path) {
+      const { error: storageError } = await supabase.storage.from(BUCKET).remove([row.storage_path]);
+      if (storageError) return NextResponse.json({ error: storageError.message }, { status: 400 });
     }
     const { error } = await supabase
       .from("job_documents")
