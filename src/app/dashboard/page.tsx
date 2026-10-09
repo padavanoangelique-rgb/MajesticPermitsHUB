@@ -8,6 +8,10 @@ import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { JobStatusBar } from "@/components/contractor/job-status-bar";
 import { ToolNav } from "@/components/contractor/tool-nav";
 import { DECLINED_REQUEST_SUB, PENDING_REQUEST_SUB } from "@/lib/job-request";
+import { ContractorResultForm } from "@/components/contractor/contractor-result-form";
+import { isFinalInspection } from "@/lib/inspection-final";
+
+type DashboardInspection = { id: string; job_id: string; slot: number; inspection_type: string | null; status: string; scheduled_date: string | null; result_date: string | null };
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +57,15 @@ export default async function DashboardPage() {
   );
 
   const totalJobs = jobs.length;
+  const { data: inspections } = jobs.length
+    ? await supabase.from("job_inspections")
+        .select("id, job_id, slot, inspection_type, status, scheduled_date, result_date")
+        .in("job_id", jobs.map((job) => job.id)).order("slot")
+    : { data: [] };
+  const inspectionsByJob: Record<string, DashboardInspection[]> = {};
+  for (const inspection of inspections || []) {
+    (inspectionsByJob[inspection.job_id] ||= []).push(inspection);
+  }
 
   const bucketed = CONTRACTOR_BUCKETS.map((bucket) => ({
     ...bucket,
@@ -174,11 +187,12 @@ export default async function DashboardPage() {
                     id={bucket.key}
                     title={bucket.key === "in_review" ? "Pending review" : bucket.label}
                     items={bucket.items}
+                    inspectionsByJob={inspectionsByJob}
                   />
                 )
             )}
             {other.length > 0 && (
-              <StageSection title="Other" items={other} accent="amber" />
+              <StageSection title="Other" items={other} accent="amber" inspectionsByJob={inspectionsByJob} />
             )}
           </div>
         )}
@@ -192,11 +206,13 @@ function StageSection({
   title,
   items,
   accent = "blue",
+  inspectionsByJob,
 }: {
   id?: string;
   title: string;
   items: any[];
   accent?: "blue" | "amber";
+  inspectionsByJob: Record<string, DashboardInspection[]>;
 }) {
   const accentPill =
     accent === "amber"
@@ -239,8 +255,27 @@ function StageSection({
               href={`/dashboard/projects/${job.id}#inspections`}
               className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white sm:w-auto"
             >
-              Schedule inspection
+              {job.stage === "Permit closed — all done" ? "View inspections" : "Manage inspections"}
             </Link>
+            </div>
+            <div className="mt-3 space-y-2 border-t border-border pt-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Inspection status & results</p>
+              {(inspectionsByJob[job.id] || []).filter((inspection) => !["not_required", "not_requested", "cancelled"].includes(inspection.status)).map((inspection) => (
+                <div key={inspection.id} className="rounded-lg bg-secondary/40 px-3 py-2">
+                  <p className="text-sm"><span className="font-medium">{inspection.inspection_type || `Inspection ${inspection.slot}`}</span> · {inspection.status.replace(/_/g, " ")}
+                    {(inspection.result_date || inspection.scheduled_date) ? ` · ${inspection.result_date || inspection.scheduled_date}` : ""}
+                  </p>
+                  {job.stage !== "Permit closed — all done" && ["scheduled", "reinspection_scheduled"].includes(inspection.status) && (
+                    <details className="mt-2">
+                      <summary className="cursor-pointer text-sm font-semibold text-primary">Record result{isFinalInspection(inspection) ? " / final pass" : ""}</summary>
+                      <ContractorResultForm inspectionId={inspection.id} isFinal={isFinalInspection(inspection)} />
+                    </details>
+                  )}
+                </div>
+              ))}
+              {!(inspectionsByJob[job.id] || []).some((inspection) => !["not_required", "not_requested", "cancelled"].includes(inspection.status)) && (
+                <p className="text-xs text-muted-foreground">No inspection scheduled yet. Use Manage inspections to request a visit.</p>
+              )}
             </div>
           </li>
         ))}

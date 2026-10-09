@@ -112,7 +112,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
           href="#inspections"
           className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white sm:w-auto"
         >
-          Schedule inspection
+          {permitClosed ? "View inspection history" : "Inspection status & results"}
         </Link>
 
         <div className="mt-4">

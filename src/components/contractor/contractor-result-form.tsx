@@ -46,8 +46,9 @@ export function ContractorResultForm({
   return (
     <div className="mt-3 space-y-2">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Result (if you have it first)
+        Record inspection result
       </p>
+      <label className="block text-sm">Result
       <select
         value={result}
         onChange={(e) => setResult(e.target.value)}
@@ -57,6 +58,8 @@ export function ContractorResultForm({
         <option value="partial_pass">Partial pass</option>
         <option value="failed">Failed — corrections</option>
       </select>
+      </label>
+      <label className="block text-sm">Inspector / correction notes
       <textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
@@ -64,9 +67,10 @@ export function ContractorResultForm({
         placeholder="Inspector notes, if any"
         className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm dark:border-border dark:bg-background dark:text-white"
       />
+      </label>
       {result === "passed" && (
         <label className="flex items-center gap-2 text-xs text-muted-foreground dark:text-muted-foreground">
-          <input type="checkbox" checked={final} onChange={(e) => setFinal(e.target.checked)} />
+          <input type="checkbox" checked={final} disabled={Boolean(isFinal) || busy} onChange={(e) => setFinal(e.target.checked)} />
           This is the final inspection — close the job
         </label>
       )}
@@ -78,7 +82,7 @@ export function ContractorResultForm({
         disabled={busy}
         className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
       >
-        {busy ? "Saving…" : "Save result"}
+        {busy ? "Saving…" : result === "passed" && final ? "Save final pass + close job" : "Save inspection result"}
       </button>
     </div>
   );
