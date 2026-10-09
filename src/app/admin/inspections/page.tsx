@@ -1,3 +1,4 @@
+import { inspectionsAllowed } from "@/lib/stages";
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/auth-guard";
 import { MarkHandledButton } from "@/components/admin/mark-handled-button";
@@ -69,7 +70,7 @@ export default async function InspectionsPage({
   const { data: jobs } = jobIds.size
     ? await supabase
         .from("jobs")
-        .select("id, property_address, homeowner_name, contractor_id")
+        .select("id, property_address, homeowner_name, contractor_id, stage")
         .in("id", Array.from(jobIds))
     : { data: [] as any[] };
 
@@ -80,6 +81,7 @@ export default async function InspectionsPage({
 
   for (const r of requests || []) {
     const job = r.job_id ? jobMap.get(r.job_id) : null;
+    if (job && !inspectionsAllowed(job.stage) && !["Passed","passed","closed"].includes(r.status)) continue;
     const contractorId = r.requested_by_contractor_id || job?.contractor_id;
     const contractor = contractorId ? contractorMap.get(contractorId) : null;
     const matches = (slots || []).filter((s) => s.job_id === r.job_id &&
@@ -111,6 +113,7 @@ export default async function InspectionsPage({
     const job = s.job_id ? jobMap.get(s.job_id) : null;
     const contractor = job?.contractor_id ? contractorMap.get(job.contractor_id) : null;
     const status = String(s.status || "");
+    if (job && !inspectionsAllowed(job.stage) && !["passed","closed"].includes(status)) continue;
     rows.push({
       id: `slot-${s.id}`,
       inspection_type: s.inspection_type,
@@ -133,6 +136,9 @@ export default async function InspectionsPage({
     const already = rows.some((r) => r.job_id === n.job_id);
     if (already) continue;
     const job = jobMap.get(n.job_id);
+    if (!job || !inspectionsAllowed(job.stage)) continue;
+    // Notification text is an alert, not a persisted inspection request.
+    if (!(slots || []).some(s => s.job_id === n.job_id && ["requested","reinspection_requested"].includes(s.status))) continue;
     const contractor = job?.contractor_id ? contractorMap.get(job.contractor_id) : null;
     rows.push({
       id: `notice-${n.id}`,

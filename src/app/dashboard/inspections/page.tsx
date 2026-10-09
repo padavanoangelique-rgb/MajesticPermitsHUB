@@ -1,3 +1,4 @@
+import { inspectionsAllowed } from "@/lib/stages";
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
@@ -33,9 +34,10 @@ export default async function ContractorInspectionsPage() {
 
   const { data: jobs } = await supabase
     .from("jobs")
-    .select("id, property_address")
+    .select("id, property_address, stage")
     .eq("contractor_id", contractor.id);
 
+  const eligibleJobIds = new Set((jobs || []).filter(j => inspectionsAllowed(j.stage)).map(j => j.id));
   const jobIds = (jobs || []).map((j) => j.id);
   const addressById = new Map((jobs || []).map((j) => [j.id, j.property_address]));
   const service = createServiceClient();
@@ -60,6 +62,7 @@ export default async function ContractorInspectionsPage() {
   const events: CalendarEvent[] = [];
 
   for (const row of inspections || []) {
+    if (!eligibleJobIds.has(row.job_id) && !["passed", "closed"].includes(row.status)) continue;
     const scheduled = ["scheduled", "reinspection_scheduled"].includes(row.status);
     const pendingStatus = ["requested", "reinspection_requested"].includes(row.status);
     const hasResult = ["passed", "failed", "partial_pass", "closed"].includes(row.status);
@@ -84,6 +87,7 @@ export default async function ContractorInspectionsPage() {
   }
 
   for (const req of pending || []) {
+    if (!eligibleJobIds.has(req.job_id)) continue;
     if (!req.preferred_date) continue;
     const already = events.some(
       (ev) =>
