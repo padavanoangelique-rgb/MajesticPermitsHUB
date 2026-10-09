@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { isAdminEmail } from "@/lib/admin";
+import { adminDestination } from "@/lib/admin-navigation";
 
 export async function middleware(request: NextRequest) {
   const host = request.headers.get("host")?.split(":")[0] ?? "";
@@ -32,21 +33,27 @@ export async function middleware(request: NextRequest) {
 
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("next", path);
+    url.search = "";
+    url.searchParams.set("next", path + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
 
   if (user && isAdminArea && !isAdminEmail(user.email)) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/admin-access";
     url.search = "";
+    url.searchParams.set("next", adminDestination(path + request.nextUrl.search));
     return NextResponse.redirect(url);
   }
 
   if (user && path === "/login") {
     const url = request.nextUrl.clone();
-    url.pathname = isAdminEmail(user.email) ? "/admin" : "/dashboard";
-    url.search = "";
+    const destination = isAdminEmail(user.email)
+      ? adminDestination(request.nextUrl.searchParams.get("next"))
+      : "/dashboard";
+    const target = new URL(destination, request.nextUrl.origin);
+    url.pathname = target.pathname;
+    url.search = target.search;
     return NextResponse.redirect(url);
   }
 

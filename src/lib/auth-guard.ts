@@ -9,7 +9,7 @@ export async function requireAdmin() {
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login?next=/admin");
-  if (!isAdminEmail(user.email)) redirect("/dashboard");
+  if (!isAdminEmail(user.email)) redirect("/admin-access");
 
   return user;
 }
