@@ -1,3 +1,6 @@
+import { UpdateStageForm } from "@/components/admin/update-stage-form";
+import { canonicalStageTitle, inspectionsAllowed } from "@/lib/stages";
+import { visibleInspections, inspectionName } from "@/lib/inspection-sequence";
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
@@ -70,7 +73,7 @@ export default async function DashboardPage() {
   const bucketed = CONTRACTOR_BUCKETS.map((bucket) => ({
     ...bucket,
     items: jobs.filter((j: any) =>
-      (bucket.stageTitles as readonly string[]).includes(j.stage)
+      (bucket.stageTitles as readonly string[]).includes(canonicalStageTitle(j.stage))
     ),
   }));
   const bucketedIds = new Set(bucketed.flatMap((b) => b.items.map((j: any) => j.id)));
@@ -127,7 +130,7 @@ export default async function DashboardPage() {
               Dashboard
             </h1>
             <p className="mt-1 text-muted-foreground">
-              {totalJobs} active project{totalJobs !== 1 ? "s" : ""}
+              {jobs.filter(j => canonicalStageTitle(j.stage) !== "Permit closed — all done").length} active projects
             </p>
           </div>
           <Link
@@ -238,6 +241,7 @@ function StageSection({
         {items.map((job) => (
           <li key={job.id} className="px-4 py-4 sm:px-5">
             <JobStatusBar stage={job.stage || job.sub_status || ""} />
+            <details className="mt-3"><summary className="cursor-pointer text-sm font-semibold text-primary">Edit permit status</summary><div className="mt-3"><UpdateStageForm key={`${job.stage}:${job.sub_status}`} jobId={job.id} currentStage={job.stage} currentSubStatus={job.sub_status || ""} contractor /></div></details>
             <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link
               href={`/dashboard/projects/${job.id}`}
@@ -255,14 +259,14 @@ function StageSection({
               href={`/dashboard/projects/${job.id}#inspections`}
               className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white sm:w-auto"
             >
-              {job.stage === "Permit closed — all done" ? "View inspections" : "Manage inspections"}
+              {job.stage === "Permit closed — all done" ? "View inspections" : inspectionsAllowed(job.stage) ? "Manage inspection" : "View project"}
             </Link>
             </div>
             <div className="mt-3 space-y-2 border-t border-border pt-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Inspection status & results</p>
-              {(inspectionsByJob[job.id] || []).filter((inspection) => !["not_required", "not_requested", "cancelled"].includes(inspection.status)).map((inspection) => (
+              {visibleInspections(inspectionsByJob[job.id] || [], inspectionsAllowed(job.stage), job.stage === "Permit closed — all done").map((inspection) => (
                 <div key={inspection.id} className="rounded-lg bg-secondary/40 px-3 py-2">
-                  <p className="text-sm"><span className="font-medium">{inspection.inspection_type || `Inspection ${inspection.slot}`}</span> · {inspection.status.replace(/_/g, " ")}
+                  <p className="text-sm"><span className="font-medium">{inspectionName(inspection)}</span> · {inspection.status.replace(/_/g, " ")}
                     {(inspection.result_date || inspection.scheduled_date) ? ` · ${inspection.result_date || inspection.scheduled_date}` : ""}
                   </p>
                   {job.stage !== "Permit closed — all done" && ["scheduled", "reinspection_scheduled"].includes(inspection.status) && (
@@ -274,7 +278,7 @@ function StageSection({
                 </div>
               ))}
               {!(inspectionsByJob[job.id] || []).some((inspection) => !["not_required", "not_requested", "cancelled"].includes(inspection.status)) && (
-                <p className="text-xs text-muted-foreground">No inspection scheduled yet. Use Manage inspections to request a visit.</p>
+                <p className="text-xs text-muted-foreground">{inspectionsAllowed(job.stage) ? "No inspection scheduled yet. Open the project to request a visit." : "Inspections become available after permit approval."}</p>
               )}
             </div>
           </li>

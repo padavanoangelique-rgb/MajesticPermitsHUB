@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getContractorForUser } from "@/lib/contractor";
-import { PERMIT_STAGES } from "@/lib/stages";
+import { defaultSubStatus, JOB_SUB_STATUSES, PERMIT_STAGES } from "@/lib/stages";
 import { textClientStatusChange } from "@/lib/job-status-sms";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +32,8 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid stage" }, { status: 400 });
     }
 
+    const subStatus = typeof body.sub_status === "string" ? body.sub_status : defaultSubStatus(stage);
+    if (!JOB_SUB_STATUSES.includes(subStatus)) return NextResponse.json({error:"Invalid status"},{status:400});
     const service = createServiceClient();
     const { data: job, error: lookupError } = await service
       .from("jobs")
@@ -48,8 +50,8 @@ export async function PATCH(
 
     const { error } = await service
       .from("jobs")
-      .update({ stage })
-      .eq("id", params.id);
+      .update({ stage, sub_status: subStatus })
+      .eq("id", params.id).eq("contractor_id", contractor.id).select("id").single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

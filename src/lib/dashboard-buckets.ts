@@ -27,12 +27,12 @@ export const CONTRACTOR_BUCKETS = [
   {
     key: "needs_inspection",
     label: "Needs inspection",
-    stageTitles: ["Inspections in progress"],
+    stageTitles: ["Inspections in progress", "Final inspection passed"],
   },
   {
     key: "permit_closed",
     label: "Permit closed",
-    stageTitles: ["Final inspection passed", "Permit closed — all done"],
+    stageTitles: ["Permit closed — all done"],
   },
 ] as const;
 

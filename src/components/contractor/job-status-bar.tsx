@@ -1,21 +1,12 @@
 import { PERMIT_STAGES } from "@/lib/stages";
 
-export function stageIndexFromTitle(stage: string) {
-  const text = (stage || "").toLowerCase();
-  if (text.includes("ready") || text.includes("getting")) return 0;
-  if (text.includes("submit")) return 1;
-  if (text.includes("review")) return 2;
-  if (text.includes("correct")) return 3;
-  if (text.includes("approv")) return 4;
-  if (text.includes("inspect")) return 5;
-  if (text.includes("final")) return 6;
-  if (text.includes("close") || text.includes("complete") || text.includes("done")) return 7;
-  return 0;
-}
+export { stageIndexFromTitle } from "@/lib/stages";
+import { stageIndexFromTitle } from "@/lib/stages";
 
 export function JobStatusBar({ stage }: { stage: string }) {
   const index = stageIndexFromTitle(stage);
-  const current = PERMIT_STAGES[index] ?? PERMIT_STAGES[0];
+  const current = PERMIT_STAGES[index];
+  if (!current) return <p className="text-sm font-semibold">{stage || "Stage not set"}</p>;
   const width = Math.max(8, Math.round(((index + 1) / PERMIT_STAGES.length) * 100));
 
   return (

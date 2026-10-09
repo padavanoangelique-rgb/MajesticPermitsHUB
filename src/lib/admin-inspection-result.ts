@@ -33,7 +33,7 @@ export async function recordAdminInspectionResult(
       .select("id, job_id, slot, inspection_type, status").eq("job_id", request.job_id);
     if (slotError) throw new Error(slotError.message);
     const matches = (slots || []).filter((slot) =>
-      (slot.inspection_type || "").trim().toLowerCase() === (request.inspection_type || "").trim().toLowerCase());
+      (slot.inspection_type || `Inspection ${slot.slot}`).trim().toLowerCase() === (request.inspection_type || "").trim().toLowerCase());
     if (matches.length !== 1) throw new Error("Open the job and choose the matching inspection; this request is not uniquely linked");
     inspection = matches[0];
   }

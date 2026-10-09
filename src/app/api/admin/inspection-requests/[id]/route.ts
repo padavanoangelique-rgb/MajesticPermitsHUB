@@ -195,6 +195,8 @@ export async function PATCH(
         .select("id, inspection_type, requested_date")
         .eq("job_id", notice.job_id)
         .in("status", ["requested", "reinspection_requested"]);
+      if (status !== "Scheduled") return NextResponse.json({error:"Open the job to select the inspection to change."},{status:400});
+      if (openSlots?.length !== 1) return NextResponse.json({error:"Open the job and choose a single inspection to schedule."},{status:409});
       for (const slot of openSlots || []) {
         await supabase
           .from("job_inspections")
@@ -234,15 +236,12 @@ export async function PATCH(
         : { data: null };
 
       if (status === "Scheduled" && request?.job_id) {
-        await supabase
-          .from("job_inspections")
-          .update({
-            status: "scheduled",
-            scheduled_date: preferredDate || request.preferred_date,
-            updated_at: handledAt,
-          })
-          .eq("job_id", request.job_id)
-          .in("status", ["requested", "reinspection_requested"]);
+        const {data: slots, error: slotError} = await supabase.from("job_inspections").select("id, slot, inspection_type, status").eq("job_id",request.job_id).in("status",["requested","reinspection_requested"]);
+        if (slotError) throw new Error(slotError.message);
+        const matches = (slots || []).filter(s => (s.inspection_type || `Inspection ${s.slot}`).toLowerCase() === (request.inspection_type || "").toLowerCase());
+        if (matches.length !== 1) throw new Error("Open the job and select the matching inspection to schedule.");
+        const {error: saveError} = await supabase.from("job_inspections").update({status: matches[0].status === "reinspection_requested" ? "reinspection_scheduled" : "scheduled", scheduled_date: preferredDate || request.preferred_date, updated_at: handledAt}).eq("id",matches[0].id);
+        if (saveError) throw new Error(saveError.message);
       }
 
       contractorId = request?.requested_by_contractor_id || job?.contractor_id || null;

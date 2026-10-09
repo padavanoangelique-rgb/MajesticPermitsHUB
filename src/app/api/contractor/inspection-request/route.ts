@@ -1,3 +1,4 @@
+import { inspectionsAllowed } from "@/lib/stages";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -73,7 +74,7 @@ export async function POST(req: Request) {
     const service = createServiceClient();
     const { data: job, error: lookupError } = await service
       .from("jobs")
-      .select("id, contractor_id, property_address")
+      .select("id, contractor_id, property_address, stage")
       .eq("id", jobId)
       .maybeSingle();
 
@@ -84,6 +85,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
 
+    if (!inspectionsAllowed(job.stage)) return NextResponse.json({error:"Inspections become available after permit approval."},{status:409});
     const { error } = await service.from("inspection_requests").insert({
       job_id: jobId,
       requested_by: "contractor",

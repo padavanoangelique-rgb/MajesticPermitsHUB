@@ -1,3 +1,5 @@
+import { canonicalStageTitle } from "@/lib/stages";
+import { UpdateStageForm } from "@/components/admin/update-stage-form";
 import { createServiceClient } from "@/lib/supabase/service";
 import { Logo } from "@/components/layout/logo";
 import Link from "next/link";
@@ -83,14 +85,14 @@ export default async function AdminPage({ searchParams }: PageProps) {
     if (selectedContractorIds.length > 0) {
       if (!job.contractor_id || !selectedContractorIds.includes(job.contractor_id)) return false;
     }
-    if (selectedStages.length > 0 && !selectedStages.includes(job.stage)) return false;
+    if (selectedStages.length > 0 && !selectedStages.includes(canonicalStageTitle(job.stage))) return false;
     return true;
   });
 
   const bucketed = CONTRACTOR_BUCKETS.map((bucket) => ({
     ...bucket,
     items: filtered.filter((j: any) =>
-      (bucket.stageTitles as readonly string[]).includes(j.stage)
+      (bucket.stageTitles as readonly string[]).includes(canonicalStageTitle(j.stage))
     ),
   }));
   const bucketedIds = new Set(bucketed.flatMap((b) => b.items.map((j: any) => j.id)));
@@ -302,6 +304,7 @@ function AdminStageSection({
                   ) : null}
                 </div>
               </Link>
+              <details className="px-5 pb-4"><summary className="cursor-pointer text-sm font-semibold text-primary">Edit permit status</summary><div className="mt-3"><UpdateStageForm key={`${job.stage}:${job.sub_status}`} jobId={job.id} currentStage={job.stage} currentSubStatus={job.sub_status || ""} /></div></details>
             </li>
           );
         })}

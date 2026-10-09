@@ -1,9 +1,11 @@
+import { UpdateStageForm } from "@/components/admin/update-stage-form";
+import { visibleInspections } from "@/lib/inspection-sequence";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { format } from "date-fns";
-import { PERMIT_STAGES } from "@/lib/stages";
+import { inspectionsAllowed, PERMIT_STAGES } from "@/lib/stages";
 import { StageStepper } from "@/components/homeowner/stage-stepper";
 import { PermitHeader } from "@/components/shared/permit-header";
 import { DocDownload } from "@/components/contractor/doc-download";
@@ -128,6 +130,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
         </div>
 
         <Section title="Current stage">
+          <UpdateStageForm key={`${job.stage}:${job.sub_status}`} jobId={job.id} currentStage={job.stage} currentSubStatus={job.sub_status} contractor />
           <p className="text-xl font-semibold text-primary dark:text-white">
             {job.stage}
           </p>
@@ -146,15 +149,15 @@ export default async function ContractorProjectPage({ params }: PageProps) {
         </Section>
 
         <Section title="Inspections" id="inspections">
-          {(inspections || []).length === 0 ? (
+          {!inspectionsAllowed(job.stage) && !permitClosed ? <p className="text-sm text-muted-foreground">Inspections become available after the permit is approved.</p> : visibleInspections(inspections || [], inspectionsAllowed(job.stage), permitClosed).length === 0 ? (
             <p className="text-sm text-muted-foreground">
               No inspections on file yet.
             </p>
           ) : (
             <ul className="divide-y divide-border dark:divide-border">
-              {(inspections || []).map((insp: any) => (
+              {visibleInspections(inspections || [], inspectionsAllowed(job.stage), permitClosed).map((insp: any) => (
                 <InspectionRow
-                  key={insp.id}
+                  key={`${insp.id}:${insp.status}:${insp.requested_date}:${insp.result_date}`}
                   jobId={job.id}
                   inspection={insp}
                   dateOptions={dateOptions}

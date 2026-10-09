@@ -1,3 +1,5 @@
+import { inspectionsAllowed } from "@/lib/stages";
+import { visibleInspections } from "@/lib/inspection-sequence";
 import { createServiceClient } from "@/lib/supabase/service";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-guard";
@@ -241,9 +243,10 @@ export default async function JobDetailPage({ params }: PageProps) {
           </div>
         </Section>
 
-        <Section title="Inspections (up to 3)">
+        <Section title="Inspections">
+          {!inspectionsAllowed(job.stage) && <p className="mb-4 text-sm text-muted-foreground">Inspection requests open after permit approval.</p>}
           <div className="-mx-6 -mb-6 divide-y divide-border dark:divide-border">
-            {(inspections || []).map((slot: any) => (
+            {visibleInspections(inspections || [], inspectionsAllowed(job.stage), job.stage === "Permit closed — all done").map((slot: any) => (
               <InspectionSlotForm
                 key={slot.id}
                 slot={slot}
@@ -251,6 +254,10 @@ export default async function JobDetailPage({ params }: PageProps) {
               />
             ))}
           </div>
+          <details className="mt-5"><summary className="cursor-pointer text-sm font-semibold text-primary">Configure required inspections</summary>
+            <p className="mt-2 text-xs text-muted-foreground">Name each required visit and set it to Not requested. Contractors see the next unfinished visit after approval.</p>
+            {(inspections || []).map((slot: any) => <InspectionSlotForm key={`${slot.id}:${slot.status}:${slot.updated_at}`} slot={slot} tradeType={job.trade_type} />)}
+          </details>
         </Section>
 
         <Section title="Details">

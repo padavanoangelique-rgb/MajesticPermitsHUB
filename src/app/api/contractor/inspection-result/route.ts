@@ -1,3 +1,4 @@
+import { inspectionsAllowed } from "@/lib/stages";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -60,11 +61,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "This job is already closed" }, { status: 409 });
     }
 
+    if (!inspectionsAllowed(job.stage)) return NextResponse.json({error:"Inspection results require an approved permit."},{status:409});
     const allowed = new Set([
       "scheduled",
       "reinspection_scheduled",
-      "requested",
-      "reinspection_requested",
     ]);
     if (!allowed.has(inspection.status)) {
       return NextResponse.json(
@@ -83,6 +83,7 @@ export async function POST(req: Request) {
         status,
         result_date: new Date().toISOString().slice(0, 10),
         correction_notes: resultNote,
+        ...(treatAsFinal && !isFinalInspection(inspection) ? {inspection_type: `${inspection.inspection_type || "Inspection"} — Final`} : {}),
       })
       .eq("id", inspection.id);
 

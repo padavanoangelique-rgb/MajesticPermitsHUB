@@ -92,3 +92,34 @@ export function getStageOrderByTitle(title: string | null | undefined) {
   const idx = PERMIT_STAGES.findIndex((s) => s.title === title);
   return idx >= 0 ? idx : PERMIT_STAGES.length;
 }
+
+// Explicit aliases prevent “ready to build” and “not submitted” substring errors.
+export function canonicalStageTitle(value: string | null | undefined): string {
+  const text = (value || "").trim().toLowerCase();
+  const exact = PERMIT_STAGES.find(s => s.title.toLowerCase() === text || s.key === text);
+  if (exact) return exact.title;
+  const aliases: Record<string, string> = {
+    "need permit submittal": PERMIT_STAGES[0].title,
+    "need to submit": PERMIT_STAGES[0].title,
+    "not submitted": PERMIT_STAGES[0].title,
+    "submitted": PERMIT_STAGES[1].title,
+    "in review": PERMIT_STAGES[2].title,
+    "approved": PERMIT_STAGES[4].title,
+    "approved and printed": PERMIT_STAGES[4].title,
+    "closed": PERMIT_STAGES[7].title,
+    "complete": PERMIT_STAGES[7].title,
+  };
+  return aliases[text] || value || "";
+}
+export function stageIndexFromTitle(value: string | null | undefined) {
+  return PERMIT_STAGES.findIndex(s => s.title === canonicalStageTitle(value));
+}
+export function inspectionsAllowed(stage: string | null | undefined) {
+  const index = stageIndexFromTitle(stage);
+  return index >= 4 && index <= 5;
+}
+export const JOB_SUB_STATUSES = ["Need to Submit", "In Review", "Approved", "Approved and Printed", "Complete", "Pending approval", "Request declined", "Closed"];
+export function defaultSubStatus(stage: string) {
+  const index = stageIndexFromTitle(stage);
+  return index === 7 ? "Closed" : index === 6 ? "Complete" : index >= 4 ? "Approved" : index >= 1 ? "In Review" : "Need to Submit";
+}

@@ -26,7 +26,6 @@ const STATUS_LABEL: Record<string, string> = {
 const FINAL_STATUSES = new Set([
   "scheduled",
   "passed",
-  "partial_pass",
   "reinspection_scheduled",
   "closed",
 ]);
@@ -123,7 +122,7 @@ export function InspectionRow({
         setLocalPhone("");
         setPhone("");
       } else {
-        setLocalStatus(localStatus === "failed" ? "reinspection_requested" : "requested");
+        setLocalStatus(["failed", "partial_pass", "reinspection_requested"].includes(localStatus) ? "reinspection_requested" : "requested");
         setLocalRequestedDate(j.requested_date ?? selectedDate);
         setLocalPhone(j.onsite_contact || phone);
       }
@@ -138,10 +137,10 @@ export function InspectionRow({
   let subline: string;
   if (EDITABLE_STATUSES.has(localStatus) && localRequestedDate) {
     subline = `Requested for ${labelDate(localRequestedDate)}`;
+  } else if (i.result_date && ["passed", "partial_pass", "failed", "closed"].includes(localStatus)) {
+    subline = `Result ${labelDate(i.result_date)}`;
   } else if (i.scheduled_date) {
     subline = `Scheduled ${labelDate(i.scheduled_date)}`;
-  } else if (i.result_date) {
-    subline = `Result ${labelDate(i.result_date)}`;
   } else {
     subline = "Not scheduled";
   }
@@ -170,8 +169,7 @@ export function InspectionRow({
       >
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-primary dark:text-white">
-            Inspection {i.slot}
-            {i.inspection_type ? ` · ${i.inspection_type}` : ""}
+            {i.inspection_type || "Inspection"}
           </p>
           <p className="text-xs text-muted-foreground">{subline}</p>
           {localPhone && (

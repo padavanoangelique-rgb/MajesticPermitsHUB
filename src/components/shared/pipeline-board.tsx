@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PERMIT_STAGES } from "@/lib/stages";
+import { canonicalStageTitle, PERMIT_STAGES } from "@/lib/stages";
 import { format } from "date-fns";
 
 export interface PipelineJob {
@@ -63,14 +63,14 @@ export function PipelineBoard({
   const [error, setError] = useState<string | null>(null);
 
   // Regroup when server-side data changes (after router.refresh)
-  useMemo(() => setLocalJobs(jobs), [jobs]);
+  useEffect(() => setLocalJobs(jobs), [jobs]);
 
   const columns = useMemo(() => {
     const byStage = new Map<string, PipelineJob[]>();
     for (const stage of PERMIT_STAGES) byStage.set(stage.title, []);
     const unknown: PipelineJob[] = [];
     for (const job of localJobs) {
-      const bucket = byStage.get(job.stage);
+      const bucket = byStage.get(canonicalStageTitle(job.stage));
       if (bucket) bucket.push(job);
       else unknown.push(job);
     }
@@ -129,13 +129,13 @@ export function PipelineBoard({
                   : "border-border bg-secondary/50 dark:border-border dark:bg-background/40")
               }
               onDragOver={(e) => {
-                if (!canDrag) return;
+                if (!canDrag || savingJobId) return;
                 e.preventDefault();
                 setDragOverStage(stage.title);
               }}
               onDragLeave={() => setDragOverStage(null)}
               onDrop={(e) => {
-                if (!canDrag) return;
+                if (!canDrag || savingJobId) return;
                 e.preventDefault();
                 setDragOverStage(null);
                 const jobId = e.dataTransfer.getData("text/plain");

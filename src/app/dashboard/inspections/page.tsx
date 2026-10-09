@@ -16,8 +16,6 @@ export const dynamic = "force-dynamic";
 const REPORTABLE = new Set([
   "scheduled",
   "reinspection_scheduled",
-  "requested",
-  "reinspection_requested",
 ]);
 
 export default async function ContractorInspectionsPage() {
@@ -75,7 +73,7 @@ export default async function ContractorInspectionsPage() {
       id: row.id,
       date: String(date).slice(0, 10),
       kind: scheduled ? "scheduled" : hasResult ? "result" : pendingStatus ? "pending" : "result",
-      title: row.inspection_type || `Inspection ${row.slot}`,
+      title: row.inspection_type || "Inspection",
       address: addressById.get(row.job_id) || "",
       jobId: row.job_id,
       inspectionId: row.id,
@@ -107,7 +105,7 @@ export default async function ContractorInspectionsPage() {
       jobId: req.job_id,
       inspectionId: match?.id || "",
       status: "pending",
-      canReport: Boolean(match?.id),
+      canReport: Boolean(match?.id && REPORTABLE.has(match.status)),
       isFinal: match ? isFinalInspection(match) : false,
     });
   }

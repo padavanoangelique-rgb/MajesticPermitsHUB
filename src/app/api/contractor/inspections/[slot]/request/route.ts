@@ -1,3 +1,5 @@
+import { inspectionsAllowed } from "@/lib/stages";
+import { visibleInspections } from "@/lib/inspection-sequence";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -18,7 +20,6 @@ const EDITABLE = new Set(["requested", "reinspection_requested"]);
 const BLOCKED = new Set([
   "scheduled",
   "passed",
-  "partial_pass",
   "reinspection_scheduled",
   "closed",
 ]);
@@ -46,7 +47,7 @@ async function requireContractorJob(jobId: string) {
   const service = createServiceClient();
   const { data: job, error: lookupError } = await service
     .from("jobs")
-    .select("id, contractor_id, property_address")
+    .select("id, contractor_id, property_address, stage")
     .eq("id", jobId)
     .maybeSingle();
 
@@ -106,7 +107,7 @@ async function upsertPendingRequest(
     .maybeSingle();
 
   if (existing?.id) {
-    await service
+    const {error: updateError} = await service
       .from("inspection_requests")
       .update({
         preferred_date: args.requestedDate,
@@ -114,12 +115,13 @@ async function upsertPendingRequest(
         status: args.status || "Pending",
       })
       .eq("id", existing.id);
+    if (updateError) throw new Error(`Inspection saved but request queue failed: ${updateError.message}`);
     return;
   }
 
   if ((args.status || "Pending") === "Cancelled") return;
 
-  await service.from("inspection_requests").insert({
+  const {error: insertError} = await service.from("inspection_requests").insert({
     job_id: args.jobId,
     requested_by: "contractor",
     requested_by_contractor_id: args.contractorId,
@@ -129,6 +131,7 @@ async function upsertPendingRequest(
     status: "Pending",
     request_type: "slot_request",
   });
+  if (insertError) throw new Error(`Inspection saved but request queue failed: ${insertError.message}`);
 }
 
 export async function POST(
@@ -169,6 +172,10 @@ async function handleWrite(
     if ("error" in auth && auth.error) return auth.error;
     const { contractor, job, service } = auth as Exclude<typeof auth, { error: NextResponse }>;
 
+    if (!inspectionsAllowed(job.stage)) return NextResponse.json({error:"Inspections are available after permit approval and before final closure."},{status:409});
+    const {data: sequence, error: sequenceError} = await service.from("job_inspections").select("id, slot, status, inspection_type").eq("job_id",jobId).order("slot");
+    if (sequenceError) throw new Error(sequenceError.message);
+    if (!visibleInspections(sequence || [], true).some(i => i.slot === slot && !["passed","closed"].includes(i.status))) return NextResponse.json({error:"Complete the current inspection before requesting the next one."},{status:409});
     const inspection = await loadSlot(service, jobId, slot);
     if (!inspection) {
       return NextResponse.json(
@@ -240,7 +247,7 @@ async function handleWrite(
       typeof body?.requested_date === "string" ? body.requested_date : ""
     );
     const nextStatus =
-      inspection.status === "failed" || inspection.status === "reinspection_requested"
+      ["failed", "partial_pass", "reinspection_requested"].includes(inspection.status)
         ? "reinspection_requested"
         : "requested";
 
@@ -248,6 +255,7 @@ async function handleWrite(
       .from("job_inspections")
       .update({
         status: nextStatus,
+        inspection_type: inspectionLabel,
         requested_date: requestedDate,
         updated_at: new Date().toISOString(),
       })

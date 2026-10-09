@@ -71,19 +71,15 @@ export function InspectionSlotForm({
       visible_to_homeowner: formData.get("visible_to_homeowner") === "on",
     };
 
-    const res = await fetch(`/api/admin/inspections/${slot.id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(patch),
-    });
-    setSaving(false);
-    if (res.ok) {
-      setMsg("Saved");
-      router.refresh();
-    } else {
+    try {
+      const res = await fetch(`/api/admin/inspections/${slot.id}`, {
+        method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(patch),
+      });
       const body = await res.json().catch(() => ({}));
-      setMsg(body.error || "Save failed");
-    }
+      if (!res.ok) throw new Error(body.error || "Save failed");
+      setMsg("Saved"); router.refresh();
+    } catch (e) {setMsg(e instanceof Error ? e.message : "Save failed");}
+    finally {setSaving(false);}
   }
 
   const summary = summarizeSlot(slot);
@@ -98,10 +94,10 @@ export function InspectionSlotForm({
       >
         <div className="flex min-w-0 items-center gap-3">
           <span className="shrink-0 text-sm font-semibold text-primary dark:text-white">
-            Inspection {slot.slot}
+            {slot.status === "not_required" ? "Not enabled" : "Required visit"}
           </span>
           <span className="truncate text-sm text-muted-foreground dark:text-muted-foreground">
-            {defaultType}
+            {slot.status === "not_required" ? "Not enabled" : "Required visit"}
           </span>
         </div>
         <div className="flex shrink-0 items-center gap-3">

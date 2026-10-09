@@ -1,3 +1,4 @@
+import { defaultSubStatus, JOB_SUB_STATUSES, PERMIT_STAGES } from "@/lib/stages";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -52,6 +53,9 @@ export async function PATCH(
     if (!isAdminEmail(user.email)) return NextResponse.json({error: "Not authorized"}, {status: 403});
     const body = await req.json();
     const patch = sanitize(body);
+    if ("stage" in patch && !PERMIT_STAGES.some(s => s.title === patch.stage)) return NextResponse.json({error:"Invalid permit stage"},{status:400});
+    if ("sub_status" in patch && !JOB_SUB_STATUSES.includes(patch.sub_status)) return NextResponse.json({error:"Invalid status"},{status:400});
+    if (typeof patch.stage === "string" && !("sub_status" in patch)) patch.sub_status = defaultSubStatus(patch.stage);
 
     if (Object.keys(patch).length === 0) {
       return NextResponse.json(
@@ -61,16 +65,18 @@ export async function PATCH(
     }
 
     const supabase = createServiceClient();
-    const { data: before } = await supabase
+    const { data: before, error: lookupError } = await supabase
       .from("jobs")
       .select("stage, sub_status")
       .eq("id", params.id)
       .maybeSingle();
 
+    if (lookupError) return NextResponse.json({error:lookupError.message},{status:400});
+    if (!before) return NextResponse.json({error:"Job not found"},{status:404});
     const { error } = await supabase
       .from("jobs")
       .update(patch)
-      .eq("id", params.id);
+      .eq("id", params.id).select("id").single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
