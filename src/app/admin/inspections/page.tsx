@@ -1,6 +1,8 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/auth-guard";
 import { MarkHandledButton } from "@/components/admin/mark-handled-button";
+import { InspectionResultForm } from "@/components/admin/inspection-result-form";
+import { isFinalInspection } from "@/lib/inspection-final";
 import {
   InspectionsCalendar,
   type InspectionRequestRow,
@@ -26,12 +28,16 @@ export default async function InspectionsPage({
 
   const { data: slots } = await supabase
     .from("job_inspections")
-    .select("id, job_id, inspection_type, status, requested_date, scheduled_date")
+    .select("id, job_id, slot, inspection_type, status, requested_date, scheduled_date, result_date")
     .in("status", [
       "requested",
       "reinspection_requested",
       "scheduled",
       "reinspection_scheduled",
+      "passed",
+      "failed",
+      "partial_pass",
+      "closed",
     ]);
 
   const { data: notices } = await supabase
@@ -76,12 +82,15 @@ export default async function InspectionsPage({
     const job = r.job_id ? jobMap.get(r.job_id) : null;
     const contractorId = r.requested_by_contractor_id || job?.contractor_id;
     const contractor = contractorId ? contractorMap.get(contractorId) : null;
+    const matches = (slots || []).filter((s) => s.job_id === r.job_id &&
+      String(s.inspection_type || "").trim().toLowerCase() === String(r.inspection_type || "").trim().toLowerCase());
+    const matched = matches.length === 1 ? matches[0] : null;
     seen.add(`${r.job_id || ""}|${String(r.inspection_type || "").toLowerCase()}`);
     rows.push({
       id: r.id,
       inspection_type: r.inspection_type,
       notes: r.notes,
-      status: r.status,
+      status: matched?.status || r.status,
       requested_by: r.requested_by,
       preferred_date: r.preferred_date,
       created_at: r.created_at,
@@ -90,6 +99,7 @@ export default async function InspectionsPage({
       property_address: job?.property_address || null,
       homeowner_name: job?.homeowner_name || null,
       job_id: r.job_id || job?.id || null,
+      is_final: matched ? isFinalInspection(matched) : isFinalInspection(r),
     });
   }
 
@@ -105,7 +115,7 @@ export default async function InspectionsPage({
       id: `slot-${s.id}`,
       inspection_type: s.inspection_type,
       notes: null,
-      status: status.includes("scheduled") ? "Scheduled" : "Pending",
+      status,
       requested_by: "contractor",
       preferred_date: s.scheduled_date || s.requested_date || null,
       created_at: new Date().toISOString(),
@@ -114,6 +124,7 @@ export default async function InspectionsPage({
       property_address: job?.property_address || null,
       homeowner_name: job?.homeowner_name || null,
       job_id: s.job_id || null,
+      is_final: isFinalInspection(s),
     });
   }
 
@@ -223,12 +234,8 @@ export default async function InspectionsPage({
                     {" · "}{req.contractor_name || req.requested_by}
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <MarkHandledButton id={req.id} status="Passed" label="Passed" preferredDate={req.preferred_date} />
-                  <MarkHandledButton id={req.id} status="Partial" label="Partial" preferredDate={req.preferred_date} />
-                  <MarkHandledButton id={req.id} status="Failed" label="Failed" preferredDate={req.preferred_date} />
-                </div>
               </div>
+              <InspectionResultForm id={req.id} isFinal={req.is_final} />
             </div>
           ))}
         </div>

@@ -3,6 +3,8 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { SITE_URL, getResend } from "@/lib/email";
 import { FROM_INSPECTIONS, MAILBOX } from "@/lib/mailboxes";
 import { sendSms } from "@/lib/sms";
+import { closeJobIfFinalPassed } from "@/lib/close-on-final";
+import { recordAdminInspectionResult } from "@/lib/admin-inspection-result";
 
 export const dynamic = "force-dynamic";
 
@@ -99,6 +101,27 @@ export async function PATCH(
 
     const supabase = createServiceClient();
     const id = params.id;
+
+    if (status && RESULT_STATUSES.has(status)) {
+      const result = await recordAdminInspectionResult(supabase, id, {
+        status,
+        result_date: body.result_date,
+        contractor_note: contractorNote,
+        final: body.final === true,
+      }, closeJobIfFinalPassed);
+      let notice = { emailed: false, texted: false, emailError: "" };
+      if (shouldNotify) {
+        notice = await sendContractorNotice({
+          contractorId: result.job.contractor_id,
+          address: result.job.property_address,
+          kind: result.inspection.inspection_type || "Inspection",
+          status,
+          dateLabel: body.result_date || "",
+          contractorNote,
+        }).catch((err) => ({ emailed: false, texted: false, emailError: err?.message || "Notification failed" }));
+      }
+      return NextResponse.json({ ok: true, closed: result.closed, emailed: notice.emailed, texted: notice.texted, email_error: notice.emailError });
+    }
 
     let contractorId: string | null = null;
     let address = "Inspection";

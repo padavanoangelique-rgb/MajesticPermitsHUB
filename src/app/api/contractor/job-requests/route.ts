@@ -117,7 +117,9 @@ export async function POST(req: Request) {
       );
     }
 
-    await service.from("homeowner_links").insert({ job_id: job.id });
+    const warnings: string[] = [];
+    const { error: linkError } = await service.from("homeowner_links").insert({ job_id: job.id });
+    if (linkError) warnings.push("The job was saved, but its customer link needs Majestic's review.");
 
     const uploaded: string[] = [];
     for (const file of files) {
@@ -131,10 +133,10 @@ export async function POST(req: Request) {
           upsert: false,
         });
       if (upErr) {
-        return NextResponse.json({ error: upErr.message }, { status: 400 });
+        warnings.push(`${file.name} was not uploaded: ${upErr.message}`);
+        continue;
       }
-      uploaded.push(storagePath);
-      await service.from("job_documents").insert({
+      const { error: documentError } = await service.from("job_documents").insert({
         job_id: job.id,
         category: "intake",
         label: file.name,
@@ -145,6 +147,12 @@ export async function POST(req: Request) {
         visible_to_contractor: true,
         visible_to_homeowner: false,
       });
+      if (documentError) {
+        warnings.push(`${file.name} could not be attached: ${documentError.message}`);
+        await service.storage.from(BUCKET).remove([storagePath]);
+      } else {
+        uploaded.push(storagePath);
+      }
     }
 
     const company = contractor.company_name || contractor.name || "Contractor";
@@ -172,6 +180,7 @@ export async function POST(req: Request) {
       files: uploaded.length,
       emailed: Boolean(emailResult?.ok),
       email_error: emailResult?.error || null,
+      warnings,
     });
   } catch (err: any) {
     return NextResponse.json(

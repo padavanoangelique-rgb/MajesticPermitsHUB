@@ -21,6 +21,7 @@ export function NewJobRequestForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [warnings, setWarnings] = useState<string[]>([]);
 
   function onFiles(list: FileList | null) {
     if (!list) return;
@@ -41,6 +42,7 @@ export function NewJobRequestForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Could not send request");
+      setWarnings(data.warnings || []);
       setDone(true);
       router.refresh();
     } catch (err: any) {
@@ -54,8 +56,13 @@ export function NewJobRequestForm() {
       <div className="rounded-2xl border border-border bg-card p-8 text-center dark:border-border dark:bg-card">
         <p className="text-lg font-semibold text-primary dark:text-white">Request sent</p>
         <p className="mt-2 text-sm text-muted-foreground">
-          Majestic has the address and documents. You will see the job here after it is approved.
+          Your job request was saved for Majestic to review. You will see the job here after it is approved.
         </p>
+        {warnings.length > 0 && <div role="alert" className="mt-4 rounded-xl border border-amber-500/40 p-4 text-left text-sm">
+          <p className="font-semibold">The request is saved. Some items need attention:</p>
+          <ul className="mt-2 list-disc pl-5">{warnings.map((warning, i) => <li key={i}>{warning}</li>)}</ul>
+          <p className="mt-2">Send any missing documents to Majestic; do not submit the same job again.</p>
+        </div>}
         <button
           type="button"
           onClick={() => router.push("/dashboard")}

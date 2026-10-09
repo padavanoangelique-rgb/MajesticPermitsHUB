@@ -66,7 +66,7 @@ export async function PATCH(
       .from("job_inspections")
       .update(patch)
       .eq("id", params.id)
-      .select("job_id, slot, inspection_type, status, scheduled_date")
+      .select("job_id, slot, inspection_type, status, scheduled_date, result_date")
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });

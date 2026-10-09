@@ -15,6 +15,7 @@ import {
   startOfWeek,
 } from "date-fns";
 import { parseOnsiteFromNotes } from "@/lib/onsite-contact";
+import { InspectionResultForm } from "@/components/admin/inspection-result-form";
 
 export type InspectionRequestRow = {
   id: string;
@@ -29,6 +30,7 @@ export type InspectionRequestRow = {
   property_address: string | null;
   homeowner_name: string | null;
   job_id: string | null;
+  is_final?: boolean;
 };
 
 export function dateKey(value: string | null, fallback?: string) {
@@ -52,7 +54,8 @@ export function dateKey(value: string | null, fallback?: string) {
 export function InspectionsCalendar({ requests }: { requests: InspectionRequestRow[] }) {
   const router = useRouter();
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
-  const [selected, setSelected] = useState<InspectionRequestRow | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = requests.find((request) => request.id === selectedId) || null;
   const [note, setNote] = useState("");
   const [scheduledDate, setScheduledDate] = useState("");
   const [notify, setNotify] = useState(true);
@@ -77,7 +80,7 @@ export function InspectionsCalendar({ requests }: { requests: InspectionRequestR
   }, [requests]);
 
   function open(req: InspectionRequestRow) {
-    setSelected(req);
+    setSelectedId(req.id);
     setNote(
       `Your ${req.inspection_type || "inspection"} for ${req.property_address || "the job"} is scheduled.`
     );
@@ -211,7 +214,7 @@ export function InspectionsCalendar({ requests }: { requests: InspectionRequestR
                 </p>
               )}
             </div>
-            <button type="button" onClick={() => setSelected(null)} className="text-sm text-muted-foreground">
+            <button type="button" onClick={() => setSelectedId(null)} className="text-sm text-muted-foreground">
               Close
             </button>
           </div>
@@ -270,6 +273,10 @@ export function InspectionsCalendar({ requests }: { requests: InspectionRequestR
             </button>
           )}
           {message && <p className="mt-3 text-sm text-muted-foreground">{message}</p>}
+          {["scheduled", "reinspection_scheduled"].includes(String(selected.status).toLowerCase()) && (
+            <InspectionResultForm key={selected.id} id={selected.id} isFinal={selected.is_final} />
+          )}
+          {selected.job_id && <a href={`/admin/jobs/${selected.job_id}#inspections`} className="mt-4 inline-block text-sm text-primary underline">Open job inspections</a>}
         </div>
       )}
     </div>
