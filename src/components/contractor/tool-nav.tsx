@@ -1,26 +1,26 @@
 import Link from "next/link";
 
 const TOOLS = [
-  { href: "/dashboard/company", label: "License and insurance", blurb: "License, COI, and expiration dates" },
-  { href: "/dashboard/forms", label: "Forms", blurb: "Fill a form and send it to sign" },
-  { href: "/dashboard/lookup", label: "Property lookup", blurb: "County appraiser for the address" },
-  { href: "/dashboard/measure", label: "Measure", blurb: "Window and door sizes on the phone" },
-  { href: "/dashboard/install", label: "Install board", blurb: "Approved jobs and inspection dates" },
-  { href: "/dashboard/inspections", label: "Inspections", blurb: "Request or check a visit" },
+  { href: "/dashboard/company", label: "License", blurb: "COI & dates" },
+  { href: "/dashboard/forms", label: "Forms", blurb: "Send to sign" },
+  { href: "/dashboard/lookup", label: "Lookup", blurb: "Appraiser" },
+  { href: "/dashboard/measure", label: "Measure", blurb: "Sizes" },
+  { href: "/dashboard/install", label: "Install", blurb: "Jobs" },
+  { href: "/dashboard/inspections", label: "Inspections", blurb: "Visits" },
 ];
 
 export function ToolNav({ current }: { current?: string }) {
   if (!current) {
     return (
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
         {TOOLS.map((tool) => (
           <Link
             key={tool.href}
             href={tool.href}
-            className="rounded-2xl border border-violet-400/25 bg-card/80 px-4 py-4 transition hover:border-violet-300"
+            className="shrink-0 flex flex-col items-center justify-center min-w-[72px] rounded-xl border border-violet-400/30 bg-card/80 px-3 py-2.5 text-center transition hover:border-violet-300 hover:bg-card"
           >
-            <p className="text-sm font-semibold">{tool.label}</p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{tool.blurb}</p>
+            <p className="text-xs font-semibold leading-tight">{tool.label}</p>
+            <p className="mt-0.5 text-[10px] text-muted-foreground leading-tight">{tool.blurb}</p>
           </Link>
         ))}
       </div>
@@ -29,7 +29,7 @@ export function ToolNav({ current }: { current?: string }) {
 
   return (
     <nav className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-      <Link href="/dashboard" className="shrink-0 rounded-full border border-border px-3 py-2 text-sm">
+      <Link href="/dashboard" className="shrink-0 rounded-full border border-border px-3 py-1.5 text-xs">
         Dashboard
       </Link>
       {TOOLS.map((tool) => (
@@ -37,7 +37,7 @@ export function ToolNav({ current }: { current?: string }) {
           key={tool.href}
           href={tool.href}
           className={
-            "shrink-0 rounded-full px-3 py-2 text-sm " +
+            "shrink-0 rounded-full px-3 py-1.5 text-xs " +
             (current === tool.href ? "bg-primary font-semibold text-white" : "border border-violet-400/30")
           }
         >
@@ -60,11 +60,11 @@ export function ToolPage({
   children: React.ReactNode;
 }) {
   return (
-    <main className="mx-auto max-w-xl px-4 py-6">
+    <main className="mx-auto max-w-xl px-4 py-5">
       <ToolNav current={current} />
-      <h1 className="mt-6 text-2xl font-bold">{title}</h1>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{lede}</p>
-      <div className="mt-6 rounded-3xl border border-violet-400/20 bg-card/80 p-4 sm:p-5">{children}</div>
+      <h1 className="mt-5 text-xl font-bold">{title}</h1>
+      <p className="mt-1 text-sm text-muted-foreground">{lede}</p>
+      <div className="mt-4 rounded-2xl border border-violet-400/20 bg-card/80 p-4">{children}</div>
     </main>
   );
 }

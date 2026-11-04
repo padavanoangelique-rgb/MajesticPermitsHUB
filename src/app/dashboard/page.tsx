@@ -86,15 +86,15 @@ export default async function DashboardPage() {
   const inspectionCount = ordered.find((bucket) => bucket.key === "needs_inspection")?.items.length ?? 0;
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-border bg-card/80">
-        <div className="mx-auto flex max-w-screen-xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card/80 sticky top-0 z-10">
+        <div className="mx-auto flex max-w-screen-xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
             <Image
               src="/icons/icon-512.png"
               alt="Majestic Permits"
-              width={36}
-              height={36}
+              width={32}
+              height={32}
               priority
               className="rounded-lg"
             />
@@ -105,16 +105,10 @@ export default async function DashboardPage() {
               <p className="text-xs text-muted-foreground">Contractor Portal</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard/inspections"
-              className="text-sm font-medium text-muted-foreground hover:text-primary dark:text-muted-foreground"
-            >
-              Inspections
-            </Link>
+          <div className="flex items-center gap-2">
             <ThemeToggle />
             <form action="/auth/signout" method="post">
-              <button className="text-sm text-muted-foreground hover:text-primary">
+              <button className="text-xs text-muted-foreground hover:text-primary px-2 py-1 rounded-lg hover:bg-secondary">
                 Sign out
               </button>
             </form>
@@ -122,66 +116,56 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-screen-xl px-4 py-6 sm:px-6">
-        <ToolNav />
-        <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
+      <main className="mx-auto max-w-screen-xl px-4 py-5 sm:px-6 pb-24">
+        <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
           <div>
-            <h1 className="text-2xl font-bold text-primary dark:text-white">
-              Dashboard
-            </h1>
-            <p className="mt-1 text-muted-foreground">
+            <h1 className="text-2xl font-bold text-primary dark:text-white">Dashboard</h1>
+            <p className="text-sm text-muted-foreground">
               {jobs.filter(j => canonicalStageTitle(j.stage) !== "Permit closed — all done").length} active projects
             </p>
           </div>
           <Link
             href="/dashboard/new"
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white"
+            className="inline-flex min-h-10 items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white"
           >
             Request a job
           </Link>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3">
-          <a href="#in_review" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-[#3b1d78] to-[#1a1038] px-4 py-4 sm:px-5">
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <a href="#in_review" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-[#3b1d78] to-[#1a1038] px-4 py-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">Pending review</p>
             <p className="mt-1 text-3xl font-bold text-white">{reviewCount}</p>
-            <p className="mt-1 text-sm text-violet-100/80">Submitted, in review, or waiting on a correction.</p>
           </a>
-          <a href="#needs_inspection" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-[#312e81] to-[#1a1038] px-4 py-4 sm:px-5">
+          <a href="#needs_inspection" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-[#312e81] to-[#1a1038] px-4 py-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">Needs inspection</p>
             <p className="mt-1 text-3xl font-bold text-white">{inspectionCount}</p>
-            <p className="mt-1 text-sm text-violet-100/80">Approved jobs that still need a visit requested.</p>
           </a>
         </div>
 
+        <div className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Tools</p>
+          <ToolNav />
+        </div>
+
         {pendingJobRequests.length > 0 && (
-          <div className="mt-6 rounded-2xl border border-amber-800/40 bg-amber-950/30 px-5 py-4 dark:border-amber-900/40 dark:bg-amber-950/20">
-            <p className="text-sm font-semibold text-amber-200 dark:text-amber-200">
-              Waiting on Majestic
-            </p>
-            <ul className="mt-2 space-y-1 text-sm text-amber-900 dark:text-amber-100">
+          <div className="mb-6 rounded-2xl border border-amber-800/40 bg-amber-950/30 px-4 py-3">
+            <p className="text-sm font-semibold text-amber-200">Waiting on Majestic</p>
+            <ul className="mt-1 space-y-1 text-sm text-amber-100">
               {pendingJobRequests.map((req: any) => (
-                <li key={req.id}>
-                  {req.property_address}
-                  {req.trade_type ? ` · ${req.trade_type}` : ""}
-                </li>
+                <li key={req.id}>{req.property_address}{req.trade_type ? ` · ${req.trade_type}` : ""}</li>
               ))}
             </ul>
           </div>
         )}
 
         {totalJobs === 0 ? (
-          <div className="mt-8 rounded-2xl border border-dashed border-border bg-card p-12 text-center dark:border-border dark:bg-card">
-            <p className="font-medium text-primary dark:text-white">
-              No projects assigned yet
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Request a job and attach documents. After Majestic approves it, the
-              permit will show here with live status.
-            </p>
+          <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center">
+            <p className="font-medium text-primary dark:text-white">No projects yet</p>
+            <p className="mt-2 text-sm text-muted-foreground">Request a job to get started.</p>
           </div>
         ) : (
-          <div className="mt-8 space-y-6">
+          <div className="space-y-5">
             {ordered.map(
               (bucket) =>
                 bucket.items.length > 0 && (
@@ -219,68 +203,52 @@ function StageSection({
 }) {
   const accentPill =
     accent === "amber"
-      ? "bg-amber-950/30 text-amber-200 dark:bg-amber-950/30 dark:text-amber-300"
-      : "bg-primary/10 text-primary dark:bg-primary/15 dark:text-primary";
+      ? "bg-amber-950/30 text-amber-200"
+      : "bg-primary/10 text-primary";
 
   return (
-    <section id={id} className="rounded-2xl border border-violet-400/20 bg-card/90 dark:border-violet-400/20 dark:bg-card/75">
-      <header className="flex items-center gap-3 border-b border-border px-5 py-3 dark:border-border">
-        <span
-          className={
-            "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider " +
-            accentPill
-          }
-        >
+    <section id={id} className="rounded-2xl border border-violet-400/20 bg-card/90">
+      <header className="flex items-center gap-3 border-b border-border px-4 py-3">
+        <span className={"inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider " + accentPill}>
           {title}
         </span>
-        <span className="ml-auto rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground dark:bg-secondary dark:text-muted-foreground">
+        <span className="ml-auto rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground">
           {items.length}
         </span>
       </header>
-      <ul className="divide-y divide-border dark:divide-border">
+      <ul className="divide-y divide-border">
         {items.map((job) => (
-          <li key={job.id} className="px-4 py-4 sm:px-5">
+          <li key={job.id} className="px-4 py-3">
             <JobStatusBar stage={job.stage || job.sub_status || ""} />
-            <details className="mt-3"><summary className="cursor-pointer text-sm font-semibold text-primary">Edit permit status</summary><div className="mt-3"><UpdateStageForm key={`${job.stage}:${job.sub_status}`} jobId={job.id} currentStage={job.stage} currentSubStatus={job.sub_status || ""} contractor /></div></details>
-            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link
-              href={`/dashboard/projects/${job.id}`}
-              className="min-w-0 flex-1"
-            >
-              <p className="text-sm font-semibold text-primary dark:text-white">
-                {job.property_address}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {job.permit_number ? `Permit ${job.permit_number}` : "No permit number yet"}
-                {job.sub_status ? ` · ${job.sub_status}` : ""}
-              </p>
-            </Link>
-            <Link href={`/dashboard/projects/${job.id}#documents`} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border px-4 py-3 text-sm font-semibold">Documents</Link>
-            <Link
-              href={`/dashboard/projects/${job.id}#inspections`}
-              className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white sm:w-auto"
-            >
-              {job.stage === "Permit closed — all done" ? "View inspections" : inspectionsAllowed(job.stage) ? "Manage inspection" : "View project"}
-            </Link>
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Link href={`/dashboard/projects/${job.id}`} className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-primary dark:text-white">{job.property_address}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {job.permit_number ? `Permit ${job.permit_number}` : "No permit yet"}
+                  {job.sub_status ? ` · ${job.sub_status}` : ""}
+                </p>
+              </Link>
+              <div className="flex gap-2">
+                <Link href={`/dashboard/projects/${job.id}#documents`} className="inline-flex min-h-9 items-center justify-center rounded-lg border border-border px-3 text-xs font-medium">Docs</Link>
+                <Link
+                  href={`/dashboard/projects/${job.id}#inspections`}
+                  className="inline-flex min-h-9 items-center justify-center rounded-lg bg-primary px-3 text-xs font-semibold text-white"
+                >
+                  {job.stage === "Permit closed — all done" ? "View" : inspectionsAllowed(job.stage) ? "Inspect" : "View"}
+                </Link>
+              </div>
             </div>
-            <div className="mt-3 space-y-2 border-t border-border pt-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Inspection status & results</p>
+            <details className="mt-2"><summary className="cursor-pointer text-xs text-muted-foreground">Edit status</summary><div className="mt-2"><UpdateStageForm key={`${job.stage}:${job.sub_status}`} jobId={job.id} currentStage={job.stage} currentSubStatus={job.sub_status || ""} contractor /></div></details>
+            <div className="mt-2 space-y-1.5 border-t border-border pt-2">
               {visibleInspections(inspectionsByJob[job.id] || [], inspectionsAllowed(job.stage), job.stage === "Permit closed — all done").map((inspection) => (
-                <div key={inspection.id} className="rounded-lg bg-secondary/40 px-3 py-2">
-                  <p className="text-sm"><span className="font-medium">{inspectionName(inspection)}</span> · {inspection.status.replace(/_/g, " ")}
-                    {(inspection.result_date || inspection.scheduled_date) ? ` · ${inspection.result_date || inspection.scheduled_date}` : ""}
-                  </p>
+                <div key={inspection.id} className="rounded-lg bg-secondary/40 px-2.5 py-1.5 text-xs">
+                  <span className="font-medium">{inspectionName(inspection)}</span> · {inspection.status.replace(/_/g, " ")}
+                  {(inspection.result_date || inspection.scheduled_date) ? ` · ${inspection.result_date || inspection.scheduled_date}` : ""}
                   {job.stage !== "Permit closed — all done" && ["scheduled", "reinspection_scheduled"].includes(inspection.status) && (
-                    <details className="mt-2">
-                      <summary className="cursor-pointer text-sm font-semibold text-primary">Record result{isFinalInspection(inspection) ? " / final pass" : ""}</summary>
-                      <ContractorResultForm inspectionId={inspection.id} isFinal={isFinalInspection(inspection)} />
-                    </details>
+                    <details className="mt-1"><summary className="cursor-pointer text-primary">Record result</summary><ContractorResultForm inspectionId={inspection.id} isFinal={isFinalInspection(inspection)} /></details>
                   )}
                 </div>
               ))}
-              {!(inspectionsByJob[job.id] || []).some((inspection) => !["not_required", "not_requested", "cancelled"].includes(inspection.status)) && (
-                <p className="text-xs text-muted-foreground">{inspectionsAllowed(job.stage) ? "No inspection scheduled yet. Open the project to request a visit." : "Inspections become available after permit approval."}</p>
-              )}
             </div>
           </li>
         ))}
