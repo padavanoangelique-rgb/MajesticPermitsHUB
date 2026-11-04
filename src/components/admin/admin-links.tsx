@@ -28,7 +28,7 @@ export function AdminLinks({ current }: { current?: string }) {
         </Link>
       ))}
       <a
-        href="https://permitaio.com/majestic"
+        href="https://permitaio.com/majestic/open"
         target="_blank"
         rel="noopener noreferrer"
         className="rounded-2xl border border-violet-400/40 bg-gradient-to-br from-[#2a1a5e] to-[#1a1038] px-4 py-4"
