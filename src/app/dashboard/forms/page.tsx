@@ -7,7 +7,8 @@ import { ToolPage } from "@/components/contractor/tool-nav";
 
 export const dynamic = "force-dynamic";
 
-export default async function FormsPage() {
+export default async function FormsPage({ searchParams }: { searchParams: { job?: string } }) {
+  const jobQuery = searchParams?.job ? `?job=${encodeURIComponent(searchParams.job)}` : "";
   const user = await requireUser("/dashboard/forms");
   const contractor = await getContractorForUser(user);
   if (!contractor) return <p className="p-6">Account not linked.</p>;
@@ -23,7 +24,7 @@ export default async function FormsPage() {
       <ul className="mb-8 grid gap-3">
         {COUNTY_FORMS.map((form) => (
           <li key={form.slug}>
-            <Link href={`/dashboard/forms/pdf/${form.slug}`} className="block rounded-2xl border border-violet-400/25 px-4 py-4 hover:border-violet-300">
+            <Link href={`/dashboard/forms/pdf/${form.slug}${jobQuery}`} className="block rounded-2xl border border-violet-400/25 px-4 py-4 hover:border-violet-300">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{form.countyName}</p>
               <p className="mt-0.5 font-semibold">{form.kind === "noc" ? "Notice of Commencement" : "Building permit application"}</p>
             </Link>
