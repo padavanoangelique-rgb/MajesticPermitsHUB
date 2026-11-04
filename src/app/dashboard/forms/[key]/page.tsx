@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
-import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getPermitForm } from "@/lib/permit-forms";
 import { ToolPage } from "@/components/contractor/tool-nav";
@@ -17,17 +16,16 @@ export default async function FormFillPage({ params }: { params: { key: string }
   if (!contractor) return <p className="p-6">Account not linked.</p>;
 
   const service = createServiceClient();
-  const supabase = createClient();
   const [{ data: record }, { data: jobs }] = await Promise.all([
     service
       .from("contractor_records")
       .select("license_number")
       .eq("contractor_id", contractor.id)
       .maybeSingle(),
-    supabase
+    service
       .from("jobs")
       .select("id, property_address, permit_number")
-      .eq("contractor_id", contractor.id)
+      .in("contractor_id", contractor.company_contractor_ids)
       .order("updated_at", { ascending: false })
       .limit(40),
   ]);
