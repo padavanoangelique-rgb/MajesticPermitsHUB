@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import Image from "next/image";
@@ -9,6 +9,11 @@ import { createClient } from "@/lib/supabase/client";
 function LoginForm() {
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next");
+  const [isAdminHost, setIsAdminHost] = useState(false);
+
+  useEffect(() => {
+    setIsAdminHost(window.location.hostname === "admin.majesticpermits.com");
+  }, []);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,7 +48,8 @@ function LoginForm() {
         return;
       }
 
-      window.location.assign(nextPath || "/dashboard");
+      const fallback = isAdminHost ? "/admin" : "/dashboard";
+      window.location.assign(nextPath || fallback);
     } catch (err: any) {
       setError(
         err?.message ||
@@ -77,6 +83,11 @@ function LoginForm() {
     setResetLoading(false);
   }
 
+  const title = isAdminHost ? "Admin Login" : "Contractor Login";
+  const subtitle = isAdminHost
+    ? "Sign in to the Majestic admin dashboard"
+    : "Sign in to view your projects";
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-sm dark:border-border dark:bg-card">
@@ -90,10 +101,10 @@ function LoginForm() {
             className="mx-auto rounded-2xl"
           />
           <h1 className="mt-4 text-2xl font-bold text-primary dark:text-white">
-            Contractor Login
+            {title}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Sign in to view your projects
+            {subtitle}
           </p>
         </div>
 
@@ -114,7 +125,7 @@ function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-border dark:bg-background dark:text-white"
-              placeholder="you@company.com"
+              placeholder={isAdminHost ? "angelique@majesticpermits.com" : "you@company.com"}
             />
           </div>
           <div>
@@ -169,15 +180,17 @@ function LoginForm() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          Need an account?{" "}
-          <a
-            href="mailto:hello@majesticpermits.com"
-            className="text-primary underline dark:text-primary"
-          >
-            Contact us
-          </a>
-        </p>
+        {!isAdminHost && (
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            Need an account?{" "}
+            <a
+              href="mailto:hello@majesticpermits.com"
+              className="text-primary underline dark:text-primary"
+            >
+              Contact us
+            </a>
+          </p>
+        )}
       </div>
     </div>
   );
