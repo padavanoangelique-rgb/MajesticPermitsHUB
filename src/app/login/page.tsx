@@ -13,12 +13,15 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setMessage("");
 
     try {
       const supabase = createClient();
@@ -40,11 +43,6 @@ function LoginForm() {
         return;
       }
 
-      /*
-       * Full page navigation (not router.push) so the browser sends the
-       * freshly written auth cookies with the request. Middleware then
-       * routes admins to /admin and contractors to /dashboard.
-       */
       window.location.assign(nextPath || "/dashboard");
     } catch (err: any) {
       setError(
@@ -53,6 +51,30 @@ function LoginForm() {
       );
       setLoading(false);
     }
+  }
+
+  async function handleResetPassword() {
+    if (!email.trim()) {
+      setError("Enter your email first, then click Forgot password.");
+      return;
+    }
+    setResetLoading(true);
+    setError("");
+    setMessage("");
+    try {
+      const supabase = createClient();
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+      if (resetError) {
+        setError(resetError.message);
+      } else {
+        setMessage("Password reset email sent. Check your inbox.");
+      }
+    } catch (err: any) {
+      setError(err?.message || "Could not send reset email.");
+    }
+    setResetLoading(false);
   }
 
   return (
@@ -123,6 +145,11 @@ function LoginForm() {
               {error}
             </p>
           )}
+          {message && (
+            <p className="rounded-xl bg-emerald-950/30 px-4 py-3 text-sm text-emerald-200">
+              {message}
+            </p>
+          )}
 
           <button
             type="submit"
@@ -130,6 +157,15 @@ function LoginForm() {
             className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white transition hover:bg-primary disabled:opacity-60"
           >
             {loading ? "Signing in..." : "Sign in"}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleResetPassword}
+            disabled={resetLoading}
+            className="w-full text-sm text-muted-foreground underline hover:text-primary disabled:opacity-50"
+          >
+            {resetLoading ? "Sending..." : "Forgot password?"}
           </button>
         </form>
 
