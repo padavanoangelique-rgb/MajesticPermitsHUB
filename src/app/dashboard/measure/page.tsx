@@ -32,7 +32,7 @@ export default async function MeasurePage({ searchParams }: { searchParams: { jo
     <ToolPage
       current="/dashboard/measure"
       title="Measure"
-      lede="Add each window and door, type the size, and it stays on that job. Made for a phone."
+      lede="Draw the floor plan with your finger. Walls snap straight. Add windows and doors."
     >
       <MeasurePad jobs={jobs || []} initialJob={first} initialOpenings={openings} />
     </ToolPage>
