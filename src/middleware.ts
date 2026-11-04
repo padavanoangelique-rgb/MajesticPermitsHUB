@@ -14,16 +14,21 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isAdminHost = host === ADMIN_HOST;
+  const isHubHost = host === HUB_HOST;
 
-  // Root on the admin host goes to the admin dashboard.
-  // Do not redirect /login — that was causing a loop with the auth guard.
+  // Admin host is admin-only. Root goes to the dashboard.
+  // Contractor paths on the admin host go to the admin app.
   if (isAdminHost && path === "/") {
     const url = request.nextUrl.clone();
     url.pathname = "/admin";
     return NextResponse.redirect(url);
   }
+  if (isAdminHost && (path === "/dashboard" || path.startsWith("/dashboard/"))) {
+    return NextResponse.redirect(`https://${ADMIN_HOST}/admin`, 308);
+  }
 
-  if (host === HUB_HOST && (path === "/admin" || path.startsWith("/admin/"))) {
+  // Hub host is contractor-only. Admin paths go to the admin domain.
+  if (isHubHost && (path === "/admin" || path.startsWith("/admin/"))) {
     return NextResponse.redirect(`https://${ADMIN_HOST}${path}${request.nextUrl.search}`, 308);
   }
 
@@ -64,7 +69,7 @@ export async function middleware(request: NextRequest) {
 
   if (user && path === "/login") {
     const url = request.nextUrl.clone();
-    const destination = isAdminEmail(user.email)
+    const destination = isAdminHost || isAdminEmail(user.email)
       ? adminDestination(request.nextUrl.searchParams.get("next"))
       : "/dashboard";
     const target = new URL(destination, request.nextUrl.origin);
