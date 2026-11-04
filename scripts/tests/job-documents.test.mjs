@@ -30,7 +30,7 @@ function route(path, options = {}) {
     '@/lib/supabase/server': { createClient: () => ({ auth: { getUser: async () => ({ data: { user } }) } }) },
     '@/lib/supabase/service': { createServiceClient: () => db },
     '@/lib/admin': { isAdminEmail: email => email === 'owner@test' },
-    '@/lib/contractor': { getContractorForUser: async () => ({ id: 'contractor', company_name: 'A Plus' }) },
+    '@/lib/contractor': { getContractorForUser: async () => ({ id: 'contractor', own_id: 'contractor', company_name: 'A Plus', company_contractor_ids: ['contractor'] }), ownsJob: (c, id) => Boolean(id) && c.company_contractor_ids.includes(id) },
     '@/lib/job-document-files': files,
     '@/lib/admin-notify': { notifyAdmin: async () => { state.notifications++; if (options.notificationError) throw new Error('notification unavailable'); } },
     '@/lib/admin-email': { sendAdminRequestEmail: async () => {} },

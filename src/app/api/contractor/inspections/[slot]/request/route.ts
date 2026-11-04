@@ -1,9 +1,10 @@
 import { inspectionsAllowed } from "@/lib/stages";
+import { ensureStandardVisits } from "@/lib/inspection-actions";
 import { visibleInspections } from "@/lib/inspection-sequence";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getContractorForUser } from "@/lib/contractor";
+import { getContractorForUser, ownsJob } from "@/lib/contractor";
 import { nextInspectionDate, isValidInspectionDate } from "@/lib/next-inspection-day";
 import { sendAdminSms } from "@/lib/sms";
 import { notifyAdmin } from "@/lib/admin-notify";
@@ -54,7 +55,7 @@ async function requireContractorJob(jobId: string) {
   if (lookupError) {
     return { error: NextResponse.json({ error: lookupError.message }, { status: 400 }) };
   }
-  if (!job || job.contractor_id !== contractor.id) {
+  if (!job || !ownsJob(contractor, job.contractor_id)) {
     return { error: NextResponse.json({ error: "Job not found" }, { status: 404 }) };
   }
 
@@ -173,6 +174,7 @@ async function handleWrite(
     const { contractor, job, service } = auth as Exclude<typeof auth, { error: NextResponse }>;
 
     if (!inspectionsAllowed(job.stage)) return NextResponse.json({error:"Inspections are available after permit approval and before final closure."},{status:409});
+    await ensureStandardVisits(service, jobId, job.stage);
     const {data: sequence, error: sequenceError} = await service.from("job_inspections").select("id, slot, status, inspection_type").eq("job_id",jobId).order("slot");
     if (sequenceError) throw new Error(sequenceError.message);
     if (!visibleInspections(sequence || [], true).some(i => i.slot === slot && !["passed","closed"].includes(i.status))) return NextResponse.json({error:"Complete the current inspection before requesting the next one."},{status:409});

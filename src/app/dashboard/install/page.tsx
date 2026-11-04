@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
-import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { ToolPage } from "@/components/contractor/tool-nav";
 
@@ -12,11 +11,11 @@ export default async function InstallPage() {
   const contractor = await getContractorForUser(user);
   if (!contractor) return <p className="p-6">Account not linked.</p>;
 
-  const supabase = createClient();
-  const { data: jobs } = await supabase
+  const service = createServiceClient();
+  const { data: jobs } = await service
     .from("jobs")
     .select("id, property_address, stage, permit_number")
-    .eq("contractor_id", contractor.id)
+    .in("contractor_id", contractor.company_contractor_ids)
     .order("updated_at", { ascending: false });
 
   const readyJobs = (jobs || []).filter((job) => {
@@ -24,7 +23,6 @@ export default async function InstallPage() {
     return stage.includes("approv") || stage.includes("inspect") || stage.includes("final");
   });
   const ids = readyJobs.map((job) => job.id);
-  const service = createServiceClient();
   const { data: inspections } = ids.length
     ? await service
         .from("job_inspections")

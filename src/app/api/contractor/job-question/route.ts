@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       .from("jobs")
       .select("id, property_address, stage, sub_status, permit_number, trade_type, jurisdiction, homeowner_name, homeowner_phone, homeowner_email, notes, next_step, contractor_id")
       .eq("id", jobId)
-      .eq("contractor_id", contractor.id)
+      .in("contractor_id", contractor.company_contractor_ids)
       .maybeSingle();
 
     if (!job) return NextResponse.json({ error: "Job not found" }, { status: 404 });

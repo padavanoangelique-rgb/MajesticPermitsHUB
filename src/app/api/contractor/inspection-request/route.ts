@@ -2,7 +2,7 @@ import { inspectionsAllowed } from "@/lib/stages";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getContractorForUser } from "@/lib/contractor";
+import { getContractorForUser, ownsJob } from "@/lib/contractor";
 import { sendAdminSms } from "@/lib/sms";
 import { notifyAdmin } from "@/lib/admin-notify";
 
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
     if (lookupError) {
       return NextResponse.json({ error: lookupError.message }, { status: 400 });
     }
-    if (!job || job.contractor_id !== contractor.id) {
+    if (!job || !ownsJob(contractor, job.contractor_id)) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
 

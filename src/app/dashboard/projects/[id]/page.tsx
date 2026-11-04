@@ -1,8 +1,7 @@
-import { UpdateStageForm } from "@/components/admin/update-stage-form";
 import { visibleInspections } from "@/lib/inspection-sequence";
+import { ensureStandardVisits } from "@/lib/inspection-actions";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { format } from "date-fns";
 import { inspectionsAllowed, PERMIT_STAGES } from "@/lib/stages";
@@ -29,31 +28,32 @@ export const dynamic = "force-dynamic";
 
 export default async function ContractorProjectPage({ params }: PageProps) {
   const user = await requireUser(`/dashboard/projects/${params.id}`);
-  const supabase = createClient();
   const service = createServiceClient();
 
   const contractor = await getContractorForUser(user);
   if (!contractor) redirect("/dashboard");
 
-  const { data: job } = await supabase
+  const { data: job } = await service
     .from("jobs")
     .select("*")
     .eq("id", params.id)
-    .eq("contractor_id", contractor.id)
-    .single();
+    .in("contractor_id", contractor.company_contractor_ids)
+    .maybeSingle();
 
   if (!job) notFound();
 
   const permitClosed = job.stage === "Permit closed — all done";
   const dateOptions = upcomingInspectionDates(10);
   const brandName = publicTrackBrand(job, contractor);
+  // An approved job gets the standard inspection visits turned on, so there is something to request.
+  await ensureStandardVisits(service, job.id, job.stage);
 
   const [{ data: inspections }, { data: docs, error: docsError }, { data: quotes }, { data: pendingReqs }, { data: link }] =
     await Promise.all([
       service
         .from("job_inspections")
         .select(
-          "id, slot, inspection_type, status, requested_date, scheduled_date, result_date, correction_notes"
+          "id, slot, inspection_type, status, requested_date, scheduled_date, result_date, correction_notes, confirmed_at, inspection_time, inspector_name, inspector_number, day_notes, reinspection_fee, reinspection_fee_status"
         )
         .eq("job_id", job.id)
         .order("slot", { ascending: true }),
@@ -135,7 +135,6 @@ export default async function ContractorProjectPage({ params }: PageProps) {
         </div>
 
         <Section title="Current stage">
-          <UpdateStageForm key={`${job.stage}:${job.sub_status}`} jobId={job.id} currentStage={job.stage} currentSubStatus={job.sub_status} contractor />
           <p className="text-xl font-semibold text-primary dark:text-white">
             {job.stage}
           </p>
