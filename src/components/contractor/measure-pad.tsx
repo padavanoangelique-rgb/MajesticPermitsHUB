@@ -1,38 +1,123 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import Link from "next/link";
 
 type Opening = { label: string; kind: "window" | "door"; width: string; height: string; x?: number; y?: number };
+type Wall = { x1: number; y1: number; x2: number; y2: number };
 type Job = { id: string; property_address: string };
 
 export function MeasurePad({ jobs, initialJob, initialOpenings }: { jobs: Job[]; initialJob: string; initialOpenings: Opening[] }) {
   const [jobId, setJobId] = useState(initialJob);
-  const [openings, setOpenings] = useState<Opening[]>(initialOpenings.map((o, i) => ({ ...o, x: o.x ?? 20 + (i % 4) * 70, y: o.y ?? (o.kind === "door" ? 50 : 40) })));
+  const [openings, setOpenings] = useState<Opening[]>(initialOpenings.map((o, i) => ({ ...o, x: o.x ?? 40 + (i % 4) * 60, y: o.y ?? 50 })));
+  const [walls, setWalls] = useState<Wall[]>([]);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
+  const [full, setFull] = useState(false);
+  const [drawing, setDrawing] = useState(false);
+  const [current, setCurrent] = useState<Wall | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   function add(kind: "window" | "door") {
     const i = openings.length;
-    setOpenings((current) => [
-      ...current,
-      { label: `${kind === "door" ? "Door" : "Window"} ${i + 1}`, kind, width: "", height: "", x: 30 + (i % 3) * 80, y: kind === "door" ? 60 : 45 },
-    ]);
+    setOpenings((c) => [...c, { label: `${kind === "door" ? "Door" : "Window"} ${i + 1}`, kind, width: "", height: "", x: 50 + (i % 3) * 70, y: 60 }]);
   }
 
   function update(index: number, key: keyof Opening, value: string | number) {
-    setOpenings((current) => current.map((item, i) => (i === index ? { ...item, [key]: value } : item)));
+    setOpenings((c) => c.map((item, i) => (i === index ? { ...item, [key]: value } : item)));
   }
 
-  function onSvgClick(e: React.MouseEvent<SVGSVGElement>) {
-    if (selected === null) return;
-    const svg = e.currentTarget;
-    const rect = svg.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 320;
-    const y = ((e.clientY - rect.top) / rect.height) * 180;
-    update(selected, "x", Math.max(10, Math.min(280, x)));
-    update(selected, "y", Math.max(20, Math.min(140, y)));
+  function snap(x1: number, y1: number, x2: number, y2: number): Wall {
+    const dx = Math.abs(x2 - x1);
+    const dy = Math.abs(y2 - y1);
+    if (dx > dy * 1.5) return { x1, y1, x2, y2: y1 }; // horizontal
+    if (dy > dx * 1.5) return { x1, y1, x2: x1, y2 }; // vertical
+    return { x1, y1, x2, y2 };
   }
+
+  function pos(e: React.PointerEvent) {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const r = canvas.getBoundingClientRect();
+    return { x: ((e.clientX - r.left) / r.width) * canvas.width, y: ((e.clientY - r.top) / r.height) * canvas.height };
+  }
+
+  function onDown(e: React.PointerEvent) {
+    if (selected !== null) {
+      const p = pos(e);
+      update(selected, "x", Math.max(10, Math.min(290, p.x)));
+      update(selected, "y", Math.max(20, Math.min(160, p.y)));
+      setSelected(null);
+      return;
+    }
+    setDrawing(true);
+    const p = pos(e);
+    setCurrent({ x1: p.x, y1: p.y, x2: p.x, y2: p.y });
+  }
+
+  function onMove(e: React.PointerEvent) {
+    if (!drawing || !current) return;
+    const p = pos(e);
+    setCurrent({ ...current, x2: p.x, y2: p.y });
+  }
+
+  function onUp() {
+    if (drawing && current) {
+      const snapped = snap(current.x1, current.y1, current.x2, current.y2);
+      if (Math.hypot(snapped.x2 - snapped.x1, snapped.y2 - snapped.y1) > 15) {
+        setWalls((w) => [...w, snapped]);
+      }
+    }
+    setDrawing(false);
+    setCurrent(null);
+  }
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#1b1238";
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = "#a78bfa";
+    ctx.lineWidth = 2;
+    walls.forEach((wall) => {
+      ctx.beginPath();
+      ctx.moveTo(wall.x1, wall.y1);
+      ctx.lineTo(wall.x2, wall.y2);
+      ctx.stroke();
+    });
+    if (current) {
+      const s = snap(current.x1, current.y1, current.x2, current.y2);
+      ctx.strokeStyle = "#fbbf24";
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(s.x1, s.y1);
+      ctx.lineTo(s.x2, s.y2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    openings.forEach((o, i) => {
+      const isSel = selected === i;
+      const ww = Math.max(20, Math.min(50, Number(o.width) || 28));
+      const hh = o.kind === "door" ? 50 : Math.max(16, Math.min(40, Number(o.height) || 22));
+      const x = o.x ?? 40;
+      const y = o.y ?? 50;
+      ctx.fillStyle = isSel ? "#8b5cf6" : "#6d28d9";
+      ctx.strokeStyle = isSel ? "#fbbf24" : "#ddd6fe";
+      ctx.lineWidth = isSel ? 2 : 1;
+      ctx.fillRect(x, y, ww, hh);
+      ctx.strokeRect(x, y, ww, hh);
+      ctx.fillStyle = "#ddd6fe";
+      ctx.font = "10px sans-serif";
+      ctx.fillText(`${o.width || "—"}×${o.height || "—"}`, x, y + hh + 12);
+    });
+  }, [walls, current, openings, selected, drawing]);
 
   async function save() {
     setSaving(true);
@@ -40,46 +125,55 @@ export function MeasurePad({ jobs, initialJob, initialOpenings }: { jobs: Job[];
     const res = await fetch("/api/contractor/measures", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ job_id: jobId, openings: openings.map(({ x, y, ...rest }) => rest) }),
+      body: JSON.stringify({ job_id: jobId, openings: openings.map(({ x, y, ...rest }) => rest), walls }),
     });
     const data = await res.json().catch(() => ({}));
     setSaving(false);
     setMessage(res.ok ? "Measurements saved." : data.error || "Could not save.");
   }
 
+  const canvas = (
+    <div ref={wrapRef} className={full ? "fixed inset-0 z-50 bg-[#0c0618] flex flex-col" : "overflow-hidden rounded-2xl border border-violet-400/25 bg-[#120a28]"}>
+      {full && (
+        <div className="flex items-center justify-between px-3 py-2 border-b border-violet-400/20">
+          <span className="text-sm text-violet-200">Draw walls — release to snap straight</span>
+          <button type="button" onClick={() => setFull(false)} className="text-xs px-3 py-1 rounded-lg border border-violet-400/40">Close</button>
+        </div>
+      )}
+      <canvas
+        ref={canvasRef}
+        width={320}
+        height={full ? 420 : 200}
+        className={full ? "flex-1 w-full touch-none" : "h-52 w-full touch-none"}
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerLeave={onUp}
+      />
+      {!full && <p className="px-2 pb-2 text-[11px] text-violet-200">Finger-draw walls (snap straight). Tap opening then wall to place.</p>}
+    </div>
+  );
+
   return (
     <div className="grid gap-3">
-      <label className="grid gap-1 text-sm">
-        Job
-        <select className="min-h-11 rounded-xl border border-border bg-card px-3" value={jobId} onChange={(e) => setJobId(e.target.value)}>
-          <option value="">Choose a job</option>
-          {jobs.map((job) => (
-            <option key={job.id} value={job.id}>{job.property_address}</option>
-          ))}
-        </select>
-      </label>
+      <div className="flex items-end gap-2">
+        <label className="grid flex-1 gap-1 text-sm">
+          Job
+          <select className="min-h-11 rounded-xl border border-border bg-card px-3" value={jobId} onChange={(e) => setJobId(e.target.value)}>
+            <option value="">Choose a job</option>
+            {jobs.map((job) => (
+              <option key={job.id} value={job.id}>{job.property_address}</option>
+            ))}
+          </select>
+        </label>
+        <Link href="/dashboard/new" className="mb-0.5 inline-flex min-h-11 items-center justify-center rounded-xl border border-violet-400/40 px-3 text-sm whitespace-nowrap">+ Job</Link>
+      </div>
 
-      <div className="overflow-hidden rounded-2xl border border-violet-400/25 bg-[#120a28] p-2">
-        <svg viewBox="0 0 320 180" className="h-48 w-full cursor-crosshair" onClick={onSvgClick}>
-          <rect x="10" y="20" width="300" height="140" rx="6" fill="#1b1238" stroke="#a78bfa" strokeWidth="1.5" />
-          <text x="160" y="16" textAnchor="middle" fill="#c4b5fd" fontSize="10">Tap an opening then click wall to move</text>
-          {openings.map((opening, index) => {
-            const w = Math.max(24, Math.min(70, Number(opening.width) || 36));
-            const h = opening.kind === "door" ? 100 : Math.max(24, Math.min(70, Number(opening.height) || 40));
-            const x = opening.x ?? 20;
-            const y = opening.y ?? 40;
-            const isSel = selected === index;
-            return (
-              <g key={index} onClick={(e) => { e.stopPropagation(); setSelected(index); }} className="cursor-pointer">
-                <rect x={x} y={y} width={w * 0.55} height={h} rx="2" fill={isSel ? "#8b5cf6" : "#6d28d9"} stroke={isSel ? "#fbbf24" : "#ddd6fe"} strokeWidth={isSel ? 2 : 1} />
-                <text x={x + (w * 0.55) / 2} y={y + h + 12} textAnchor="middle" fill="#ddd6fe" fontSize="9">
-                  {opening.width || "—"}×{opening.height || "—"}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-        <p className="px-1 pt-1 text-[11px] text-violet-200">Select opening below, then click the wall to place it.</p>
+      {canvas}
+
+      <div className="flex gap-2">
+        <button type="button" onClick={() => setFull(true)} className="min-h-10 flex-1 rounded-xl border border-violet-400/40 text-sm">Full screen draw</button>
+        <button type="button" onClick={() => setWalls([])} className="min-h-10 rounded-xl border border-border px-3 text-sm">Clear walls</button>
       </div>
 
       <div className="flex gap-2">
