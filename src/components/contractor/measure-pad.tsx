@@ -17,6 +17,10 @@ export function MeasurePad({ jobs, initialJob, initialOpenings }: { jobs: Job[];
   const [full, setFull] = useState(false);
   const [drawing, setDrawing] = useState(false);
   const [current, setCurrent] = useState<Wall | null>(null);
+  const [uploadAddr, setUploadAddr] = useState("");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -32,8 +36,8 @@ export function MeasurePad({ jobs, initialJob, initialOpenings }: { jobs: Job[];
   function snap(x1: number, y1: number, x2: number, y2: number): Wall {
     const dx = Math.abs(x2 - x1);
     const dy = Math.abs(y2 - y1);
-    if (dx > dy * 1.5) return { x1, y1, x2, y2: y1 }; // horizontal
-    if (dy > dx * 1.5) return { x1, y1, x2: x1, y2 }; // vertical
+    if (dx > dy * 1.5) return { x1, y1, x2, y2: y1 };
+    if (dy > dx * 1.5) return { x1, y1, x2: x1, y2 };
     return { x1, y1, x2, y2 };
   }
 
@@ -79,11 +83,9 @@ export function MeasurePad({ jobs, initialJob, initialOpenings }: { jobs: Job[];
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const w = canvas.width;
-    const h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#1b1238";
-    ctx.fillRect(0, 0, w, h);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = "#a78bfa";
     ctx.lineWidth = 2;
     walls.forEach((wall) => {
@@ -132,6 +134,31 @@ export function MeasurePad({ jobs, initialJob, initialOpenings }: { jobs: Job[];
     setMessage(res.ok ? "Measurements saved." : data.error || "Could not save.");
   }
 
+  async function sendPdfAsJob() {
+    if (!uploadAddr.trim() || !uploadFile) {
+      setUploadMsg("Address and PDF required.");
+      return;
+    }
+    setUploading(true);
+    setUploadMsg("");
+    const form = new FormData();
+    form.append("property_address", uploadAddr.trim());
+    form.append("trade_type", "Windows");
+    form.append("notes", "Floor plan PDF uploaded from Measure page.");
+    form.append("files", uploadFile);
+    try {
+      const res = await fetch("/api/contractor/job-requests", { method: "POST", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Could not send");
+      setUploadMsg("Sent. Majestic will review it.");
+      setUploadAddr("");
+      setUploadFile(null);
+    } catch (err: any) {
+      setUploadMsg(err.message || "Could not send.");
+    }
+    setUploading(false);
+  }
+
   const canvas = (
     <div ref={wrapRef} className={full ? "fixed inset-0 z-50 bg-[#0c0618] flex flex-col" : "overflow-hidden rounded-2xl border border-violet-400/25 bg-[#120a28]"}>
       {full && (
@@ -150,7 +177,7 @@ export function MeasurePad({ jobs, initialJob, initialOpenings }: { jobs: Job[];
         onPointerUp={onUp}
         onPointerLeave={onUp}
       />
-      {!full && <p className="px-2 pb-2 text-[11px] text-violet-200">Finger-draw walls (snap straight). Tap opening then wall to place.</p>}
+      {!full && <p className="px-2 pb-2 text-[11px] text-violet-200">Finger-draw walls (snap straight). Tap an opening then the wall to place it.</p>}
     </div>
   );
 
@@ -181,12 +208,13 @@ export function MeasurePad({ jobs, initialJob, initialOpenings }: { jobs: Job[];
         <button type="button" onClick={() => add("door")} className="min-h-10 flex-1 rounded-xl border border-violet-400/40 text-sm">+ Door</button>
       </div>
 
+      <p className="text-xs text-muted-foreground">Tap an opening, then type the size. Width × Height.</p>
       <ul className="grid gap-2">
         {openings.map((opening, index) => (
           <li key={index} className={`grid grid-cols-2 gap-2 rounded-xl border p-2.5 ${selected === index ? "border-amber-400 bg-amber-950/20" : "border-border"}`} onClick={() => setSelected(index)}>
-            <input className="col-span-2 min-h-10 rounded-lg border border-border bg-card px-2 text-sm" value={opening.label} onChange={(e) => update(index, "label", e.target.value)} />
-            <input inputMode="decimal" placeholder="W" className="min-h-10 rounded-lg border border-border bg-card px-2 text-sm" value={opening.width} onChange={(e) => update(index, "width", e.target.value)} />
-            <input inputMode="decimal" placeholder="H" className="min-h-10 rounded-lg border border-border bg-card px-2 text-sm" value={opening.height} onChange={(e) => update(index, "height", e.target.value)} />
+            <input className="col-span-2 min-h-10 rounded-lg border border-border bg-card px-2 text-sm" value={opening.label} onChange={(e) => update(index, "label", e.target.value)} placeholder="Label" />
+            <label className="text-[11px] text-muted-foreground">Width<input inputMode="decimal" placeholder="e.g. 36" className="mt-0.5 min-h-10 w-full rounded-lg border border-border bg-card px-2 text-sm" value={opening.width} onChange={(e) => update(index, "width", e.target.value)} /></label>
+            <label className="text-[11px] text-muted-foreground">Height<input inputMode="decimal" placeholder="e.g. 60" className="mt-0.5 min-h-10 w-full rounded-lg border border-border bg-card px-2 text-sm" value={opening.height} onChange={(e) => update(index, "height", e.target.value)} /></label>
           </li>
         ))}
       </ul>
@@ -195,6 +223,27 @@ export function MeasurePad({ jobs, initialJob, initialOpenings }: { jobs: Job[];
         {saving ? "Saving..." : "Save measurements"}
       </button>
       {message && <p className="text-sm text-muted-foreground">{message}</p>}
+
+      <div className="mt-4 rounded-2xl border border-dashed border-violet-400/40 p-3">
+        <p className="text-sm font-semibold">Or upload a floor plan PDF as a new job</p>
+        <p className="mt-1 text-xs text-muted-foreground">Send the plan to Majestic. It appears after review.</p>
+        <input
+          placeholder="Property address"
+          value={uploadAddr}
+          onChange={(e) => setUploadAddr(e.target.value)}
+          className="mt-2 min-h-10 w-full rounded-lg border border-border bg-card px-3 text-sm"
+        />
+        <input
+          type="file"
+          accept=".pdf,application/pdf"
+          onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+          className="mt-2 block w-full text-xs file:mr-2 file:rounded-lg file:border-0 file:bg-primary file:px-2 file:py-1 file:text-xs file:text-white"
+        />
+        <button type="button" onClick={sendPdfAsJob} disabled={uploading} className="mt-2 min-h-10 w-full rounded-xl border border-violet-400/40 text-sm">
+          {uploading ? "Sending…" : "Send PDF as new job"}
+        </button>
+        {uploadMsg && <p className="mt-1 text-xs text-muted-foreground">{uploadMsg}</p>}
+      </div>
     </div>
   );
 }
