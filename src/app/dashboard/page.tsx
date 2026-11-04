@@ -1,6 +1,6 @@
-import { UpdateStageForm } from "@/components/admin/update-stage-form";
 import { canonicalStageTitle, inspectionsAllowed } from "@/lib/stages";
-import { visibleInspections, inspectionName } from "@/lib/inspection-sequence";
+import { ensureVisitsForJobs } from "@/lib/inspection-actions";
+import { inspectionLine, type InspectionLine } from "@/lib/inspection-summary";
 import Link from "next/link";
 import Image from "next/image";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -10,11 +10,19 @@ import { CONTRACTOR_BUCKETS } from "@/lib/dashboard-buckets";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { JobStatusBar } from "@/components/contractor/job-status-bar";
 import { ToolNav } from "@/components/contractor/tool-nav";
+import { AskJobQuestion } from "@/components/contractor/ask-job-question";
 import { DECLINED_REQUEST_SUB, PENDING_REQUEST_SUB } from "@/lib/job-request";
-import { ContractorResultForm } from "@/components/contractor/contractor-result-form";
-import { isFinalInspection } from "@/lib/inspection-final";
 
-type DashboardInspection = { id: string; job_id: string; slot: number; inspection_type: string | null; status: string; scheduled_date: string | null; result_date: string | null };
+type JobCard = {
+  id: string;
+  property_address: string;
+  stage: string | null;
+  sub_status: string | null;
+  permit_number: string | null;
+  trade_type: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
 
 export const dynamic = "force-dynamic";
 
@@ -40,41 +48,43 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
   const { data: allJobs } = await supabase
     .from("jobs")
     .select("id, property_address, stage, sub_status, permit_number, permit_eta, submitted_date, updated_at, trade_type, created_at")
-    .eq("contractor_id", contractor.id)
+    .in("contractor_id", contractor.company_contractor_ids)
     .order("created_at", { ascending: false });
 
   const pendingJobRequests = (allJobs || []).filter((j: any) => j.sub_status === PENDING_REQUEST_SUB);
-  let jobs = (allJobs || []).filter((j: any) => j.sub_status !== PENDING_REQUEST_SUB && j.sub_status !== DECLINED_REQUEST_SUB);
+  let jobs = (allJobs || []).filter((j: any) => j.sub_status !== PENDING_REQUEST_SUB && j.sub_status !== DECLINED_REQUEST_SUB) as JobCard[];
 
   if (q) {
-    jobs = jobs.filter((j: any) =>
+    jobs = jobs.filter((j) =>
       [j.property_address, j.permit_number, j.stage, j.sub_status, j.trade_type]
         .filter(Boolean)
-        .some((v: string) => v.toLowerCase().includes(q))
+        .some((v) => String(v).toLowerCase().includes(q))
     );
   }
 
   const totalJobs = jobs.length;
-  const { data: inspections } = jobs.length
-    ? await supabase.from("job_inspections").select("id, job_id, slot, inspection_type, status, scheduled_date, result_date").in("job_id", jobs.map((job) => job.id)).order("slot")
-    : { data: [] };
-  const inspectionsByJob: Record<string, DashboardInspection[]> = {};
-  for (const inspection of inspections || []) {
-    (inspectionsByJob[inspection.job_id] ||= []).push(inspection);
-  }
-
-  const pendingInspections = jobs.filter((j: any) =>
-    (inspectionsByJob[j.id] || []).some((i) => ["scheduled", "pending", "requested", "reinspection_scheduled"].includes(i.status))
+  // An approved job gets the standard inspection visits turned on, so there is always something to request.
+  const rowsByJob = await ensureVisitsForJobs(
+    supabase,
+    jobs.filter((j) => inspectionsAllowed(j.stage)).map((j) => ({ id: j.id, stage: j.stage }))
   );
+  const lineByJob: Record<string, InspectionLine | null> = {};
+  for (const job of jobs) lineByJob[job.id] = inspectionsAllowed(job.stage) ? inspectionLine(rowsByJob.get(job.id) || []) : null;
+
+  const pendingInspections = jobs.filter((j) => {
+    const phase = lineByJob[j.id]?.phase;
+    return phase === "requested" || phase === "needs_reinspection";
+  });
+  const scheduledInspections = jobs.filter((j) => lineByJob[j.id]?.phase === "scheduled");
 
   const bucketed = CONTRACTOR_BUCKETS.map((bucket) => ({
     ...bucket,
     items: jobs
-      .filter((j: any) => (bucket.stageTitles as readonly string[]).includes(canonicalStageTitle(j.stage)))
-      .sort((a: any, b: any) => new Date(b.created_at || b.updated_at || 0).getTime() - new Date(a.created_at || a.updated_at || 0).getTime()),
+      .filter((j) => (bucket.stageTitles as readonly string[]).includes(canonicalStageTitle(j.stage)))
+      .sort((a, b) => new Date(b.created_at || b.updated_at || 0).getTime() - new Date(a.created_at || a.updated_at || 0).getTime()),
   }));
-  const bucketedIds = new Set(bucketed.flatMap((b) => b.items.map((j: any) => j.id)));
-  const other = jobs.filter((j: any) => !bucketedIds.has(j.id));
+  const bucketedIds = new Set(bucketed.flatMap((b) => b.items.map((j) => j.id)));
+  const other = jobs.filter((j) => !bucketedIds.has(j.id));
   const displayOrder = ["pending_permits", "needs_install", "needs_inspection", "complete"];
   const ordered = displayOrder.map((key) => bucketed.find((b) => b.key === key)).filter(Boolean) as typeof bucketed;
   const pendingCount = ordered.find((b) => b.key === "pending_permits")?.items.length ?? 0;
@@ -105,7 +115,7 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
         <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
           <div>
             <h1 className="text-2xl font-bold text-primary dark:text-white">Job Management</h1>
-            <p className="text-sm text-muted-foreground">{jobs.filter(j => !["Permit closed — all done", "Final inspection passed"].includes(canonicalStageTitle(j.stage))).length} active · newest first</p>
+            <p className="text-sm text-muted-foreground">{jobs.filter((j) => !["Permit closed — all done", "Final inspection passed"].includes(canonicalStageTitle(j.stage))).length} active · newest first</p>
           </div>
           <Link href="/dashboard/new" className="inline-flex min-h-10 items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white">Request a job</Link>
         </div>
@@ -117,23 +127,40 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           <a href="#pending_permits" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-[#3b1d78] to-[#1a1038] px-4 py-4"><p className="text-xs font-semibold uppercase tracking-wider text-violet-200">Pending permits</p><p className="mt-1 text-3xl font-bold text-white">{pendingCount}</p></a>
           <a href="#needs_install" className="rounded-2xl border border-amber-400/30 bg-gradient-to-br from-[#78350f] to-[#1a1038] px-4 py-4"><p className="text-xs font-semibold uppercase tracking-wider text-amber-200">Needs install</p><p className="mt-1 text-3xl font-bold text-white">{installCount}</p></a>
-          <a href="#needs_inspection" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-[#312e81] to-[#1a1038] px-4 py-4"><p className="text-xs font-semibold uppercase tracking-wider text-violet-200">Needs inspection</p><p className="mt-1 text-3xl font-bold text-white">{inspectionCount}</p></a>
+          <a href="#needs_inspection" className="rounded-2xl border border-sky-400/30 bg-gradient-to-br from-[#0c4a6e] to-[#1a1038] px-4 py-4"><p className="text-xs font-semibold uppercase tracking-wider text-sky-200">Needs inspection</p><p className="mt-1 text-3xl font-bold text-white">{inspectionCount}</p></a>
           <a href="#complete" className="rounded-2xl border border-emerald-400/30 bg-gradient-to-br from-[#064e3b] to-[#1a1038] px-4 py-4"><p className="text-xs font-semibold uppercase tracking-wider text-emerald-200">Complete</p><p className="mt-1 text-3xl font-bold text-white">{completeCount}</p></a>
         </div>
 
         <div className="mb-6"><p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Tools</p><ToolNav /></div>
 
-        {pendingInspections.length > 0 && (
-          <section id="pending_inspections" className="mb-5 rounded-2xl border border-sky-400/30 bg-card/90">
+        {scheduledInspections.length > 0 && (
+          <section id="scheduled_inspections" className="mb-5 rounded-2xl border border-sky-400/30 bg-card/90">
             <header className="flex items-center gap-3 border-b border-border px-4 py-3">
-              <span className="inline-flex items-center rounded-full bg-sky-950/40 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-sky-200">Pending inspections</span>
+              <span className="inline-flex items-center rounded-full bg-sky-950/40 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-sky-200">Scheduled inspections</span>
+              <span className="ml-auto rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground">{scheduledInspections.length}</span>
+            </header>
+            <ul className="divide-y divide-border">
+              {scheduledInspections.map((job) => (
+                <li key={job.id} className="px-4 py-3">
+                  <Link href={`/dashboard/projects/${job.id}#inspections`} className="text-sm font-semibold text-primary dark:text-white">{job.property_address}</Link>
+                  <p className="text-xs text-sky-200 mt-0.5">{lineByJob[job.id]?.text}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {pendingInspections.length > 0 && (
+          <section id="pending_inspections" className="mb-5 rounded-2xl border border-amber-400/30 bg-card/90">
+            <header className="flex items-center gap-3 border-b border-border px-4 py-3">
+              <span className="inline-flex items-center rounded-full bg-amber-950/40 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-amber-200">Pending inspections</span>
               <span className="ml-auto rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground">{pendingInspections.length}</span>
             </header>
             <ul className="divide-y divide-border">
-              {pendingInspections.map((job: any) => (
+              {pendingInspections.map((job) => (
                 <li key={job.id} className="px-4 py-3">
                   <Link href={`/dashboard/projects/${job.id}#inspections`} className="text-sm font-semibold text-primary dark:text-white">{job.property_address}</Link>
-                  <p className="text-xs text-muted-foreground mt-0.5">{(inspectionsByJob[job.id] || []).filter(i => ["scheduled","pending","requested","reinspection_scheduled"].includes(i.status)).map(i => `${inspectionName(i)} · ${i.status.replace(/_/g," ")}`).join(" · ")}</p>
+                  <p className={"text-xs mt-0.5 " + (lineByJob[job.id]?.phase === "needs_reinspection" ? "text-rose-200" : "text-amber-200")}>{lineByJob[job.id]?.text}</p>
                 </li>
               ))}
             </ul>
@@ -152,9 +179,9 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
         ) : (
           <div className="space-y-5">
             {ordered.map((bucket) => bucket.items.length > 0 && (
-              <StageSection key={bucket.key} id={bucket.key} title={bucket.label} items={bucket.items} inspectionsByJob={inspectionsByJob} progress={Math.round((bucket.items.length / totalForProgress) * 100)} />
+              <StageSection key={bucket.key} id={bucket.key} bucketKey={bucket.key} title={bucket.label} items={bucket.items} lineByJob={lineByJob} progress={Math.round((bucket.items.length / totalForProgress) * 100)} />
             ))}
-            {other.length > 0 && <StageSection title="Other" items={other} accent="amber" inspectionsByJob={inspectionsByJob} progress={0} />}
+            {other.length > 0 && <StageSection title="Other" bucketKey="other" items={other} lineByJob={lineByJob} progress={0} />}
           </div>
         )}
       </main>
@@ -162,46 +189,47 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
   );
 }
 
-function StageSection({ id, title, items, accent = "blue", inspectionsByJob, progress = 0 }: { id?: string; title: string; items: any[]; accent?: "blue" | "amber"; inspectionsByJob: Record<string, DashboardInspection[]>; progress?: number }) {
-  const accentPill = accent === "amber" ? "bg-amber-950/30 text-amber-200" : "bg-primary/10 text-primary";
+const SECTION_TONE: Record<string, { pill: string; bar: string; border: string }> = {
+  pending_permits: { pill: "bg-violet-500/15 text-violet-200", bar: "bg-violet-400", border: "border-violet-400/20" },
+  needs_install: { pill: "bg-amber-500/15 text-amber-200", bar: "bg-amber-400", border: "border-amber-400/20" },
+  needs_inspection: { pill: "bg-sky-500/15 text-sky-200", bar: "bg-sky-400", border: "border-sky-400/20" },
+  complete: { pill: "bg-emerald-500/15 text-emerald-200", bar: "bg-emerald-400", border: "border-emerald-400/20" },
+  other: { pill: "bg-slate-500/15 text-slate-200", bar: "bg-slate-400", border: "border-slate-400/20" },
+};
+
+function StageSection({ id, bucketKey, title, items, lineByJob, progress = 0 }: { id?: string; bucketKey: string; title: string; items: JobCard[]; lineByJob: Record<string, InspectionLine | null>; progress?: number }) {
+  const tone = SECTION_TONE[bucketKey] || SECTION_TONE.other;
   return (
-    <section id={id} className="rounded-2xl border border-violet-400/20 bg-card/90">
+    <section id={id} className={`rounded-2xl border bg-card/90 ${tone.border}`}>
       <header className="border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
-          <span className={"inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider " + accentPill}>{title}</span>
+          <span className={"inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider " + tone.pill}>{title}</span>
           <span className="ml-auto rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground">{items.length}</span>
         </div>
         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-          <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
+          <div className={"h-full rounded-full " + tone.bar} style={{ width: `${progress}%` }} />
         </div>
       </header>
       <ul className="divide-y divide-border">
-        {items.map((job) => (
-          <li key={job.id} className="px-4 py-3">
-            <JobStatusBar stage={job.stage || job.sub_status || ""} />
-            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-              <Link href={`/dashboard/projects/${job.id}`} className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-primary dark:text-white">{job.property_address}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{job.permit_number ? `Permit ${job.permit_number}` : "No permit yet"}{job.sub_status ? ` · ${job.sub_status}` : ""}</p>
-              </Link>
-              <div className="flex gap-2">
+        {items.map((job) => {
+          const line = lineByJob[job.id];
+          const closed = ["Permit closed — all done", "Final inspection passed"].includes(canonicalStageTitle(job.stage));
+          return (
+            <li key={job.id} className="px-4 py-3">
+              <JobStatusBar stage={job.stage || job.sub_status || ""} flag={line?.flag} />
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Link href={`/dashboard/projects/${job.id}`} className="min-w-0 flex-1 basis-60">
+                  <p className="text-sm font-semibold text-primary dark:text-white">{job.property_address}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{job.permit_number ? `Permit ${job.permit_number}` : "No permit yet"}{job.sub_status ? ` · ${job.sub_status}` : ""}</p>
+                  {line && <p className={"mt-0.5 text-xs " + (line.phase === "needs_reinspection" ? "text-rose-200" : line.phase === "scheduled" ? "text-sky-200" : "text-muted-foreground")}>{line.text}</p>}
+                </Link>
+                <AskJobQuestion compact jobId={job.id} address={job.property_address || "this job"} />
                 <Link href={`/dashboard/projects/${job.id}#documents`} className="inline-flex min-h-9 items-center justify-center rounded-lg border border-border px-3 text-xs font-medium">Docs</Link>
-                <Link href={`/dashboard/projects/${job.id}#inspections`} className="inline-flex min-h-9 items-center justify-center rounded-lg bg-primary px-3 text-xs font-semibold text-white">{["Permit closed — all done", "Final inspection passed"].includes(canonicalStageTitle(job.stage)) ? "View" : inspectionsAllowed(job.stage) ? "Inspect" : "View"}</Link>
+                <Link href={`/dashboard/projects/${job.id}#inspections`} className="inline-flex min-h-9 items-center justify-center rounded-lg bg-primary px-3 text-xs font-semibold text-white">{closed ? "View" : line?.phase === "ready" ? "Request inspection" : "Inspections"}</Link>
               </div>
-            </div>
-            <details className="mt-2"><summary className="cursor-pointer text-xs text-muted-foreground">Edit status</summary><div className="mt-2"><UpdateStageForm key={`${job.stage}:${job.sub_status}`} jobId={job.id} currentStage={job.stage} currentSubStatus={job.sub_status || ""} contractor /></div></details>
-            <div className="mt-2 space-y-1.5 border-t border-border pt-2">
-              {visibleInspections(inspectionsByJob[job.id] || [], inspectionsAllowed(job.stage), job.stage === "Permit closed — all done").map((inspection) => (
-                <div key={inspection.id} className="rounded-lg bg-secondary/40 px-2.5 py-1.5 text-xs">
-                  <span className="font-medium">{inspectionName(inspection)}</span> · {inspection.status.replace(/_/g, " ")}{(inspection.result_date || inspection.scheduled_date) ? ` · ${inspection.result_date || inspection.scheduled_date}` : ""}
-                  {job.stage !== "Permit closed — all done" && ["scheduled", "reinspection_scheduled"].includes(inspection.status) && (
-                    <details className="mt-1"><summary className="cursor-pointer text-primary">Record result</summary><ContractorResultForm inspectionId={inspection.id} isFinal={isFinalInspection(inspection)} /></details>
-                  )}
-                </div>
-              ))}
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

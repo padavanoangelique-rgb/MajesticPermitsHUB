@@ -36,7 +36,7 @@ export async function GET() {
   const { data, error } = await service
     .from("jobs")
     .select("id, property_address, trade_type, sub_status, created_at")
-    .eq("contractor_id", contractor.id)
+    .in("contractor_id", contractor.company_contractor_ids)
     .eq("sub_status", PENDING_REQUEST_SUB)
     .order("created_at", { ascending: false })
     .limit(25);

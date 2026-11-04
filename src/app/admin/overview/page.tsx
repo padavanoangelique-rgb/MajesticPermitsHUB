@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-guard";
 import { createServiceClient } from "@/lib/supabase/service";
-import { canonicalStageTitle, inspectionsAllowed, PERMIT_STAGES } from "@/lib/stages";
+import { canonicalStageTitle, inspectionsAllowed, PERMIT_STAGES, stageTitle } from "@/lib/stages";
 import { PENDING_REQUEST_SUB, DECLINED_REQUEST_SUB } from "@/lib/job-request";
 
 export const dynamic = "force-dynamic";
@@ -33,18 +33,18 @@ export default async function AdminOverview({ searchParams }: { searchParams: { 
   const href = (path: string) => path + (embed ? (path.includes("?") ? "&embed=1" : "?embed=1") : "");
   if (failed) return <main className="p-6"><h1 className="text-2xl font-bold">Operations overview</h1><p role="alert" className="mt-4">The overview could not load. Refresh to try again.</p><Link href={href("/admin")} className="mt-4 inline-block text-primary">Open jobs</Link></main>;
   const accepted = jobs.filter(j => ![PENDING_REQUEST_SUB, DECLINED_REQUEST_SUB].includes(j.sub_status));
-  const active = accepted.filter(j => canonicalStageTitle(j.stage) !== PERMIT_STAGES[7].title);
+  const active = accepted.filter(j => canonicalStageTitle(j.stage) !== stageTitle("closed"));
   const jobMap = new Map(jobs.map(j => [j.id, j]));
   const eligible = inspections.filter(i => inspectionsAllowed(jobMap.get(i.job_id)?.stage));
   const pending = jobs.filter(j => j.sub_status === PENDING_REQUEST_SUB);
-  const corrections = active.filter(j => canonicalStageTitle(j.stage) === PERMIT_STAGES[3].title);
+  const corrections = active.filter(j => canonicalStageTitle(j.stage) === stageTitle("corrections"));
   const requested = eligible.filter(i => ["requested", "reinspection_requested"].includes(i.status));
   const scheduled = eligible.filter(i => ["scheduled", "reinspection_scheduled"].includes(i.status));
   const recent = [...accepted].sort((a,b) => (b.updated_at || "").localeCompare(a.updated_at || "")).slice(0,8);
   const metrics = [
     { label: "Active permit jobs", value: active.length, path: "/admin" },
     { label: "Job requests to review", value: pending.length, path: "/admin/job-requests" },
-    { label: "Under city review", value: active.filter(j => [PERMIT_STAGES[1].title, PERMIT_STAGES[2].title].includes(canonicalStageTitle(j.stage) as any)).length, path: "/admin?stage=Under+review&stage=Submitted+to+the+city" },
+    { label: "Under city review", value: active.filter(j => [stageTitle("submitted"), stageTitle("under_review")].includes(canonicalStageTitle(j.stage) as any)).length, path: "/admin?stage=Under+review&stage=Submitted+to+the+city" },
     { label: "Corrections requested", value: corrections.length, path: "/admin?stage=Corrections+requested" },
     { label: "Inspections to schedule", value: requested.length, path: "/admin/inspections" },
     { label: "Scheduled inspections", value: scheduled.length, path: "/admin/inspections" },

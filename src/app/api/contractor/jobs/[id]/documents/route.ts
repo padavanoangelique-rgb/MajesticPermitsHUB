@@ -3,7 +3,7 @@ import { DOCUMENT_CATEGORIES, MAX_DOCUMENT_BYTES, documentFileError } from "@/li
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getContractorForUser } from "@/lib/contractor";
+import { getContractorForUser, ownsJob } from "@/lib/contractor";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { sendAdminRequestEmail } from "@/lib/admin-email";
 
@@ -35,7 +35,7 @@ export async function POST(
       .eq("id", params.id)
       .maybeSingle();
 
-    if (!job || job.contractor_id !== contractor.id) {
+    if (!job || !ownsJob(contractor, job.contractor_id)) {
       return NextResponse.json({ error: "Not your job" }, { status: 403 });
     }
 

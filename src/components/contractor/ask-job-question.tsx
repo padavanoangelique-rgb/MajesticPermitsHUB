@@ -5,9 +5,12 @@ import { useState } from "react";
 export function AskJobQuestion({
   jobId,
   address,
+  compact = false,
 }: {
   jobId: string;
   address: string;
+  /** A small button for a row in a list; the form opens below the row. */
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState("");
@@ -42,24 +45,28 @@ export function AskJobQuestion({
 
   if (done) {
     return (
-      <div className="rounded-xl border border-emerald-400/30 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200">
+      <div className={"rounded-xl border border-emerald-400/30 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200" + (compact ? " order-last w-full basis-full" : "")}>
         Sent. Angelique has the job details and your question. She’ll reply by text.
       </div>
     );
   }
 
   return (
-    <div className="mt-4">
+    <div className={compact ? "contents" : "mt-4"}>
       {!open ? (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-violet-400/40 bg-card px-4 py-3 text-sm font-semibold text-primary hover:bg-secondary sm:w-auto"
+          className={
+            compact
+              ? "inline-flex min-h-9 items-center justify-center rounded-lg border border-violet-400/40 bg-card px-3 text-xs font-semibold text-primary hover:bg-secondary"
+              : "inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-violet-400/40 bg-card px-4 py-3 text-sm font-semibold text-primary hover:bg-secondary sm:w-auto"
+          }
         >
           What’s up with this one?
         </button>
       ) : (
-        <form onSubmit={submit} className="rounded-xl border border-violet-400/30 bg-card/80 p-4">
+        <form onSubmit={submit} className={"rounded-xl border border-violet-400/30 bg-card/80 p-4" + (compact ? " order-last w-full basis-full" : "")}>
           <p className="text-sm font-semibold text-primary">Ask about {address}</p>
           <p className="mt-1 text-xs text-muted-foreground">
             Your question goes to Angelique as a text with the full job details. She can reply right back.

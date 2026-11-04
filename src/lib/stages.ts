@@ -46,6 +46,33 @@ export const PERMIT_STAGES = [
   },
   {
     id: 6,
+    key: "install_scheduled",
+    title: "Install scheduled",
+    short: "Install scheduled",
+    description:
+      "The installation is on the schedule.",
+    next: "The installer will arrive on the scheduled day. Keep the permit documents on site.",
+  },
+  {
+    id: 7,
+    key: "installing",
+    title: "Being installed",
+    short: "Installing",
+    description:
+      "The work is underway on site.",
+    next: "When the installation is complete we schedule the inspection.",
+  },
+  {
+    id: 8,
+    key: "inspection_scheduled",
+    title: "Inspection scheduled",
+    short: "Inspection set",
+    description:
+      "An inspection is scheduled with the building department.",
+    next: "The inspector visits on the scheduled day. We track the result and handle anything that comes up.",
+  },
+  {
+    id: 9,
     key: "inspections",
     title: "Inspections in progress",
     short: "Inspections",
@@ -54,7 +81,16 @@ export const PERMIT_STAGES = [
     next: "We coordinate each inspection and track the results until the final sign-off.",
   },
   {
-    id: 7,
+    id: 10,
+    key: "ready_for_final",
+    title: "Ready for final",
+    short: "Ready for final",
+    description:
+      "The earlier inspections passed. The job is ready for its final inspection.",
+    next: "We schedule the final inspection with the building department.",
+  },
+  {
+    id: 11,
     key: "final_passed",
     title: "Final inspection passed",
     short: "Final passed",
@@ -63,7 +99,7 @@ export const PERMIT_STAGES = [
     next: "We will close out the permit paperwork with the jurisdiction.",
   },
   {
-    id: 8,
+    id: 12,
     key: "closed",
     title: "Permit closed — all done",
     short: "Closed",
@@ -106,20 +142,106 @@ export function canonicalStageTitle(value: string | null | undefined): string {
     "in review": PERMIT_STAGES[2].title,
     "approved": PERMIT_STAGES[4].title,
     "approved and printed": PERMIT_STAGES[4].title,
-    "closed": PERMIT_STAGES[7].title,
-    "complete": PERMIT_STAGES[7].title,
+    "closed": PERMIT_STAGES[PERMIT_STAGES.length - 1].title,
+    "complete": PERMIT_STAGES[PERMIT_STAGES.length - 1].title,
+    "inspection scheduled": "Inspection scheduled",
+    "ready for final": "Ready for final",
+    "install scheduled": "Install scheduled",
+    "being installed": "Being installed",
+    "installing": "Being installed",
   };
   return aliases[text] || value || "";
 }
 export function stageIndexFromTitle(value: string | null | undefined) {
   return PERMIT_STAGES.findIndex(s => s.title === canonicalStageTitle(value));
 }
+export function stageKeyFromTitle(value: string | null | undefined): StageKey | "" {
+  const title = canonicalStageTitle(value);
+  return PERMIT_STAGES.find((s) => s.title === title)?.key ?? "";
+}
+/** The title of a stage by its key, so callers never depend on where a stage sits in the list. */
+export function stageTitle(key: StageKey): string {
+  return PERMIT_STAGES.find((s) => s.key === key)!.title;
+}
+
+// Inspections can be requested from the moment the permit is approved until the final has passed.
+const INSPECTION_STAGE_KEYS: readonly string[] = ["approved", "install_scheduled", "installing", "inspection_scheduled", "inspections", "ready_for_final"];
 export function inspectionsAllowed(stage: string | null | undefined) {
-  const index = stageIndexFromTitle(stage);
-  return index >= 4 && index <= 5;
+  return INSPECTION_STAGE_KEYS.includes(stageKeyFromTitle(stage));
 }
 export const JOB_SUB_STATUSES = ["Need to Submit", "In Review", "Approved", "Approved and Printed", "Complete", "Pending approval", "Request declined", "Closed"];
 export function defaultSubStatus(stage: string) {
-  const index = stageIndexFromTitle(stage);
-  return index === 7 ? "Closed" : index === 6 ? "Complete" : index >= 4 ? "Approved" : index >= 1 ? "In Review" : "Need to Submit";
+  const key = stageKeyFromTitle(stage);
+  if (key === "closed") return "Closed";
+  if (key === "final_passed") return "Complete";
+  if (INSPECTION_STAGE_KEYS.includes(key)) return "Approved";
+  if (key === "submitted" || key === "under_review" || key === "corrections") return "In Review";
+  return "Need to Submit";
+}
+
+/**
+ * Where a job's stage goes when an inspection is confirmed on the calendar, or null to leave it alone.
+ * Only a job that is somewhere between approval and its final moves; a closed job never goes backwards.
+ */
+export function stageAfterInspectionConfirmed(stage: string | null | undefined): string | null {
+  const key = stageKeyFromTitle(stage);
+  if (["approved", "install_scheduled", "installing", "inspections", "ready_for_final"].includes(key)) return stageTitle("inspection_scheduled");
+  return null;
+}
+
+/**
+ * Where a job's stage goes when an inspection result is recorded, or null to leave it alone.
+ * A final that passes is closed by the closing step, not here.
+ */
+export function stageAfterInspectionResult(
+  stage: string | null | undefined,
+  result: "passed" | "partial_pass" | "failed",
+  isFinal: boolean
+): string | null {
+  const key = stageKeyFromTitle(stage);
+  if (!INSPECTION_STAGE_KEYS.includes(key)) return null;
+  if (result === "passed") return isFinal ? null : stageTitle("ready_for_final");
+  return stageTitle("inspections");
+}
+
+export type StageTone = "permit" | "corrections" | "install" | "inspection" | "done" | "unknown";
+
+/** The colour family of a stage, so a list of jobs can be read at a glance. */
+export function stageTone(stage: string | null | undefined): StageTone {
+  switch (stageKeyFromTitle(stage)) {
+    case "getting_ready":
+    case "submitted":
+    case "under_review":
+      return "permit";
+    case "corrections":
+      return "corrections";
+    case "approved":
+    case "install_scheduled":
+    case "installing":
+      return "install";
+    case "inspection_scheduled":
+    case "inspections":
+    case "ready_for_final":
+      return "inspection";
+    case "final_passed":
+    case "closed":
+      return "done";
+    default:
+      return "unknown";
+  }
+}
+
+export type InstallGroup = "scheduled_install" | "installing" | "needs_inspection" | "needs_reinspection";
+
+/**
+ * Which column of the install board a job belongs in, or null when it is not on the board (permit not approved yet,
+ * or the final inspection already passed). A failed inspection puts the job under re-inspection whatever its stage.
+ */
+export function installBoardGroup(stage: string | null | undefined, needsReinspection: boolean): InstallGroup | null {
+  const key = stageKeyFromTitle(stage);
+  if (!INSPECTION_STAGE_KEYS.includes(key)) return null;
+  if (needsReinspection) return "needs_reinspection";
+  if (key === "installing") return "installing";
+  if (key === "approved" || key === "install_scheduled") return "scheduled_install";
+  return "needs_inspection";
 }

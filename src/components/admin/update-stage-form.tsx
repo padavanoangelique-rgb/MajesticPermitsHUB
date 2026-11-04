@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PERMIT_STAGES, canonicalStageTitle, defaultSubStatus, JOB_SUB_STATUSES } from "@/lib/stages";
+import { PERMIT_STAGES, canonicalStageTitle, defaultSubStatus, inspectionsAllowed, stageKeyFromTitle, stageTitle, JOB_SUB_STATUSES } from "@/lib/stages";
 export function UpdateStageForm({jobId,currentStage,currentSubStatus,contractor=false}: {
   jobId: string; currentStage: string; currentSubStatus: string; contractor?: boolean;
 }) {
@@ -34,10 +34,10 @@ export function UpdateStageForm({jobId,currentStage,currentSubStatus,contractor=
       <label className="text-xs font-medium">Status
         <select disabled={loading} value={subStatus} onChange={e=>{const value=e.target.value;setSubStatus(value);
           if (["Need to Submit","Pending approval","Request declined"].includes(value)) setStage(PERMIT_STAGES[0].title);
-          else if (value === "In Review" && ![1,2,3].some(i=>PERMIT_STAGES[i].title===stage)) setStage(PERMIT_STAGES[2].title);
-          else if (["Approved","Approved and Printed"].includes(value) && stage !== PERMIT_STAGES[5].title) setStage(PERMIT_STAGES[4].title);
-          else if (value === "Complete") setStage(PERMIT_STAGES[6].title);
-          else if (value === "Closed") setStage(PERMIT_STAGES[7].title);
+          else if (value === "In Review" && !["submitted","under_review","corrections"].includes(stageKeyFromTitle(stage))) setStage(stageTitle("under_review"));
+          else if (["Approved","Approved and Printed"].includes(value) && !inspectionsAllowed(stage)) setStage(stageTitle("approved"));
+          else if (value === "Complete") setStage(stageTitle("final_passed"));
+          else if (value === "Closed") setStage(stageTitle("closed"));
           setSaved(false);}} className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm">
           {!JOB_SUB_STATUSES.includes(subStatus) && <option>{subStatus}</option>}
           {JOB_SUB_STATUSES.map(s=><option key={s}>{s}</option>)}

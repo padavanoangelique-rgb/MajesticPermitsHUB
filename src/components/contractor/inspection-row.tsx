@@ -5,33 +5,37 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import type { InspectionDateOption } from "@/lib/next-inspection-day";
 import { InspectionDateCalendar } from "@/components/contractor/inspection-date-calendar";
-import { ContractorResultForm } from "@/components/contractor/contractor-result-form";
 import { formatPhone, isValidUsPhone } from "@/lib/onsite-contact";
-import { isFinalInspection } from "@/lib/inspection-final";
+import { phaseOf, visitName } from "@/lib/inspection-flow";
 
-const STATUS_LABEL: Record<string, string> = {
-  not_required: "Not required",
-  not_requested: "Not requested",
-  requested: "Requested",
-  scheduled: "Scheduled",
-  passed: "Passed",
-  partial_pass: "Partial pass",
-  failed: "Failed — corrections",
-  reinspection_requested: "Reinspection requested",
-  reinspection_scheduled: "Reinspection scheduled",
-  cancelled: "Cancelled",
-  closed: "Closed",
-};
-
-const FINAL_STATUSES = new Set([
-  "scheduled",
-  "passed",
-  "reinspection_scheduled",
-  "closed",
-]);
+// What the contractor sees. A visit Majestic has put on the calendar but not confirmed reads as "Requested": the
+// contractor is told the date when it is confirmed. Majestic records the results; the contractor only requests.
+function chipLabel(status: string, confirmed: boolean) {
+  switch (status) {
+    case "not_requested":
+    case "cancelled":
+      return "Ready to request";
+    case "requested":
+      return "Requested";
+    case "reinspection_requested":
+      return "Reinspection requested";
+    case "scheduled":
+      return confirmed ? "Scheduled" : "Requested";
+    case "reinspection_scheduled":
+      return confirmed ? "Reinspection scheduled" : "Reinspection requested";
+    case "passed":
+    case "closed":
+      return "Passed";
+    case "partial_pass":
+      return "Partial pass — reinspection needed";
+    case "failed":
+      return "Did not pass — reinspection needed";
+    default:
+      return "Not needed";
+  }
+}
 
 const EDITABLE_STATUSES = new Set(["requested", "reinspection_requested"]);
-const REPORTABLE = new Set(["scheduled", "reinspection_scheduled"]);
 
 interface InspectionRowProps {
   jobId: string;
@@ -44,6 +48,13 @@ interface InspectionRowProps {
     result_date: string | null;
     correction_notes: string | null;
     requested_date?: string | null;
+    confirmed_at?: string | null;
+    inspection_time?: string | null;
+    inspector_name?: string | null;
+    inspector_number?: string | null;
+    day_notes?: string | null;
+    reinspection_fee?: number | string | null;
+    reinspection_fee_status?: string | null;
   };
   dateOptions: InspectionDateOption[];
   permitClosed: boolean;
@@ -79,11 +90,14 @@ export function InspectionRow({
   );
   const [localPhone, setLocalPhone] = useState(onsiteContact || "");
 
+  const phase = phaseOf({ status: localStatus, confirmed_at: i.confirmed_at });
+  const confirmed = phase === "scheduled";
+  // A visit can be requested, edited or cancelled until Majestic puts it on the calendar.
   const canManage =
-    !permitClosed && !FINAL_STATUSES.has(localStatus) && localStatus !== "closed";
+    !permitClosed && (phase === "ready" || phase === "requested" || phase === "needs_reinspection") && localStatus !== "closed";
   const isPendingRequest = EDITABLE_STATUSES.has(localStatus);
   const canOpen = canManage;
-  const canReport = !permitClosed && REPORTABLE.has(localStatus);
+  const fee = Number(i.reinspection_fee);
 
   async function submit(action: "request" | "edit" | "cancel") {
     if (action !== "cancel" && !selectedDate) {
@@ -135,15 +149,31 @@ export function InspectionRow({
   }
 
   let subline: string;
-  if (EDITABLE_STATUSES.has(localStatus) && localRequestedDate) {
+  if (confirmed) {
+    subline = `Scheduled ${labelDate(i.scheduled_date)}${i.inspection_time ? ` at ${i.inspection_time}` : ""}`;
+  } else if (EDITABLE_STATUSES.has(localStatus) && localRequestedDate) {
     subline = `Requested for ${labelDate(localRequestedDate)}`;
+  } else if (["scheduled", "reinspection_scheduled"].includes(localStatus)) {
+    subline = `Requested${localRequestedDate ? ` for ${labelDate(localRequestedDate)}` : ""}. Majestic is scheduling it`;
   } else if (i.result_date && ["passed", "partial_pass", "failed", "closed"].includes(localStatus)) {
     subline = `Result ${labelDate(i.result_date)}`;
-  } else if (i.scheduled_date) {
-    subline = `Scheduled ${labelDate(i.scheduled_date)}`;
+  } else if (phase === "ready") {
+    subline = "Ready to request";
   } else {
     subline = "Not scheduled";
   }
+
+  const chip = chipLabel(localStatus, confirmed);
+  const chipTone =
+    phase === "needs_reinspection"
+      ? "bg-rose-500/15 text-rose-200"
+      : phase === "scheduled"
+        ? "bg-sky-500/15 text-sky-200"
+        : phase === "passed"
+          ? "bg-emerald-500/15 text-emerald-200"
+          : phase === "requested" || phase === "tentative"
+            ? "bg-amber-500/15 text-amber-200"
+            : "bg-secondary text-foreground";
 
   return (
     <li className="py-3">
@@ -168,31 +198,32 @@ export function InspectionRow({
         }
       >
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-primary dark:text-white">
-            {i.inspection_type || "Inspection"}
-          </p>
+          <p className="text-sm font-semibold text-primary dark:text-white">{visitName(i)}</p>
           <p className="text-xs text-muted-foreground">{subline}</p>
           {localPhone && (
             <p className="mt-0.5 text-xs text-muted-foreground">
               On-site {formatPhone(localPhone)}
             </p>
           )}
+          {confirmed && (i.inspector_name || i.day_notes) && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {i.inspector_name ? `Inspector ${i.inspector_name}${i.inspector_number ? ` (${i.inspector_number})` : ""}` : ""}
+              {i.inspector_name && i.day_notes ? " · " : ""}
+              {i.day_notes || ""}
+            </p>
+          )}
           {canOpen && !open && (
             <p className="mt-0.5 text-xs text-muted-foreground">
               {isPendingRequest
                 ? "Click to edit, cancel, or change the date"
-                : "Click to pick a date and request"}
+                : phase === "needs_reinspection"
+                  ? "Click to pick a date and request the re-inspection"
+                  : "Click to pick a date and request"}
             </p>
           )}
         </div>
-        <span
-          className={
-            EDITABLE_STATUSES.has(localStatus)
-              ? "rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary dark:bg-primary/15 dark:text-primary"
-              : "rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-foreground dark:bg-secondary dark:text-foreground"
-          }
-        >
-          {loading ? "Saving..." : STATUS_LABEL[localStatus] ?? localStatus}
+        <span className={"rounded-full px-2.5 py-1 text-xs font-semibold " + chipTone}>
+          {loading ? "Saving..." : chip}
         </span>
       </div>
 
@@ -261,7 +292,7 @@ export function InspectionRow({
                 disabled={loading || !selectedDate}
                 className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary disabled:opacity-60"
               >
-                {loading ? "Sending..." : "Request inspection"}
+                {loading ? "Sending..." : phase === "needs_reinspection" ? "Request re-inspection" : "Request inspection"}
               </button>
             )}
             <button
@@ -276,18 +307,15 @@ export function InspectionRow({
         </div>
       )}
 
-      {canReport && (
-        <div className="mt-3 rounded-xl border border-border bg-secondary p-3 dark:border-border dark:bg-secondary/40">
-          <ContractorResultForm
-            inspectionId={i.id}
-            isFinal={isFinalInspection(i)}
-          />
-        </div>
+      {phase === "needs_reinspection" && i.reinspection_fee_status === "due" && fee > 0 && (
+        <p className="mt-2 rounded-lg bg-rose-500/10 px-2.5 py-1.5 text-xs text-rose-200">
+          Re-inspection fee due: ${fee.toFixed(2)}
+        </p>
       )}
 
       {i.correction_notes && (
         <p className="mt-1 px-1 text-xs text-muted-foreground">
-          Notes: {i.correction_notes}
+          Inspector notes: {i.correction_notes}
         </p>
       )}
     </li>

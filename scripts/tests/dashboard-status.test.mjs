@@ -10,7 +10,8 @@ test('canonical and legacy stages never confuse preparation, approval or final',
  assert.equal(defaultSubStatus(PERMIT_STAGES[0].title),'Need to Submit');
 });
 test('inspections open only after approval until final completion',()=>{
- PERMIT_STAGES.forEach((s,i)=>assert.equal(inspectionsAllowed(s.title),i===4||i===5));
+ const open=['approved','install_scheduled','installing','inspection_scheduled','inspections','ready_for_final'];
+ PERMIT_STAGES.forEach(s=>assert.equal(inspectionsAllowed(s.title),open.includes(s.key),s.key));
 });
 test('next required visit appears alone, results become history and corrections keep current visit',()=>{
  const rows=[{slot:3,status:'not_requested'},{slot:1,status:'not_required'},{slot:2,status:'scheduled'}];

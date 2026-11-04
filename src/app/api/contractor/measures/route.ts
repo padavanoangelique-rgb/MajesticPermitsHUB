@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { getContractorForUser } from "@/lib/contractor";
+import { getContractorForUser, ownsJob } from "@/lib/contractor";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     .select("id, contractor_id")
     .eq("id", jobId)
     .maybeSingle();
-  if (!job || job.contractor_id !== contractor.id) {
+  if (!job || !ownsJob(contractor, job.contractor_id)) {
     return NextResponse.json({ error: "Job not found" }, { status: 404 });
   }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { getContractorForUser, ownsJob } from "@/lib/contractor";
 
 export const dynamic = "force-dynamic";
 
@@ -43,12 +44,8 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const { data: contractor } = await service
-    .from("contractors")
-    .select("id")
-    .eq("auth_user_id", user.id)
-    .maybeSingle();
-  if (!contractor || contractor.id !== job.contractor_id) {
+  const contractor = await getContractorForUser(user);
+  if (!contractor || !ownsJob(contractor, job.contractor_id)) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 

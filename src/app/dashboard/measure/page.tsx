@@ -1,6 +1,5 @@
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
-import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { ToolPage } from "@/components/contractor/tool-nav";
 import { MeasurePad } from "@/components/contractor/measure-pad";
@@ -12,16 +11,15 @@ export default async function MeasurePage({ searchParams }: { searchParams: { jo
   const contractor = await getContractorForUser(user);
   if (!contractor) return <p className="p-6">Account not linked.</p>;
 
-  const supabase = createClient();
-  const { data: jobs } = await supabase
+  const service = createServiceClient();
+  const { data: jobs } = await service
     .from("jobs")
     .select("id, property_address")
-    .eq("contractor_id", contractor.id)
+    .in("contractor_id", contractor.company_contractor_ids)
     .order("updated_at", { ascending: false })
     .limit(40);
 
   const first = searchParams.job || jobs?.[0]?.id || "";
-  const service = createServiceClient();
   const { data: saved } = first
     ? await service.from("job_measures").select("openings").eq("job_id", first).maybeSingle()
     : { data: null };

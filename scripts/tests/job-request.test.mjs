@@ -28,7 +28,7 @@ function route({ user = { id: 'u1' }, contractor = { id: 'c1', company_name: 'Te
     'next/server': { NextResponse: { json: (body, options) => new Response(JSON.stringify(body), { status: options?.status || 200 }) } },
     '@/lib/supabase/server': { createClient: () => ({ auth: { getUser: async () => ({ data: { user } }) } }) },
     '@/lib/supabase/service': { createServiceClient: () => db },
-    '@/lib/contractor': { getContractorForUser: async () => contractor },
+    '@/lib/contractor': { getContractorForUser: async () => contractor, ownsJob: (c, id) => Boolean(id) && c.company_contractor_ids.includes(id) },
     '@/lib/admin-notify': { notifyAdmin: async () => {} },
     '@/lib/sms': { sendAdminSms: async () => {} },
     '@/lib/admin-email': { sendAdminRequestEmail: async () => ({ ok: true }) },
