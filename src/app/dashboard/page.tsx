@@ -3,7 +3,7 @@ import { canonicalStageTitle, inspectionsAllowed } from "@/lib/stages";
 import { visibleInspections, inspectionName } from "@/lib/inspection-sequence";
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
 import { CONTRACTOR_BUCKETS } from "@/lib/dashboard-buckets";
@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage({ searchParams }: { searchParams?: { q?: string } }) {
   const user = await requireUser("/dashboard");
-  const supabase = createClient();
+  const supabase = createServiceClient();
   const q = (searchParams?.q || "").trim().toLowerCase();
 
   const contractor = await getContractorForUser(user);
