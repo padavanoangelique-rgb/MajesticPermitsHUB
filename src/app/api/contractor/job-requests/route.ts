@@ -6,6 +6,7 @@ import { notifyAdmin } from "@/lib/admin-notify";
 import { sendAdminSms } from "@/lib/sms";
 import { sendAdminRequestEmail } from "@/lib/admin-email";
 import { PENDING_REQUEST_SUB } from "@/lib/job-request";
+import { pushJobToPermitAIO } from "@/lib/permitaio-sync";
 
 export const dynamic = "force-dynamic";
 
@@ -174,12 +175,27 @@ export async function POST(req: Request) {
       actionLabel: "Review request",
     }).catch((err: any) => ({ ok: false, error: err?.message || "email failed" }));
 
+    const sync = await pushJobToPermitAIO({
+      hub_job_id: job.id,
+      company_name: company,
+      property_address: propertyAddress,
+      trade_type: tradeType || null,
+      jurisdiction: jurisdiction || null,
+      homeowner_name: homeownerName || null,
+      homeowner_phone: homeownerPhone || null,
+      notes: notes || null,
+    });
+    if (sync && "error" in sync && sync.error) {
+      warnings.push(`PermitAIO sync: ${sync.error}`);
+    }
+
     return NextResponse.json({
       ok: true,
       id: job.id,
       files: uploaded.length,
       emailed: Boolean(emailResult?.ok),
       email_error: emailResult?.error || null,
+      permitaio: "ok" in sync ? sync.ok : false,
       warnings,
     });
   } catch (err: any) {
