@@ -13,6 +13,7 @@ import { InspectionRow } from "@/components/contractor/inspection-row";
 import { documentSource } from "@/lib/job-document-files";
 import { JobDocUpload } from "@/components/contractor/job-doc-upload";
 import { HomeownerSharePanel } from "@/components/contractor/homeowner-share-panel";
+import { AskJobQuestion } from "@/components/contractor/ask-job-question";
 import { requireUser } from "@/lib/auth-guard";
 import { getContractorForUser } from "@/lib/contractor";
 import { upcomingInspectionDates } from "@/lib/next-inspection-day";
@@ -111,12 +112,15 @@ export default async function ContractorProjectPage({ params }: PageProps) {
         <div className="mt-4 rounded-2xl border border-violet-400/25 bg-card/80 p-4">
           <JobStatusBar stage={job.stage || ""} />
         </div>
-        <Link
-          href="#inspections"
-          className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white sm:w-auto"
-        >
-          {permitClosed ? "View inspection history" : "Inspection status & results"}
-        </Link>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Link
+            href="#inspections"
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white sm:w-auto"
+          >
+            {permitClosed ? "View inspection history" : "Inspection status & results"}
+          </Link>
+          <AskJobQuestion jobId={job.id} address={job.property_address || "this job"} />
+        </div>
 
         <div className="mt-4">
           <PermitHeader
