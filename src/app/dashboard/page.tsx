@@ -46,10 +46,10 @@ export default async function DashboardPage() {
   const { data: allJobs } = await supabase
     .from("jobs")
     .select(
-      "id, property_address, stage, sub_status, permit_number, permit_eta, submitted_date, updated_at, trade_type"
+      "id, property_address, stage, sub_status, permit_number, permit_eta, submitted_date, updated_at, trade_type, created_at"
     )
     .eq("contractor_id", contractor.id)
-    .order("updated_at", { ascending: false });
+    .order("created_at", { ascending: false });
 
   const pendingJobRequests = (allJobs || []).filter(
     (j: any) => j.sub_status === PENDING_REQUEST_SUB
@@ -72,17 +72,24 @@ export default async function DashboardPage() {
 
   const bucketed = CONTRACTOR_BUCKETS.map((bucket) => ({
     ...bucket,
-    items: jobs.filter((j: any) =>
-      (bucket.stageTitles as readonly string[]).includes(canonicalStageTitle(j.stage))
-    ),
+    items: jobs
+      .filter((j: any) =>
+        (bucket.stageTitles as readonly string[]).includes(canonicalStageTitle(j.stage))
+      )
+      .sort((a: any, b: any) => {
+        const aTime = new Date(a.created_at || a.updated_at || 0).getTime();
+        const bTime = new Date(b.created_at || b.updated_at || 0).getTime();
+        return bTime - aTime; // newest first
+      }),
   }));
   const bucketedIds = new Set(bucketed.flatMap((b) => b.items.map((j: any) => j.id)));
   const other = jobs.filter((j: any) => !bucketedIds.has(j.id));
-  const displayOrder = ["needs_inspection", "in_review", "approved", "getting_ready", "permit_closed"];
+  const displayOrder = ["pending_permits", "needs_install", "needs_inspection", "complete"];
   const ordered = displayOrder
     .map((key) => bucketed.find((bucket) => bucket.key === key))
     .filter((bucket): bucket is (typeof bucketed)[number] => Boolean(bucket));
-  const reviewCount = ordered.find((bucket) => bucket.key === "in_review")?.items.length ?? 0;
+  const pendingCount = ordered.find((bucket) => bucket.key === "pending_permits")?.items.length ?? 0;
+  const installCount = ordered.find((bucket) => bucket.key === "needs_install")?.items.length ?? 0;
   const inspectionCount = ordered.find((bucket) => bucket.key === "needs_inspection")?.items.length ?? 0;
 
   return (
@@ -121,7 +128,7 @@ export default async function DashboardPage() {
           <div>
             <h1 className="text-2xl font-bold text-primary dark:text-white">Dashboard</h1>
             <p className="text-sm text-muted-foreground">
-              {jobs.filter(j => canonicalStageTitle(j.stage) !== "Permit closed — all done").length} active projects
+              {jobs.filter(j => canonicalStageTitle(j.stage) !== "Permit closed — all done" && canonicalStageTitle(j.stage) !== "Final inspection passed").length} active projects
             </p>
           </div>
           <Link
@@ -132,10 +139,14 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <a href="#in_review" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-[#3b1d78] to-[#1a1038] px-4 py-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">Pending review</p>
-            <p className="mt-1 text-3xl font-bold text-white">{reviewCount}</p>
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <a href="#pending_permits" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-[#3b1d78] to-[#1a1038] px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">Pending permits</p>
+            <p className="mt-1 text-3xl font-bold text-white">{pendingCount}</p>
+          </a>
+          <a href="#needs_install" className="rounded-2xl border border-amber-400/30 bg-gradient-to-br from-[#78350f] to-[#1a1038] px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-amber-200">Needs install</p>
+            <p className="mt-1 text-3xl font-bold text-white">{installCount}</p>
           </a>
           <a href="#needs_inspection" className="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-[#312e81] to-[#1a1038] px-4 py-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-violet-200">Needs inspection</p>
@@ -172,7 +183,7 @@ export default async function DashboardPage() {
                   <StageSection
                     key={bucket.key}
                     id={bucket.key}
-                    title={bucket.key === "in_review" ? "Pending review" : bucket.label}
+                    title={bucket.label}
                     items={bucket.items}
                     inspectionsByJob={inspectionsByJob}
                   />
@@ -234,7 +245,7 @@ function StageSection({
                   href={`/dashboard/projects/${job.id}#inspections`}
                   className="inline-flex min-h-9 items-center justify-center rounded-lg bg-primary px-3 text-xs font-semibold text-white"
                 >
-                  {job.stage === "Permit closed — all done" ? "View" : inspectionsAllowed(job.stage) ? "Inspect" : "View"}
+                  {canonicalStageTitle(job.stage) === "Permit closed — all done" || canonicalStageTitle(job.stage) === "Final inspection passed" ? "View" : inspectionsAllowed(job.stage) ? "Inspect" : "View"}
                 </Link>
               </div>
             </div>
