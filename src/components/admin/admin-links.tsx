@@ -9,7 +9,7 @@ const LINKS = [
 
 export function AdminLinks({ current }: { current?: string }) {
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
       {LINKS.map((link) => (
         <Link
           key={link.href}
@@ -27,6 +27,15 @@ export function AdminLinks({ current }: { current?: string }) {
           </p>
         </Link>
       ))}
+      <a
+        href="https://permitaio.com/majestic"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="rounded-2xl border border-violet-400/40 bg-gradient-to-br from-[#2a1a5e] to-[#1a1038] px-4 py-4"
+      >
+        <p className="text-sm font-semibold text-white">PermitAIO desk</p>
+        <p className="mt-1 text-xs leading-relaxed text-violet-100/80">One click to your Majestic PermitAIO dashboard</p>
+      </a>
     </div>
   );
 }
