@@ -2,12 +2,9 @@ import { inspectionsAllowed } from "@/lib/stages";
 import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/auth-guard";
 import { MarkHandledButton } from "@/components/admin/mark-handled-button";
-import { InspectionResultForm } from "@/components/admin/inspection-result-form";
-import { isFinalInspection } from "@/lib/inspection-final";
-import {
-  InspectionsCalendar,
-  type InspectionRequestRow,
-} from "@/components/admin/inspections-calendar";
+import { InspectionPlanner, type PlannerNeed, type PlannerVisit } from "@/components/admin/inspection-planner";
+import { ensureVisitsForJobs } from "@/lib/inspection-actions";
+import { isFinalVisit, isoDay, jobsNeedingInspection, phaseOf, visitName } from "@/lib/inspection-flow";
 
 export const dynamic = "force-dynamic";
 
@@ -18,249 +15,97 @@ export default async function InspectionsPage({
 }) {
   await requireAdmin();
   const embed = searchParams?.embed === "1";
-  const supabase = createServiceClient();
+  const db = createServiceClient();
 
-  const { data: requests } = await supabase
+  const { data: jobs } = await db.from("jobs").select("id, property_address, homeowner_name, contractor_id, stage");
+  const jobList = (jobs || []) as Array<{ id: string; property_address: string | null; homeowner_name: string | null; contractor_id: string | null; stage: string | null }>;
+  const { data: contractors } = await db.from("contractors").select("id, name, company_name");
+  const contractorName = new Map((contractors || []).map((c: any) => [c.id, c.company_name || c.name || "Contractor"]));
+
+  // Approved jobs get the standard visits turned on, so every one of them can be scheduled from here.
+  const rowsByJob = await ensureVisitsForJobs(db, jobList.map((j) => ({ id: j.id, stage: j.stage })));
+  const jobById = new Map(jobList.map((j) => [j.id, j]));
+
+  const visits: PlannerVisit[] = [];
+  for (const [jobId, rows] of Array.from(rowsByJob.entries())) {
+    const job = jobById.get(jobId);
+    if (!job) continue;
+    for (const row of rows) {
+      const phase = phaseOf(row);
+      if (phase === "unavailable" || phase === "ready") continue;
+      const fee = Number(row.reinspection_fee);
+      visits.push({
+        id: row.id,
+        jobId,
+        address: job.property_address || "Unknown address",
+        contractor: (job.contractor_id && contractorName.get(job.contractor_id)) || job.homeowner_name || "Homeowner",
+        name: visitName(row),
+        isFinal: isFinalVisit(row),
+        phase,
+        requestedDate: isoDay(row.requested_date),
+        scheduledDate: isoDay(row.scheduled_date),
+        resultDate: isoDay(row.result_date),
+        time: row.inspection_time || "",
+        inspector: row.inspector_name || "",
+        inspectorNumber: row.inspector_number || "",
+        dayNotes: row.day_notes || "",
+        resultNotes: row.correction_notes || "",
+        fee: Number.isFinite(fee) && fee > 0 ? fee : null,
+        feeStatus: row.reinspection_fee_status || null,
+      });
+    }
+  }
+
+  const needs: PlannerNeed[] = jobsNeedingInspection(jobList, rowsByJob, (job) => inspectionsAllowed(job.stage)).map((entry) => ({
+    visitId: entry.visit.id,
+    jobId: entry.job.id,
+    address: entry.job.property_address || "Unknown address",
+    contractor: (entry.job.contractor_id && contractorName.get(entry.job.contractor_id)) || entry.job.homeowner_name || "Homeowner",
+    name: visitName(entry.visit),
+    phase: entry.phase as PlannerNeed["phase"],
+    requestedDate: isoDay(entry.visit.requested_date),
+  }));
+
+  // Requests that came in through the older homeowner form have no visit behind them yet.
+  const { data: legacy } = await db
     .from("inspection_requests")
-    .select(
-      "id, job_id, inspection_type, notes, status, requested_by, requested_by_contractor_id, preferred_date, created_at"
-    )
+    .select("id, job_id, inspection_type, notes, preferred_date, created_at")
+    .eq("status", "Pending")
     .order("created_at", { ascending: false });
+  const legacyRows = (legacy || []).filter((r: any) => !(r.job_id && rowsByJob.get(r.job_id)?.some((row) => ["requested", "reinspection_requested"].includes(row.status))));
 
-  const { data: slots } = await supabase
-    .from("job_inspections")
-    .select("id, job_id, slot, inspection_type, status, requested_date, scheduled_date, result_date")
-    .in("status", [
-      "requested",
-      "reinspection_requested",
-      "scheduled",
-      "reinspection_scheduled",
-      "passed",
-      "failed",
-      "partial_pass",
-      "closed",
-    ]);
-
-  const { data: notices } = await supabase
-    .from("admin_notifications")
-    .select("id, job_id, type, message, created_at")
-    .eq("type", "inspection_needed")
-    .order("created_at", { ascending: false })
-    .limit(50);
-
-  const { data: contractors } = await supabase
-    .from("contractors")
-    .select("id, name, company_name, email");
-
-  const contractorMap = new Map(
-    (contractors || []).map((c) => [
-      c.id,
-      {
-        name: c.company_name || c.name || "Contractor",
-        email: c.email || null,
-      },
-    ])
-  );
-
-  const jobIds = new Set<string>();
-  for (const r of requests || []) if (r.job_id) jobIds.add(r.job_id);
-  for (const s of slots || []) if ((s as any).job_id) jobIds.add((s as any).job_id);
-  for (const n of notices || []) if (n.job_id) jobIds.add(n.job_id);
-
-  const { data: jobs } = jobIds.size
-    ? await supabase
-        .from("jobs")
-        .select("id, property_address, homeowner_name, contractor_id, stage")
-        .in("id", Array.from(jobIds))
-    : { data: [] as any[] };
-
-  const jobMap = new Map((jobs || []).map((j: any) => [j.id, j]));
-
-  const rows: InspectionRequestRow[] = [];
-  const seen = new Set<string>();
-
-  for (const r of requests || []) {
-    const job = r.job_id ? jobMap.get(r.job_id) : null;
-    if (job && !inspectionsAllowed(job.stage) && !["Passed","passed","closed"].includes(r.status)) continue;
-    const contractorId = r.requested_by_contractor_id || job?.contractor_id;
-    const contractor = contractorId ? contractorMap.get(contractorId) : null;
-    const matches = (slots || []).filter((s) => s.job_id === r.job_id &&
-      String(s.inspection_type || "").trim().toLowerCase() === String(r.inspection_type || "").trim().toLowerCase());
-    const matched = matches.length === 1 ? matches[0] : null;
-    seen.add(`${r.job_id || ""}|${String(r.inspection_type || "").toLowerCase()}`);
-    rows.push({
-      id: r.id,
-      inspection_type: r.inspection_type,
-      notes: r.notes,
-      status: matched?.status || r.status,
-      requested_by: r.requested_by,
-      preferred_date: r.preferred_date,
-      created_at: r.created_at,
-      contractor_email: contractor?.email || null,
-      contractor_name: contractor?.name || null,
-      property_address: job?.property_address || null,
-      homeowner_name: job?.homeowner_name || null,
-      job_id: r.job_id || job?.id || null,
-      is_final: matched ? isFinalInspection(matched) : isFinalInspection(r),
-    });
-  }
-
-  for (const slot of slots || []) {
-    const s = slot as any;
-    const key = `${s.job_id || ""}|${String(s.inspection_type || "").toLowerCase()}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    const job = s.job_id ? jobMap.get(s.job_id) : null;
-    const contractor = job?.contractor_id ? contractorMap.get(job.contractor_id) : null;
-    const status = String(s.status || "");
-    if (job && !inspectionsAllowed(job.stage) && !["passed","closed"].includes(status)) continue;
-    rows.push({
-      id: `slot-${s.id}`,
-      inspection_type: s.inspection_type,
-      notes: null,
-      status,
-      requested_by: "contractor",
-      preferred_date: s.scheduled_date || s.requested_date || null,
-      created_at: new Date().toISOString(),
-      contractor_email: contractor?.email || null,
-      contractor_name: contractor?.name || null,
-      property_address: job?.property_address || null,
-      homeowner_name: job?.homeowner_name || null,
-      job_id: s.job_id || null,
-      is_final: isFinalInspection(s),
-    });
-  }
-
-  for (const n of notices || []) {
-    if (!n.job_id) continue;
-    const already = rows.some((r) => r.job_id === n.job_id);
-    if (already) continue;
-    const job = jobMap.get(n.job_id);
-    if (!job || !inspectionsAllowed(job.stage)) continue;
-    // Notification text is an alert, not a persisted inspection request.
-    if (!(slots || []).some(s => s.job_id === n.job_id && ["requested","reinspection_requested"].includes(s.status))) continue;
-    const contractor = job?.contractor_id ? contractorMap.get(job.contractor_id) : null;
-    rows.push({
-      id: `notice-${n.id}`,
-      inspection_type: "Inspection request",
-      notes: n.message,
-      status: "Pending",
-      requested_by: "contractor",
-      preferred_date: String(n.created_at || "").slice(0, 10),
-      created_at: n.created_at,
-      contractor_email: contractor?.email || null,
-      contractor_name: contractor?.name || null,
-      property_address: job?.property_address || n.message,
-      homeowner_name: job?.homeowner_name || null,
-      job_id: n.job_id,
-    });
-  }
-
-  const pending = rows.filter((r) => {
-    const s = String(r.status || "").toLowerCase();
-    return ["pending", "requested", "reinspection_requested"].includes(s);
-  });
-  const scheduled = rows.filter((r) => {
-    const s = String(r.status || "").toLowerCase();
-    return ["scheduled", "reinspection_scheduled"].includes(s);
-  });
-  const done = rows.filter((r) => !pending.includes(r) && !scheduled.includes(r));
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+  const scheduledCount = visits.filter((v) => v.phase === "scheduled" || v.phase === "tentative").length;
+  const needsResult = visits.filter((v) => v.phase === "scheduled" && v.scheduledDate && v.scheduledDate <= today).length;
 
   return (
     <div className="min-h-screen bg-background">
       <main className={embed ? "px-4 py-6 sm:px-6" : "mx-auto max-w-6xl px-4 py-10 sm:px-6"}>
-        <h1 className="text-2xl font-bold text-primary dark:text-primary">
-          Inspection calendar
-        </h1>
+        <h1 className="text-2xl font-bold text-primary">Inspection calendar</h1>
         <p className="mt-1 text-muted-foreground">
-          {pending.length} pending · {scheduled.length} scheduled · record pass/fail to close
+          {needs.length} {needs.length === 1 ? "job needs" : "jobs need"} an inspection · {scheduledCount} on the calendar · {needsResult} {needsResult === 1 ? "needs" : "need"} a result.
+          Click a day, add a job to it, confirm it to tell the contractor, then record the result.
         </p>
 
-        <InspectionsCalendar requests={rows} />
+        <InspectionPlanner visits={visits} needs={needs} />
 
-        <h2 className="mt-12 text-lg font-semibold text-primary dark:text-primary">
-          Pending queue
-        </h2>
-        <div className="mt-4 space-y-4">
-          {pending.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center dark:border-border dark:bg-card">
-              <p className="text-muted-foreground">No pending requests</p>
-            </div>
-          )}
-          {pending.map((req) => (
-            <div key={req.id} className="rounded-2xl border border-border bg-card p-6 dark:border-border dark:bg-card">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="font-semibold text-primary dark:text-primary">
-                    {req.property_address || "Unknown address"}
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {req.homeowner_name} · {req.contractor_name || req.requested_by}
-                    {req.preferred_date ? ` · ${String(req.preferred_date).slice(0, 10)}` : ""}
-                  </p>
-                  <p className="mt-3">
-                    <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-200">
-                      {req.inspection_type}
-                    </span>
-                  </p>
-                  {req.notes && <p className="mt-3 text-sm text-muted-foreground">{req.notes}</p>}
-                </div>
-                <div className="flex gap-2">
-                  <MarkHandledButton
-                    id={req.id}
-                    status="Scheduled"
-                    label="Schedule + notify"
-                    preferredDate={req.preferred_date}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <h2 className="mt-12 text-lg font-semibold text-primary dark:text-primary">
-          Scheduled — waiting on result
-        </h2>
-        <div className="mt-4 space-y-4">
-          {scheduled.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center dark:border-border dark:bg-card">
-              <p className="text-muted-foreground">Nothing on the calendar waiting for a result</p>
-            </div>
-          )}
-          {scheduled.map((req) => (
-            <div key={req.id} className="rounded-2xl border border-border bg-card p-6 dark:border-border dark:bg-card">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="font-semibold text-primary dark:text-primary">
-                    {req.property_address || "Unknown address"}
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {req.inspection_type}
-                    {req.preferred_date ? ` · ${req.preferred_date}` : ""}
-                    {" · "}{req.contractor_name || req.requested_by}
-                  </p>
-                </div>
-              </div>
-              <InspectionResultForm id={req.id} isFinal={req.is_final} />
-            </div>
-          ))}
-        </div>
-
-        {done.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-lg font-semibold text-muted-foreground">Results</h2>
+        {legacyRows.length > 0 && (
+          <section className="mt-12">
+            <h2 className="text-lg font-semibold text-primary">Other requests</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Sent through the older request form. Mark them scheduled here, or open the job to set its inspections up.</p>
             <div className="mt-4 space-y-3">
-              {done.map((req) => (
-                <div key={req.id} className="rounded-xl border border-border bg-card/80 px-5 py-4 text-sm dark:border-border dark:bg-card/60">
-                  <span className="font-medium">{req.property_address}</span>
-                  <span className="mx-2 text-muted-foreground">·</span>
-                  <span>{req.inspection_type}</span>
-                  <span className="mx-2 text-muted-foreground">·</span>
-                  <span className="capitalize text-muted-foreground">{req.status}</span>
+              {legacyRows.map((req: any) => (
+                <div key={req.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
+                  <div>
+                    <p className="text-sm font-semibold">{(req.job_id && jobById.get(req.job_id)?.property_address) || "Unknown address"}</p>
+                    <p className="text-xs text-muted-foreground">{req.inspection_type || "Inspection"}{req.preferred_date ? ` · ${String(req.preferred_date).slice(0, 10)}` : ""}</p>
+                    {req.notes && <p className="mt-1 text-xs text-muted-foreground">{req.notes}</p>}
+                  </div>
+                  <MarkHandledButton id={req.id} status="Scheduled" label="Schedule + notify" preferredDate={req.preferred_date} />
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
       </main>
     </div>

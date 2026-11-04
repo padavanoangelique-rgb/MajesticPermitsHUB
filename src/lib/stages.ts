@@ -230,3 +230,18 @@ export function stageTone(stage: string | null | undefined): StageTone {
       return "unknown";
   }
 }
+
+export type InstallGroup = "scheduled_install" | "installing" | "needs_inspection" | "needs_reinspection";
+
+/**
+ * Which column of the install board a job belongs in, or null when it is not on the board (permit not approved yet,
+ * or the final inspection already passed). A failed inspection puts the job under re-inspection whatever its stage.
+ */
+export function installBoardGroup(stage: string | null | undefined, needsReinspection: boolean): InstallGroup | null {
+  const key = stageKeyFromTitle(stage);
+  if (!INSPECTION_STAGE_KEYS.includes(key)) return null;
+  if (needsReinspection) return "needs_reinspection";
+  if (key === "installing") return "installing";
+  if (key === "approved" || key === "install_scheduled") return "scheduled_install";
+  return "needs_inspection";
+}

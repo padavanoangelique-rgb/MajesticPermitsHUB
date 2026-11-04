@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { phaseOf, currentVisit, slotsToActivate, jobsNeedingInspection, reinspectionFee, scheduledStatusFor, isFinalVisit, visitName } from '../../src/lib/inspection-flow.ts';
-import { stageAfterInspectionConfirmed, stageAfterInspectionResult, inspectionsAllowed, stageTitle, PERMIT_STAGES, canonicalStageTitle, defaultSubStatus } from '../../src/lib/stages.ts';
+import { stageAfterInspectionConfirmed, stageAfterInspectionResult, inspectionsAllowed, stageTitle, PERMIT_STAGES, canonicalStageTitle, defaultSubStatus, installBoardGroup, stageTone } from '../../src/lib/stages.ts';
 
 const row = (slot, status, extra = {}) => ({ id: `r${slot}`, job_id: 'j', slot, inspection_type: null, status, ...extra });
 
@@ -101,4 +101,24 @@ test('stage list: every stage has a unique key and title, in the order Majestic 
   assert.equal(defaultSubStatus('Ready for final'), 'Approved');
   assert.equal(defaultSubStatus('Final inspection passed'), 'Complete');
   assert.equal(inspectionsAllowed('Final inspection passed'), false);
+});
+
+test('install board: scheduled, being installed, needs inspection, needs reinspection; nothing else', () => {
+  assert.equal(installBoardGroup('Approved — ready to build', false), 'scheduled_install');
+  assert.equal(installBoardGroup('Install scheduled', false), 'scheduled_install');
+  assert.equal(installBoardGroup('Being installed', false), 'installing');
+  assert.equal(installBoardGroup('Inspection scheduled', false), 'needs_inspection');
+  assert.equal(installBoardGroup('Inspections in progress', false), 'needs_inspection');
+  assert.equal(installBoardGroup('Ready for final', false), 'needs_inspection');
+  assert.equal(installBoardGroup('Inspections in progress', true), 'needs_reinspection');
+  assert.equal(installBoardGroup('Approved — ready to build', true), 'needs_reinspection', 'a failure wins over the stage');
+  for (const stage of ['Getting your project ready', 'Submitted to the city', 'Under review', 'Corrections requested', 'Final inspection passed', 'Permit closed — all done', '', null, 'unrecognized']) {
+    assert.equal(installBoardGroup(stage, false), null, String(stage));
+    assert.equal(installBoardGroup(stage, true), null, String(stage));
+  }
+});
+
+test('status bar tones: one colour family per kind of stage', () => {
+  assert.deepEqual(PERMIT_STAGES.map((s) => stageTone(s.title)), ['permit', 'permit', 'permit', 'corrections', 'install', 'install', 'install', 'inspection', 'inspection', 'inspection', 'done', 'done']);
+  assert.equal(stageTone('nonsense'), 'unknown');
 });
