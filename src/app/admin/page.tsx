@@ -113,7 +113,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
           <nav className="flex flex-wrap items-center justify-end gap-3">
             <a
-              href="https://permitaio.com/majestic"
+              href="https://permitaio.com/majestic/open"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700"
