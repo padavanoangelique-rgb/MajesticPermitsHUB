@@ -112,6 +112,14 @@ export default async function AdminPage({ searchParams }: PageProps) {
           <Logo subtitle="Admin" />
 
           <nav className="flex flex-wrap items-center justify-end gap-3">
+            <a
+              href="https://permitaio.com/majestic"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700"
+            >
+              PermitAIO desk
+            </a>
             <Link
               href="/admin/inspections"
               className="text-sm font-medium text-muted-foreground hover:text-primary dark:text-muted-foreground"
