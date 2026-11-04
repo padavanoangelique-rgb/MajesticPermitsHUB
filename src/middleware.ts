@@ -15,7 +15,9 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isAdminHost = host === ADMIN_HOST;
 
-  if (isAdminHost && (path === "/" || path === "/login")) {
+  // Root on the admin host goes to the admin dashboard.
+  // Do not redirect /login — that was causing a loop with the auth guard.
+  if (isAdminHost && path === "/") {
     const url = request.nextUrl.clone();
     url.pathname = "/admin";
     return NextResponse.redirect(url);
