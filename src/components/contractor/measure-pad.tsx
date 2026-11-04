@@ -22,7 +22,6 @@ export function MeasurePad({ jobs, initialJob, initialOpenings }: { jobs: Job[];
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
 
   function add(kind: "window" | "door") {
     const i = openings.length;
@@ -119,7 +118,7 @@ export function MeasurePad({ jobs, initialJob, initialOpenings }: { jobs: Job[];
       ctx.font = "10px sans-serif";
       ctx.fillText(`${o.width || "—"}×${o.height || "—"}`, x, y + hh + 12);
     });
-  }, [walls, current, openings, selected, drawing]);
+  }, [walls, current, openings, selected, drawing, full]);
 
   async function save() {
     setSaving(true);
@@ -159,48 +158,59 @@ export function MeasurePad({ jobs, initialJob, initialOpenings }: { jobs: Job[];
     setUploading(false);
   }
 
-  const canvas = (
-    <div ref={wrapRef} className={full ? "fixed inset-0 z-50 bg-[#0c0618] flex flex-col" : "overflow-hidden rounded-2xl border border-violet-400/25 bg-[#120a28]"}>
-      {full && (
-        <div className="flex items-center justify-between px-3 py-2 border-b border-violet-400/20">
+  if (full) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col bg-[#0c0618]">
+        <div className="flex items-center justify-between border-b border-violet-400/20 px-3 py-2">
           <span className="text-sm text-violet-200">Draw walls — release to snap straight</span>
-          <button type="button" onClick={() => setFull(false)} className="text-xs px-3 py-1 rounded-lg border border-violet-400/40">Close</button>
+          <button type="button" onClick={() => setFull(false)} className="rounded-lg border border-violet-400/40 px-3 py-1 text-xs">Close</button>
         </div>
-      )}
-      <canvas
-        ref={canvasRef}
-        width={320}
-        height={full ? 420 : 200}
-        className={full ? "flex-1 w-full touch-none" : "h-52 w-full touch-none"}
-        onPointerDown={onDown}
-        onPointerMove={onMove}
-        onPointerUp={onUp}
-        onPointerLeave={onUp}
-      />
-      {!full && <p className="px-2 pb-2 text-[11px] text-violet-200">Finger-draw walls (snap straight). Tap an opening then the wall to place it.</p>}
-    </div>
-  );
+        <canvas
+          ref={canvasRef}
+          width={320}
+          height={480}
+          className="h-full w-full flex-1 touch-none"
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerLeave={onUp}
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="grid gap-3">
+    <div className="flex flex-col gap-4">
       <div className="flex items-end gap-2">
-        <label className="grid flex-1 gap-1 text-sm">
-          Job
-          <select className="min-h-11 rounded-xl border border-border bg-card px-3" value={jobId} onChange={(e) => setJobId(e.target.value)}>
+        <label className="flex-1 text-sm">
+          <span className="mb-1 block">Job</span>
+          <select className="min-h-11 w-full rounded-xl border border-border bg-card px-3" value={jobId} onChange={(e) => setJobId(e.target.value)}>
             <option value="">Choose a job</option>
             {jobs.map((job) => (
               <option key={job.id} value={job.id}>{job.property_address}</option>
             ))}
           </select>
         </label>
-        <Link href="/dashboard/new" className="mb-0.5 inline-flex min-h-11 items-center justify-center rounded-xl border border-violet-400/40 px-3 text-sm whitespace-nowrap">+ Job</Link>
+        <Link href="/dashboard/new" className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl border border-violet-400/40 px-3 text-sm">+ Job</Link>
       </div>
 
-      {canvas}
+      <div className="relative isolate overflow-hidden rounded-2xl border border-violet-400/25 bg-[#120a28]">
+        <canvas
+          ref={canvasRef}
+          width={320}
+          height={200}
+          className="block h-48 w-full touch-none"
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerLeave={onUp}
+        />
+        <p className="px-2 pb-2 text-[11px] text-violet-200">Finger-draw walls (snap straight). Tap an opening then the wall to place it.</p>
+      </div>
 
       <div className="flex gap-2">
         <button type="button" onClick={() => setFull(true)} className="min-h-10 flex-1 rounded-xl border border-violet-400/40 text-sm">Full screen draw</button>
-        <button type="button" onClick={() => setWalls([])} className="min-h-10 rounded-xl border border-border px-3 text-sm">Clear walls</button>
+        <button type="button" onClick={() => setWalls([])} className="min-h-10 shrink-0 rounded-xl border border-border px-3 text-sm">Clear</button>
       </div>
 
       <div className="flex gap-2">
@@ -209,22 +219,24 @@ export function MeasurePad({ jobs, initialJob, initialOpenings }: { jobs: Job[];
       </div>
 
       <p className="text-xs text-muted-foreground">Tap an opening, then type the size. Width × Height.</p>
-      <ul className="grid gap-2">
+      <ul className="flex flex-col gap-2">
         {openings.map((opening, index) => (
-          <li key={index} className={`grid grid-cols-2 gap-2 rounded-xl border p-2.5 ${selected === index ? "border-amber-400 bg-amber-950/20" : "border-border"}`} onClick={() => setSelected(index)}>
-            <input className="col-span-2 min-h-10 rounded-lg border border-border bg-card px-2 text-sm" value={opening.label} onChange={(e) => update(index, "label", e.target.value)} placeholder="Label" />
-            <label className="text-[11px] text-muted-foreground">Width<input inputMode="decimal" placeholder="e.g. 36" className="mt-0.5 min-h-10 w-full rounded-lg border border-border bg-card px-2 text-sm" value={opening.width} onChange={(e) => update(index, "width", e.target.value)} /></label>
-            <label className="text-[11px] text-muted-foreground">Height<input inputMode="decimal" placeholder="e.g. 60" className="mt-0.5 min-h-10 w-full rounded-lg border border-border bg-card px-2 text-sm" value={opening.height} onChange={(e) => update(index, "height", e.target.value)} /></label>
+          <li key={index} className={`rounded-xl border p-2.5 ${selected === index ? "border-amber-400 bg-amber-950/20" : "border-border"}`} onClick={() => setSelected(index)}>
+            <input className="mb-2 min-h-10 w-full rounded-lg border border-border bg-card px-2 text-sm" value={opening.label} onChange={(e) => update(index, "label", e.target.value)} placeholder="Label" />
+            <div className="grid grid-cols-2 gap-2">
+              <label className="text-[11px] text-muted-foreground">Width<input inputMode="decimal" placeholder="e.g. 36" className="mt-0.5 min-h-10 w-full rounded-lg border border-border bg-card px-2 text-sm" value={opening.width} onChange={(e) => update(index, "width", e.target.value)} /></label>
+              <label className="text-[11px] text-muted-foreground">Height<input inputMode="decimal" placeholder="e.g. 60" className="mt-0.5 min-h-10 w-full rounded-lg border border-border bg-card px-2 text-sm" value={opening.height} onChange={(e) => update(index, "height", e.target.value)} /></label>
+            </div>
           </li>
         ))}
       </ul>
 
-      <button type="button" onClick={save} disabled={saving || !jobId} className="min-h-11 rounded-xl bg-primary font-semibold text-white text-sm disabled:opacity-50">
+      <button type="button" onClick={save} disabled={saving || !jobId} className="min-h-11 rounded-xl bg-primary text-sm font-semibold text-white disabled:opacity-50">
         {saving ? "Saving..." : "Save measurements"}
       </button>
       {message && <p className="text-sm text-muted-foreground">{message}</p>}
 
-      <div className="mt-4 rounded-2xl border border-dashed border-violet-400/40 p-3">
+      <div className="rounded-2xl border border-dashed border-violet-400/40 p-3">
         <p className="text-sm font-semibold">Or upload a floor plan PDF as a new job</p>
         <p className="mt-1 text-xs text-muted-foreground">Send the plan to Majestic. It appears after review.</p>
         <input
