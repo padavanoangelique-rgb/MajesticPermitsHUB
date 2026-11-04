@@ -1,46 +1,39 @@
 import { PERMIT_STAGES } from "@/lib/stages";
 
-// Coarser grouping than PERMIT_STAGES for the contractor dashboard's list
-// view — one section per bucket instead of one per granular stage. Every
-// PERMIT_STAGES title must appear in exactly one bucket so no job is ever
-// silently dropped from the list.
+// Coarser grouping for the contractor dashboard. Order of how to proceed:
+// pending permits → needs install → needs inspection → complete.
+// Every PERMIT_STAGES title must appear in exactly one bucket.
 export const CONTRACTOR_BUCKETS = [
   {
-    key: "getting_ready",
-    label: "Getting ready",
-    stageTitles: ["Getting your project ready"],
-  },
-  {
-    key: "in_review",
-    label: "In review",
+    key: "pending_permits",
+    label: "Pending permits",
     stageTitles: [
+      "Getting your project ready",
       "Submitted to the city",
       "Under review",
       "Corrections requested",
     ],
   },
   {
-    key: "approved",
-    label: "Approved",
+    key: "needs_install",
+    label: "Needs install",
     stageTitles: ["Approved — ready to build"],
   },
   {
     key: "needs_inspection",
     label: "Needs inspection",
-    stageTitles: ["Inspections in progress", "Final inspection passed"],
+    stageTitles: ["Inspections in progress"],
   },
   {
-    key: "permit_closed",
-    label: "Permit closed",
-    stageTitles: ["Permit closed — all done"],
+    key: "complete",
+    label: "Complete",
+    stageTitles: ["Final inspection passed", "Permit closed — all done"],
   },
 ] as const;
 
 const BUCKETED_TITLES = new Set<string>(
   CONTRACTOR_BUCKETS.flatMap((b) => b.stageTitles as readonly string[])
 );
-// Every canonical stage title must be covered by a bucket above. Iterating
-// with .forEach avoids needing downlevelIteration for Set<>.
 PERMIT_STAGES.forEach((s) => {
   if (!BUCKETED_TITLES.has(s.title)) {
     throw new Error(
