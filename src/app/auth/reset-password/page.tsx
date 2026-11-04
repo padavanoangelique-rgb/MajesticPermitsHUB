@@ -14,17 +14,73 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     const supabase = createClient();
+    let cancelled = false;
+
+    async function boot() {
+      try {
+        // PKCE / code flow
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get("code");
+        if (code) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) {
+            setError(exchangeError.message);
+          } else if (!cancelled) {
+            setReady(true);
+            return;
+          }
+        }
+
+        // Implicit / hash flow (#access_token=...&type=recovery)
+        const hash = window.location.hash.replace(/^#/, "");
+        if (hash) {
+          const hashParams = new URLSearchParams(hash);
+          const accessToken = hashParams.get("access_token");
+          const refreshToken = hashParams.get("refresh_token");
+          if (accessToken && refreshToken) {
+            const { error: sessionError } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+            if (sessionError) {
+              setError(sessionError.message);
+            } else if (!cancelled) {
+              setReady(true);
+              return;
+            }
+          }
+        }
+
+        // Already have a recovery session
+        const { data } = await supabase.auth.getSession();
+        if (!cancelled && data.session) {
+          setReady(true);
+          return;
+        }
+
+        if (!cancelled) {
+          setError("This reset link is invalid or expired. Request a new one from the login page.");
+          setReady(true);
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          setError(err?.message || "Could not open the reset link.");
+          setReady(true);
+        }
+      }
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
         setReady(true);
+        setError("");
       }
     });
 
-    // Supabase recovery links land with a hash or code. Give the client a moment to exchange it.
-    const timer = setTimeout(() => setReady(true), 800);
+    boot();
     return () => {
+      cancelled = true;
       subscription.unsubscribe();
-      clearTimeout(timer);
     };
   }, []);
 
@@ -51,11 +107,11 @@ export default function ResetPasswordPage() {
         setLoading(false);
         return;
       }
-      setMessage("Password updated. Taking you to sign in…");
+      setMessage("Password updated. Taking you in…");
       const admin = window.location.hostname === "admin.majesticpermits.com";
       setTimeout(() => {
         window.location.assign(admin ? "/admin" : "/dashboard");
-      }, 800);
+      }, 600);
     } catch (err: any) {
       setError(err?.message || "Could not update password.");
       setLoading(false);
