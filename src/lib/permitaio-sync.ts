@@ -7,6 +7,7 @@ export async function pushJobToPermitAIO(payload: {
   jurisdiction?: string | null;
   homeowner_name?: string | null;
   homeowner_phone?: string | null;
+  homeowner_email?: string | null;
   notes?: string | null;
 }) {
   const url = process.env.PERMITAIO_SYNC_URL;
