@@ -15,6 +15,11 @@ const MAX_FILES = 5;
 const MAX_BYTES = 8 * 1024 * 1024;
 const ALLOWED_EXT = /\.(pdf|png|jpe?g|heic|webp|doc|docx|xls|xlsx)$/i;
 
+function row(label: string, value: string) {
+  if (!value) return "";
+  return `<tr><td style="padding:6px 10px 6px 0;color:#64748b;font-size:13px;vertical-align:top;">${label}</td><td style="padding:6px 0;color:#0f172a;font-size:14px;">${value}</td></tr>`;
+}
+
 export async function GET() {
   const supabase = createClient();
   const {
@@ -159,20 +164,29 @@ export async function POST(req: Request) {
     const company = contractor.company_name || contractor.name || "Contractor";
     const notice = `${company} requested a new job at ${propertyAddress}${tradeType ? ` (${tradeType})` : ""}.`;
     await notifyAdmin("job_request", notice, job.id);
-    await sendAdminSms(`New job request — ${notice}`);
+    await sendAdminSms(`New job — ${company} — ${propertyAddress}`);
+
+    const detailTable = `<table style="width:100%;border-collapse:collapse;margin-top:8px;">
+      ${row("Contractor", company)}
+      ${row("Address", propertyAddress)}
+      ${row("Trade", tradeType)}
+      ${row("Jurisdiction", jurisdiction)}
+      ${row("Homeowner", homeownerName)}
+      ${row("Phone", homeownerPhone)}
+      ${row("Email", homeownerEmail)}
+      ${row("Notes", notes)}
+      ${row("Documents", files.length ? String(files.length) : "None")}
+      ${row("Hub job", job.id)}
+    </table>
+    <p style="margin:14px 0 0;font-size:13px;color:#64748b;">Also syncing to your PermitAIO Majestic desk for prep, submittal, and fees.</p>`;
 
     const emailResult = await sendAdminRequestEmail({
       kind: "request",
-      subject: `New job request — ${propertyAddress}`,
-      heading: "New contractor job request",
-      bodyHtml: `<p style="margin:0;color:#334155;font-size:15px;line-height:1.65;">
-        <strong>${company}</strong> submitted ${propertyAddress}${tradeType ? ` · ${tradeType}` : ""}.
-      </p>
-      ${homeownerName ? `<p style="margin:12px 0 0;color:#334155;font-size:15px;">Homeowner: ${homeownerName}${homeownerPhone ? ` · ${homeownerPhone}` : ""}</p>` : ""}
-      ${notes ? `<p style="margin:12px 0 0;color:#334155;font-size:15px;">${notes}</p>` : ""}
-      ${files.length ? `<p style="margin:12px 0 0;color:#334155;font-size:15px;">${files.length} document${files.length === 1 ? "" : "s"} attached.</p>` : ""}`,
+      subject: `New job — ${company} — ${propertyAddress}`,
+      heading: "New job from the contractor hub",
+      bodyHtml: detailTable,
       actionUrl: "https://hub.majesticpermits.com/admin/job-requests",
-      actionLabel: "Review request",
+      actionLabel: "Open on Majestic dashboard",
     }).catch((err: any) => ({ ok: false, error: err?.message || "email failed" }));
 
     const sync = await pushJobToPermitAIO({
@@ -183,6 +197,7 @@ export async function POST(req: Request) {
       jurisdiction: jurisdiction || null,
       homeowner_name: homeownerName || null,
       homeowner_phone: homeownerPhone || null,
+      homeowner_email: homeownerEmail || null,
       notes: notes || null,
     });
     if (sync && "error" in sync && sync.error) {
