@@ -124,6 +124,32 @@ create table if not exists job_inspection_events (
 create index if not exists idx_job_inspection_events_job on job_inspection_events (job_id, created_at desc);
 alter table job_inspection_events enable row level security;
 
+-- The admin pages, the forms and the Commonwealth operations feed read "contractor_records" (license and insurance
+-- per contractor). That table never existed in production. It is now a read-only view over the company documents:
+-- the latest license and the latest certificate of insurance of the contractor's company.
+create or replace view contractor_records as
+select
+  c.id as contractor_id,
+  lic.doc_number as license_number,
+  lic.expires_on as license_expires,
+  ins.label as coi_carrier,
+  ins.doc_number as coi_policy,
+  ins.expires_on as coi_expires,
+  now() as updated_at
+from contractors c
+left join lateral (
+  select d.doc_number, d.expires_on from contractor_documents d
+  where d.company_id = c.company_id and d.doc_type = 'license'
+  order by d.expires_on desc nulls last, d.created_at desc limit 1
+) lic on true
+left join lateral (
+  select d.label, d.doc_number, d.expires_on from contractor_documents d
+  where d.company_id = c.company_id and d.doc_type = 'insurance'
+  order by d.expires_on desc nulls last, d.created_at desc limit 1
+) ins on true;
+alter view contractor_records set (security_invoker = on);
+revoke all on contractor_records from anon, authenticated;
+
 -- ---------------------------------------------------------------------------------------------------
 -- 4. Contractor tools whose tables were missing in production (from 20260930_contractor_tools.sql)
 -- ---------------------------------------------------------------------------------------------------
