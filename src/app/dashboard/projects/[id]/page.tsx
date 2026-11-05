@@ -136,6 +136,12 @@ export default async function ContractorProjectPage({ params }: PageProps) {
           >
             {permitClosed ? "View inspection history" : "Inspection status & results"}
           </Link>
+          <a
+            href={`/dashboard/photo-report.html?${new URLSearchParams({ job: job.id, addr: job.property_address || "", name: job.homeowner_name || "", by: contractor.company_name || contractor.name || "" }).toString()}`}
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-violet-400/40 bg-card px-4 py-3 text-sm font-semibold text-primary hover:bg-secondary sm:w-auto"
+          >
+            Take photos
+          </a>
           <AskJobQuestion jobId={job.id} address={job.property_address || "this job"} />
         </div>
 

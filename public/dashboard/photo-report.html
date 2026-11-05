@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Photo report | Majestic Permits</title>
+<style>
+  :root{--ink:#0b1f3a;--muted:#5b667a;--faint:#6b7280;--border:#e2e8f0;--border-strong:#cbd5e1;--surface-2:#f1f5f9;--primary:#2563eb;--danger:#b91c1c;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:#fff;height:100dvh;overflow:hidden;display:flex;flex-direction:column;}
+  .top{flex-shrink:0;display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);}
+  .top a{color:var(--primary);text-decoration:none;font-size:14px;font-weight:600;min-height:44px;display:inline-flex;align-items:center;}
+  .top h1{margin:0;font-size:18px;}
+  .wrap{max-width:880px;width:100%;flex:1;min-height:0;padding:8px 16px;margin:0 auto;display:flex;flex-direction:column;overflow:hidden;}
+  .pr-app{flex:1;min-height:0;display:flex;flex-direction:column;background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  .pr-job{border-bottom:1px solid var(--border);background:var(--surface-2);}
+  .pr-job summary{list-style:none;padding:12px;font-size:14px;font-weight:600;cursor:pointer;min-height:44px;}
+  .pr-job summary::-webkit-details-marker{display:none;}
+  .pr-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px 10px;}
+  @media(min-width:720px){.pr-meta{grid-template-columns:repeat(4,1fr);}}
+  .field{display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .pr-meta label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:600;}
+  input,textarea,button{font-family:inherit;}
+  .pr-meta input,.pr-shoot input,.pr-row input,.pr-fields textarea{font-size:16px;}
+  .pr-meta input{min-height:44px;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;background:#fff;color:var(--ink);width:100%;}
+  .pr-shoot{display:flex;gap:8px;align-items:center;padding:8px 12px;border-top:1px solid var(--border);background:#fff;}
+  .pr-next-room{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);}
+  .pr-next-room input{min-height:44px;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;font-weight:600;color:var(--ink);text-transform:none;letter-spacing:0;}
+  .pr-keep{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;white-space:nowrap;}
+  .pr-keep input{width:20px;height:20px;}
+  .pr-dock{display:grid;grid-template-columns:2.2fr 1fr 1fr;gap:8px;padding:8px 12px;padding-bottom:max(8px,env(safe-area-inset-bottom));border-top:1px solid var(--border);background:#fff;}
+  .pr-dock button{min-height:52px;font-weight:600;border-radius:10px;border:1px solid var(--border-strong);background:#fff;font-size:14px;color:var(--ink);}
+  .pr-dock button.cam{background:var(--primary);color:#fff;border-color:var(--primary);font-size:16px;}
+  .pr-dock button.primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .pr-list{flex:1;min-height:0;overflow:auto;padding:10px 12px;background:#f8fafc;-webkit-overflow-scrolling:touch;}
+  .pr-card{display:grid;grid-template-columns:96px 1fr;gap:10px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;}
+  .pr-thumb{position:relative;background:#e2e8f0;border-radius:8px;overflow:hidden;min-height:88px;}
+  .pr-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .pr-num{position:absolute;left:6px;top:6px;background:#0b0b0c;color:#fff;font-size:12px;font-weight:700;padding:2px 6px;border-radius:4px;}
+  .pr-empty{min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px dashed var(--border-strong);border-radius:12px;padding:24px;color:var(--muted);cursor:pointer;}
+  .pr-empty b{color:var(--ink);font-size:16px;display:block;margin-bottom:6px;}
+  .pr-fields{display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .pr-row{display:flex;gap:6px;align-items:center;}
+  .pr-row input{border:1px solid var(--border-strong);border-radius:8px;padding:8px 10px;color:var(--ink);background:#fff;}
+  .pr-row input[type=number]{width:64px;text-align:center;min-height:44px;}
+  .pr-row{flex-wrap:wrap;}
+  .pr-row input[type=number]{order:1;}
+  .pr-row .pr-icon{order:2;}
+  .pr-row .pr-icon:first-of-type{margin-left:auto;}
+  /* The room gets its own full-width line, so it can be read and typed on a phone. */
+  .pr-row input[list]{order:3;flex:1 1 100%;min-width:0;min-height:44px;}
+  .pr-fields textarea{min-height:52px;resize:vertical;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;color:var(--ink);}
+  .pr-icon{width:44px;height:44px;border:1px solid var(--border-strong);border-radius:8px;background:#fff;font-size:16px;color:var(--ink);}
+  .pr-dock button:disabled{opacity:.4;}
+  @media(max-width:720px){
+    .wrap{padding:0;max-width:none;}
+    .pr-app{border-radius:0;border-left:0;border-right:0;}
+    .pr-fields textarea{min-height:44px;}
+  }
+  .pr-err{color:var(--danger);font-size:13px;padding:4px 2px;}
+  .pr-pdf{position:fixed;inset:0;z-index:100000;background:rgba(11,11,12,.7);display:none;flex-direction:column;}
+  .pr-pdf.open{display:flex;}
+  .pr-pdf-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 14px;background:#fff;border-bottom:1px solid var(--border);}
+  .pr-pdf-bar strong{flex:1;min-width:120px;}
+  .btn{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--border-strong);background:#fff;color:var(--ink);font-weight:600;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;cursor:pointer;}
+  .btn-primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .btn:disabled{opacity:.5;}
+  .pr-status{flex-basis:100%;margin:0;font-size:13px;color:var(--muted);min-height:1em;}
+  .pr-pdf iframe{flex:1;width:100%;background:#fff;border:0;}
+</style>
+</head>
+<body>
+<div class="top">
+  <a href="/dashboard/photos">&larr; Photos</a>
+  <h1>Photo report</h1>
+</div>
+<div class="wrap">
+  <div class="pr-app">
+    <details class="pr-job" id="prJobBox">
+      <summary>Job details</summary>
+      <div class="pr-meta">
+        <div class="field"><label for="prJob">Job</label><input id="prJob" type="text" placeholder="Job or owner" autocomplete="off"></div>
+        <div class="field"><label for="prAddr">Address</label><input id="prAddr" type="text" placeholder="Street, city" autocomplete="off"></div>
+        <div class="field"><label for="prDate">Date</label><input id="prDate" type="date"></div>
+        <div class="field"><label for="prBy">Taken by</label><input id="prBy" type="text" placeholder="Name" autocomplete="off"></div>
+      </div>
+    </details>
+    <div class="pr-list" id="prList"></div>
+    <div class="pr-shoot">
+      <label class="pr-next-room">Next room
+        <input id="prRoomNext" list="prRooms" placeholder="Master Bedroom" autocomplete="off">
+      </label>
+      <label class="pr-keep"><input id="prKeep" type="checkbox" checked> Keep shooting</label>
+    </div>
+    <div class="pr-dock">
+      <button type="button" class="cam" id="prCam">Take photo</button>
+      <button type="button" id="prLib">Library</button>
+      <button type="button" class="primary" id="prPdf">PDF</button>
+    </div>
+  </div>
+</div>
+<input id="prCamInput" type="file" accept="image/*,.heic,.heif,image/heic,image/heif" capture="environment" hidden>
+<input id="prCamInput2" type="file" accept="image/*,.heic,.heif,image/heic,image/heif" capture="environment" hidden>
+<input id="prLibInput" type="file" accept="image/*,.heic,.heif,image/heic,image/heif" multiple hidden>
+<datalist id="prRooms">
+  <option value="Exterior Front"><option value="Exterior Rear"><option value="Exterior Left"><option value="Exterior Right">
+  <option value="Living"><option value="Kitchen"><option value="Dining"><option value="Family">
+  <option value="Master Bedroom"><option value="Bedroom 2"><option value="Bedroom 3">
+  <option value="Master Bath"><option value="Bath 2"><option value="Hall">
+  <option value="Garage"><option value="Patio / Lanai"><option value="Opening"><option value="Roof"><option value="Other">
+</datalist>
+<div class="pr-pdf" id="prOverlay">
+  <div class="pr-pdf-bar">
+    <strong>Photo report</strong>
+    <button type="button" class="btn btn-primary" id="prJobSave">Save to job</button>
+    <button type="button" class="btn" id="prPrint">Print</button>
+    <a class="btn" id="prSave" download="photo-report.pdf">Save PDF</a>
+    <button type="button" class="btn" id="prClose">Close</button>
+    <p class="pr-status" id="prStatus" role="status"></p>
+  </div>
+  <iframe id="prFrame" title="Photo report PDF"></iframe>
+</div>
+<script src="/dashboard/pdf-lib.min.js"></script>
+<script src="/dashboard/photo-report.js"></script>
+</body>
+</html>
