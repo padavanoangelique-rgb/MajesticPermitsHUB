@@ -1,14 +1,20 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { getResend } from "@/lib/email";
-import { sendAdminSms } from "@/lib/sms";
 import { FROM_INSPECTIONS, MAILBOX } from "@/lib/mailboxes";
 
-/** Where Majestic hears about things. The email address is the inbox the bot reads, so everything lands there. */
+/** Where Majestic hears about things. This is the inbox the bot reads, so it sees everything and does the texting. */
 export const ADMIN_ALERT_EMAIL = process.env.ADMIN_ALERT_EMAIL || MAILBOX.owner;
 
-/** Only these kinds of notice are texted: an inspection has to be requested or scheduled. Everything else is an email. */
-const TEXT_TYPES = new Set(["inspection_needed"]);
+/** The notice types that mean an inspection has to be requested or scheduled. The bot texts Majestic for these. */
+export const INSPECTION_ALERT_TYPES = new Set(["inspection_needed"]);
 
+const SITE = "https://admin.majesticpermits.com";
+
+/**
+ * Tell Majestic something happened. Every notice is saved on the admin notification list and emailed to Majestic's
+ * inbox. The Hub sends no texts: an inspection-needed notice has its own fixed subject, "[Majestic Hub] INSPECTION
+ * NEEDED", and a "Type:" line, so the bot can pick it out and text Majestic.
+ */
 export async function notifyAdmin(
   type: string,
   message: string,
@@ -28,21 +34,22 @@ export async function notifyAdmin(
     console.error("notifyAdmin: insert failed", err);
   }
 
-  if (TEXT_TYPES.has(type)) {
-    const sent = await sendAdminSms(message).catch((err) => {
-      console.error("notifyAdmin: sms failed", err);
-      return { ok: false as const };
-    });
-    // A text that cannot go out (Twilio not set up, or it failed) is never the only copy: it is emailed too.
-    if (sent.ok) return;
-  }
+  const inspection = INSPECTION_ALERT_TYPES.has(type);
+  const subject = inspection ? "[Majestic Hub] INSPECTION NEEDED" : `[Majestic Hub] ${type.replace(/_/g, " ")}`;
+  const lines = [
+    ...(inspection ? ["INSPECTION NEEDED", ""] : []),
+    message,
+    "",
+    `Type: ${type}`,
+    ...(jobId ? [`Job: ${SITE}/admin/jobs/${jobId}`] : []),
+  ];
 
   try {
     await getResend().emails.send({
       from: FROM_INSPECTIONS,
       to: ADMIN_ALERT_EMAIL,
-      subject: `[Majestic Hub] ${type.replace(/_/g, " ")}${TEXT_TYPES.has(type) ? " (text not sent)" : ""}`,
-      text: message,
+      subject,
+      text: lines.join("\n"),
     });
   } catch (err) {
     console.error("notifyAdmin: email failed", err);

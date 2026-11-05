@@ -102,43 +102,48 @@ test('Majestic changing it tells nobody, and setting the same status again is qu
   assert.equal(same.state.notices.length, 0);
 });
 
-// notifyAdmin: texts only for inspection-needed notices, and the email is the fallback when a text cannot go out.
-function loadNotify({ smsOk }) {
-  const sent = { sms: [], email: [], rows: [] };
+// notifyAdmin: every notice is an email to Majestic's inbox, the Hub sends no text, and an inspection notice is labeled for the bot.
+function loadNotify() {
+  const sent = { email: [], rows: [] };
   const stubs = {
     '@/lib/supabase/service': { createServiceClient: () => ({ from: () => ({ insert: async (row) => { sent.rows.push(row); return { error: null }; } }) }) },
     '@/lib/email': { getResend: () => ({ emails: { send: async (m) => { sent.email.push(m); return {}; } } }) },
-    '@/lib/sms': { sendAdminSms: async (body) => { sent.sms.push(body); return smsOk ? { ok: true } : { ok: false, error: 'Twilio not configured' }; } },
     '@/lib/mailboxes': { FROM_INSPECTIONS: 'Majestic <inspections@majesticpermits.com>', MAILBOX: { owner: 'angelique@majesticpermits.com' } },
   };
   const exports = {};
   vm.runInNewContext(
     ts.transpileModule(fs.readFileSync('src/lib/admin-notify.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText,
-    { exports, require: (n) => stubs[n], console, process: { env: {} }, Error },
+    { exports, require: (n) => stubs[n], console, process: { env: {} }, Error, Set },
   );
   return { sent, ...exports };
 }
 
-test('an inspection-needed notice is texted, and not emailed when the text goes out', async () => {
-  const n = loadNotify({ smsOk: true });
-  await n.notifyAdmin('inspection_needed', '4410 Haddon Pkwy: needs inspection', 'j');
-  assert.equal(n.sent.sms.length, 1);
-  assert.equal(n.sent.email.length, 0);
+test('an inspection-needed notice is emailed with a fixed subject and a Type line the bot can read', async () => {
+  const n = loadNotify();
+  await n.notifyAdmin('inspection_needed', '4410 Haddon Pkwy: needs inspection', 'job-1');
+  assert.equal(n.sent.email.length, 1);
+  const mail = n.sent.email[0];
+  assert.equal(mail.to, 'angelique@majesticpermits.com');
+  assert.equal(mail.subject, '[Majestic Hub] INSPECTION NEEDED');
+  assert.match(mail.text, /^INSPECTION NEEDED/);
+  assert.match(mail.text, /4410 Haddon Pkwy: needs inspection/);
+  assert.match(mail.text, /Type: inspection_needed/);
+  assert.match(mail.text, /Job: https:\/\/admin\.majesticpermits\.com\/admin\/jobs\/job-1/);
   assert.equal(n.sent.rows.length, 1);
 });
 
-test('when the text cannot go out, the inspection notice is emailed instead of lost', async () => {
-  const n = loadNotify({ smsOk: false });
-  await n.notifyAdmin('inspection_needed', '4410 Haddon Pkwy: needs inspection', 'j');
-  assert.equal(n.sent.email.length, 1);
-  assert.equal(n.sent.email[0].to, 'angelique@majesticpermits.com');
-  assert.match(n.sent.email[0].subject, /text not sent/);
+test('every other notice is an email too, with its own subject, and never says inspection needed', async () => {
+  const n = loadNotify();
+  for (const type of ['job_status', 'job_request', 'job_question', 'job_upload', 'job_closed']) await n.notifyAdmin(type, 'something happened', 'j');
+  assert.equal(n.sent.email.length, 5);
+  assert.ok(n.sent.email.every((m) => m.to === 'angelique@majesticpermits.com' && !/INSPECTION NEEDED/.test(m.subject)));
+  assert.equal(n.sent.email[0].subject, '[Majestic Hub] job status');
 });
 
-test('every other notice is an email to Majestic and never a text', async () => {
-  const n = loadNotify({ smsOk: true });
-  for (const type of ['job_status', 'job_request', 'job_question', 'job_upload', 'job_closed']) await n.notifyAdmin(type, 'something happened', 'j');
-  assert.equal(n.sent.sms.length, 0);
-  assert.equal(n.sent.email.length, 5);
-  assert.ok(n.sent.email.every((m) => m.to === 'angelique@majesticpermits.com'));
+test('a notice with no job still sends, and the Hub never texts', async () => {
+  const n = loadNotify();
+  await n.notifyAdmin('inspection_needed', 'walk-in request', null);
+  assert.equal(n.sent.email.length, 1);
+  assert.doesNotMatch(n.sent.email[0].text, /Job:/);
+  assert.equal(typeof n.sendAdminSms, 'undefined');
 });
