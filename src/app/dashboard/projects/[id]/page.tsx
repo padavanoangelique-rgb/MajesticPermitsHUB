@@ -18,7 +18,10 @@ import { getContractorForUser } from "@/lib/contractor";
 import { upcomingInspectionDates } from "@/lib/next-inspection-day";
 import { parseOnsiteFromNotes } from "@/lib/onsite-contact";
 import { publicTrackBrand } from "@/lib/public-brand";
-import { JobStatusBar, stageIndexFromTitle } from "@/components/contractor/job-status-bar";
+import { JobStatusBar } from "@/components/contractor/job-status-bar";
+import { WorkStatusControl } from "@/components/work-status-control";
+import { effectiveWorkStatus, permitApproved } from "@/lib/work-status";
+import { stageKeyFromTitle } from "@/lib/stages";
 
 interface PageProps {
   params: { id: string };
@@ -89,7 +92,6 @@ export default async function ContractorProjectPage({ params }: PageProps) {
     }
   }
 
-  const currentIndex = stageIndexFromTitle(job.stage || "");
 
   const trackUrl = link?.token
     ? `https://hub.majesticpermits.com/track/${link.token}`
@@ -110,7 +112,22 @@ export default async function ContractorProjectPage({ params }: PageProps) {
           {job.property_address}
         </h1>
         <div className="mt-4 rounded-2xl border border-violet-400/25 bg-card/80 p-4">
-          <JobStatusBar stage={job.stage || ""} />
+          <JobStatusBar stage={job.stage || ""} workStatus={job.work_status} />
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="mb-2 text-xs text-muted-foreground">Majestic updates the permit status. You can update where the work is.</p>
+            <WorkStatusControl
+              jobId={job.id}
+              role="contractor"
+              current={effectiveWorkStatus(stageKeyFromTitle(job.stage), job.work_status)}
+              locked={
+                !permitApproved(stageKeyFromTitle(job.stage))
+                  ? "The inspection status opens once the permit is approved."
+                  : permitClosed
+                    ? "This job is closed."
+                    : null
+              }
+            />
+          </div>
         </div>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
           <Link
@@ -119,6 +136,12 @@ export default async function ContractorProjectPage({ params }: PageProps) {
           >
             {permitClosed ? "View inspection history" : "Inspection status & results"}
           </Link>
+          <a
+            href={`/dashboard/photo-report.html?${new URLSearchParams({ job: job.id, addr: job.property_address || "", name: job.homeowner_name || "", by: contractor.company_name || contractor.name || "" }).toString()}`}
+            className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-violet-400/40 bg-card px-4 py-3 text-sm font-semibold text-primary hover:bg-secondary sm:w-auto"
+          >
+            Take photos
+          </a>
           <AskJobQuestion jobId={job.id} address={job.property_address || "this job"} />
         </div>
 
@@ -130,9 +153,7 @@ export default async function ContractorProjectPage({ params }: PageProps) {
           />
         </div>
 
-        <div className="mt-8 hidden sm:block">
-          <StageStepper stages={PERMIT_STAGES} currentIndex={currentIndex} />
-        </div>
+
 
         <Section title="Current stage">
           <p className="text-xl font-semibold text-primary dark:text-white">

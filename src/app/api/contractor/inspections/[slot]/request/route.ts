@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getContractorForUser, ownsJob } from "@/lib/contractor";
 import { nextInspectionDate, isValidInspectionDate } from "@/lib/next-inspection-day";
-import { sendAdminSms } from "@/lib/sms";
+import { markWorkStatus } from "@/lib/work-status-actions";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { sendAdminRequestEmail } from "@/lib/admin-email";
 import {
@@ -225,7 +225,6 @@ async function handleWrite(
 
       const notice = `${job.property_address}: ${inspectionLabel} request cancelled (${company}).`;
       await notifyAdmin("inspection_needed", notice, jobId);
-      await sendAdminSms(`Inspection cancelled — ${notice}`);
       await sendAdminRequestEmail({
         kind: "inspection",
         subject: `Inspection cancelled — ${job.property_address}`,
@@ -267,6 +266,8 @@ async function handleWrite(
       return NextResponse.json({ error: slotError.message }, { status: 400 });
     }
 
+    await markWorkStatus(service, jobId, nextStatus === "reinspection_requested" ? "needs_reinspection" : slot === 3 ? "needs_inspection_final" : "needs_inspection_progress");
+
     await upsertPendingRequest(service, {
       jobId,
       contractorId: contractor.id,
@@ -279,7 +280,6 @@ async function handleWrite(
     const verb = action === "edit" ? "updated" : "requested";
     const noticeMessage = `${job.property_address}: ${inspectionLabel} ${verb} for ${requestedDate}${contactBit} (${company}).`;
     await notifyAdmin("inspection_needed", noticeMessage, jobId);
-    await sendAdminSms(`Inspection ${verb} — ${noticeMessage}`);
     await sendAdminRequestEmail({
       kind: "inspection",
       subject: `Inspection ${verb} — ${job.property_address}`,

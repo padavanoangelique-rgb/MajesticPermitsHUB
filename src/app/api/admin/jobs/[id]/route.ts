@@ -1,4 +1,5 @@
-import { defaultSubStatus, JOB_SUB_STATUSES, PERMIT_STAGES } from "@/lib/stages";
+import { defaultSubStatus, JOB_SUB_STATUSES, PERMIT_STAGES, stageKeyFromTitle } from "@/lib/stages";
+import { permitApproved, workStatusFromStageKey } from "@/lib/work-status";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -67,12 +68,27 @@ export async function PATCH(
     const supabase = createServiceClient();
     const { data: before, error: lookupError } = await supabase
       .from("jobs")
-      .select("stage, sub_status")
+      .select("stage, sub_status, work_status")
       .eq("id", params.id)
       .maybeSingle();
 
     if (lookupError) return NextResponse.json({error:lookupError.message},{status:400});
     if (!before) return NextResponse.json({error:"Job not found"},{status:404});
+
+    // The permit status here only moves the permit. A job already past approval keeps where its work has got to;
+    // moving the permit back before approval closes the inspection bar, and approving it opens the bar.
+    if (typeof patch.stage === "string") {
+      const wasApproved = permitApproved(stageKeyFromTitle(before.stage));
+      const toKey = stageKeyFromTitle(patch.stage);
+      if (permitApproved(toKey) && wasApproved && toKey === "approved") {
+        delete patch.stage; // the work has moved on, and that stays; only a status the admin typed is kept
+      } else if (!permitApproved(toKey)) {
+        patch.work_status = null;
+      } else if (!wasApproved) {
+        patch.work_status = workStatusFromStageKey(toKey);
+      }
+    }
+    if (Object.keys(patch).length === 0) return NextResponse.json({ ok: true });
     const { error } = await supabase
       .from("jobs")
       .update(patch)

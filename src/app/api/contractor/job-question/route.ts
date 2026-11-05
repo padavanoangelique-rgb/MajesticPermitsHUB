@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getContractorForUser } from "@/lib/contractor";
 import { notifyAdmin } from "@/lib/admin-notify";
-import { sendAdminSms } from "@/lib/sms";
 import { sendAdminRequestEmail } from "@/lib/admin-email";
 
 export const dynamic = "force-dynamic";
@@ -51,7 +50,6 @@ export async function POST(req: Request) {
     const sms = `Job question — ${company}\n${address}\nStage: ${job.stage || "—"}${job.permit_number ? `\nPermit: ${job.permit_number}` : ""}\nQ: ${question.slice(0, 160)}\nReply to this text.`;
 
     await notifyAdmin("job_question", `${company} asked about ${address}: ${question}`, job.id);
-    await sendAdminSms(sms);
 
     const detailTable = `<table style="width:100%;border-collapse:collapse;margin-top:8px;">
       ${row("Contractor", company)}

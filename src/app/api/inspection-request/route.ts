@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { sendAdminSms } from "@/lib/sms";
 import { notifyAdmin } from "@/lib/admin-notify";
 
 export async function POST(req: Request) {
@@ -53,8 +52,6 @@ export async function POST(req: Request) {
     }: ${inspection_type || "Rough-in"} requested (homeowner).`;
 
     await notifyAdmin("inspection_needed", noticeMessage, job_id);
-
-    await sendAdminSms(`Inspection needed — ${noticeMessage}`);
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {

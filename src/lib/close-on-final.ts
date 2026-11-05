@@ -27,6 +27,7 @@ export async function closeJobIfFinalPassed(opts: {
     .from("jobs")
     .update({
       stage: "Permit closed — all done",
+      work_status: "permit_closed",
       sub_status: "Closed",
       next_step: "Permit closed after final inspection passed",
       final_inspection_date: opts.inspection.result_date || new Date().toISOString().slice(0, 10),

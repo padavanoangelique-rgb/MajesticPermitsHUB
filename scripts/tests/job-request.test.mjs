@@ -30,7 +30,7 @@ function route({ user = { id: 'u1' }, contractor = { id: 'c1', company_name: 'Te
     '@/lib/supabase/service': { createServiceClient: () => db },
     '@/lib/contractor': { getContractorForUser: async () => contractor, ownsJob: (c, id) => Boolean(id) && c.company_contractor_ids.includes(id) },
     '@/lib/admin-notify': { notifyAdmin: async () => {} },
-    '@/lib/sms': { sendAdminSms: async () => {} },
+    '@/lib/permitaio-sync': { pushJobToPermitAIO: async () => ({ ok: true }) },
     '@/lib/admin-email': { sendAdminRequestEmail: async () => ({ ok: true }) },
     '@/lib/job-request': { PENDING_REQUEST_SUB: 'Pending approval' },
   };

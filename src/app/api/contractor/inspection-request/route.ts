@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getContractorForUser, ownsJob } from "@/lib/contractor";
-import { sendAdminSms } from "@/lib/sms";
 import { notifyAdmin } from "@/lib/admin-notify";
 
 export const dynamic = "force-dynamic";
@@ -105,8 +104,6 @@ export async function POST(req: Request) {
     }).`;
 
     await notifyAdmin("inspection_needed", noticeMessage, jobId);
-
-    await sendAdminSms(`Inspection needed — ${noticeMessage}`);
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {

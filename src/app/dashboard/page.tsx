@@ -17,6 +17,7 @@ type JobCard = {
   id: string;
   property_address: string;
   stage: string | null;
+  work_status?: string | null;
   sub_status: string | null;
   permit_number: string | null;
   trade_type: string | null;
@@ -47,7 +48,7 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
 
   const { data: allJobs } = await supabase
     .from("jobs")
-    .select("id, property_address, stage, sub_status, permit_number, permit_eta, submitted_date, updated_at, trade_type, created_at")
+    .select("id, property_address, stage, work_status, sub_status, permit_number, permit_eta, submitted_date, updated_at, trade_type, created_at")
     .in("contractor_id", contractor.company_contractor_ids)
     .order("created_at", { ascending: false });
 
@@ -91,22 +92,24 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
   const installCount = ordered.find((b) => b.key === "needs_install")?.items.length ?? 0;
   const inspectionCount = ordered.find((b) => b.key === "needs_inspection")?.items.length ?? 0;
   const completeCount = ordered.find((b) => b.key === "complete")?.items.length ?? 0;
+  const isClosed = (j: JobCard) => ["Permit closed — all done", "Final inspection passed"].includes(canonicalStageTitle(j.stage));
+  const overview = [...jobs].sort((a, b) => Number(isClosed(a)) - Number(isClosed(b)));
   const totalForProgress = pendingCount + installCount + inspectionCount + completeCount || 1;
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/80 sticky top-0 z-10">
         <div className="mx-auto flex max-w-screen-xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <Image src="/icons/icon-512.png" alt="Majestic Permits" width={32} height={32} priority className="rounded-lg" />
-            <div>
-              <p className="text-sm font-semibold text-primary dark:text-white">{contractor.company_name || contractor.name}</p>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-primary dark:text-white">{contractor.company_name || contractor.name}</p>
               <p className="text-xs text-muted-foreground">Field Job Overview</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <form action="/auth/signout" method="post"><button className="text-xs text-muted-foreground hover:text-primary px-2 py-1 rounded-lg hover:bg-secondary">Sign out</button></form>
+            <form action="/auth/signout" method="post"><button className="min-h-11 rounded-lg px-3 text-xs text-muted-foreground hover:bg-secondary hover:text-primary">Sign out</button></form>
           </div>
         </div>
       </header>
@@ -117,11 +120,11 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
             <h1 className="text-2xl font-bold text-primary dark:text-white">Job Management</h1>
             <p className="text-sm text-muted-foreground">{jobs.filter((j) => !["Permit closed — all done", "Final inspection passed"].includes(canonicalStageTitle(j.stage))).length} active · newest first</p>
           </div>
-          <Link href="/dashboard/new" className="inline-flex min-h-10 items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white">Request a job</Link>
+          <Link href="/dashboard/new" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white">Request a job</Link>
         </div>
 
         <form method="get" className="mb-5">
-          <input name="q" defaultValue={q} placeholder="Search address, permit #, status…" className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary" />
+          <input name="q" defaultValue={q} placeholder="Search address, permit #, status…" className="min-h-12 w-full rounded-xl border border-border bg-card px-4 py-3 text-base outline-none focus:border-primary sm:text-sm" />
         </form>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -130,6 +133,28 @@ export default async function DashboardPage({ searchParams }: { searchParams?: {
           <a href="#needs_inspection" className="rounded-2xl border border-sky-400/30 bg-gradient-to-br from-[#0c4a6e] to-[#1a1038] px-4 py-4"><p className="text-xs font-semibold uppercase tracking-wider text-sky-200">Needs inspection</p><p className="mt-1 text-3xl font-bold text-white">{inspectionCount}</p></a>
           <a href="#complete" className="rounded-2xl border border-emerald-400/30 bg-gradient-to-br from-[#064e3b] to-[#1a1038] px-4 py-4"><p className="text-xs font-semibold uppercase tracking-wider text-emerald-200">Complete</p><p className="mt-1 text-3xl font-bold text-white">{completeCount}</p></a>
         </div>
+
+        {totalJobs > 0 && (
+          <section aria-label="All jobs" className="mb-6 rounded-2xl border border-border bg-card/90">
+            <header className="flex items-center gap-3 border-b border-border px-4 py-3">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Your jobs</h2>
+              <span className="ml-auto rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground">{totalJobs}</span>
+            </header>
+            <ul className="divide-y divide-border">
+              {overview.map((job) => (
+                <li key={job.id}>
+                  <Link href={`/dashboard/projects/${job.id}`} className="grid gap-2 px-4 py-3 hover:bg-secondary/40 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:items-center sm:gap-5">
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-semibold text-primary dark:text-white">{job.property_address}</span>
+                      <span className="block truncate text-xs text-muted-foreground">{job.permit_number ? `Permit ${job.permit_number}` : "No permit number yet"}</span>
+                    </span>
+                    <JobStatusBar compact stage={job.stage || job.sub_status || ""} workStatus={job.work_status} flag={lineByJob[job.id]?.flag} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <div className="mb-6"><p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Tools</p><ToolNav /></div>
 
@@ -216,7 +241,7 @@ function StageSection({ id, bucketKey, title, items, lineByJob, progress = 0 }: 
           const closed = ["Permit closed — all done", "Final inspection passed"].includes(canonicalStageTitle(job.stage));
           return (
             <li key={job.id} className="px-4 py-3">
-              <JobStatusBar stage={job.stage || job.sub_status || ""} flag={line?.flag} />
+              <JobStatusBar stage={job.stage || job.sub_status || ""} workStatus={job.work_status} flag={line?.flag} />
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <Link href={`/dashboard/projects/${job.id}`} className="min-w-0 flex-1 basis-60">
                   <p className="text-sm font-semibold text-primary dark:text-white">{job.property_address}</p>
@@ -224,8 +249,8 @@ function StageSection({ id, bucketKey, title, items, lineByJob, progress = 0 }: 
                   {line && <p className={"mt-0.5 text-xs " + (line.phase === "needs_reinspection" ? "text-rose-200" : line.phase === "scheduled" ? "text-sky-200" : "text-muted-foreground")}>{line.text}</p>}
                 </Link>
                 <AskJobQuestion compact jobId={job.id} address={job.property_address || "this job"} />
-                <Link href={`/dashboard/projects/${job.id}#documents`} className="inline-flex min-h-9 items-center justify-center rounded-lg border border-border px-3 text-xs font-medium">Docs</Link>
-                <Link href={`/dashboard/projects/${job.id}#inspections`} className="inline-flex min-h-9 items-center justify-center rounded-lg bg-primary px-3 text-xs font-semibold text-white">{closed ? "View" : line?.phase === "ready" ? "Request inspection" : "Inspections"}</Link>
+                <Link href={`/dashboard/projects/${job.id}#documents`} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-border px-4 text-xs font-medium">Docs</Link>
+                <Link href={`/dashboard/projects/${job.id}#inspections`} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 text-xs font-semibold text-white">{closed ? "View" : line?.phase === "ready" ? "Request inspection" : "Inspections"}</Link>
               </div>
             </li>
           );

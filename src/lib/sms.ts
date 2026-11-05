@@ -51,10 +51,7 @@ export async function sendSms(to: string, body: string) {
 }
 
 export async function sendAdminSms(body: string) {
-  const toNumber = process.env.ADMIN_SMS_NUMBER;
-  if (!toNumber) {
-    console.warn("sendAdminSms: skipped, ADMIN_SMS_NUMBER not set");
-    return { ok: false, error: "ADMIN_SMS_NUMBER not set" };
-  }
+  // Majestic's number for inspection texts. ADMIN_SMS_NUMBER overrides it.
+  const toNumber = process.env.ADMIN_SMS_NUMBER || "+15618883805";
   return sendSms(toNumber, body);
 }

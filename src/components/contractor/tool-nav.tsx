@@ -7,6 +7,7 @@ const TOOLS = [
   { href: "/dashboard/measure", label: "Measure", blurb: "Sizes" },
   { href: "/dashboard/install", label: "Install", blurb: "Jobs" },
   { href: "/dashboard/inspections", label: "Inspections", blurb: "Visits" },
+  { href: "/dashboard/photos", label: "Photos", blurb: "Report" },
 ];
 
 export function ToolNav({ current }: { current?: string }) {

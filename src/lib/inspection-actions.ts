@@ -3,6 +3,7 @@ import { SITE_URL, getResend } from "@/lib/email";
 import { FROM_INSPECTIONS, MAILBOX } from "@/lib/mailboxes";
 import { sendSms } from "@/lib/sms";
 import { closeJobIfFinalPassed } from "@/lib/close-on-final";
+import { markWorkStatus } from "@/lib/work-status-actions";
 import { defaultSubStatus, inspectionsAllowed, stageAfterInspectionConfirmed, stageAfterInspectionResult } from "@/lib/stages";
 import {
   isFinalVisit,
@@ -186,6 +187,7 @@ export async function confirmVisit(db: Db, inspectionId: string, by?: string) {
   if (nextStage) {
     await db.from("jobs").update({ stage: nextStage, sub_status: defaultSubStatus(nextStage) }).eq("id", job.id);
   }
+  if (isFinalVisit(inspection)) await markWorkStatus(db, job.id, "final_scheduled");
   await recordEvent(db, { inspection_id: inspection.id, job_id: job.id, kind: "confirmed", status: inspection.status, event_date: inspection.scheduled_date, inspection_time: inspection.inspection_time, created_by: by });
 
   const when = longDay(inspection.scheduled_date) + (inspection.inspection_time ? ` at ${inspection.inspection_time}` : "");
@@ -282,6 +284,8 @@ export async function recordVisitResult(
   const isFinal = isFinalVisit(inspection);
   const nextStage = stageAfterInspectionResult(job.stage, kind, isFinal);
   if (nextStage) await db.from("jobs").update({ stage: nextStage, sub_status: defaultSubStatus(nextStage) }).eq("id", job.id);
+  if (kind === "failed" || kind === "partial_pass") await markWorkStatus(db, job.id, "inspection_failed");
+  else if (kind === "passed" && !isFinal) await markWorkStatus(db, job.id, "in_progress_passed");
   const closed =
     kind === "passed" && isFinal
       ? await closeJobIfFinalPassed({ jobId: job.id, inspection: { ...inspection, status: "passed", result_date: date }, treatAsFinal: true })
