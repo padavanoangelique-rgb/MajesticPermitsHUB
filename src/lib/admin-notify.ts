@@ -29,17 +29,19 @@ export async function notifyAdmin(
   }
 
   if (TEXT_TYPES.has(type)) {
-    await sendAdminSms(message).catch((err) => {
+    const sent = await sendAdminSms(message).catch((err) => {
       console.error("notifyAdmin: sms failed", err);
+      return { ok: false as const };
     });
-    return;
+    // A text that cannot go out (Twilio not set up, or it failed) is never the only copy: it is emailed too.
+    if (sent.ok) return;
   }
 
   try {
     await getResend().emails.send({
       from: FROM_INSPECTIONS,
       to: ADMIN_ALERT_EMAIL,
-      subject: `[Majestic Hub] ${type.replace(/_/g, " ")}`,
+      subject: `[Majestic Hub] ${type.replace(/_/g, " ")}${TEXT_TYPES.has(type) ? " (text not sent)" : ""}`,
       text: message,
     });
   } catch (err) {
