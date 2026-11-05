@@ -48,3 +48,21 @@ test('search says so in plain words when the lookup is down', async () => {
   assert.equal(isParcelCounty('palm-beach'), true);
   assert.equal(isParcelCounty('martin'), false);
 });
+
+import { JURISDICTIONS } from '../../src/lib/jurisdiction-directory.ts';
+
+test('the department directory has every South Florida city once, and the lookup finds each', () => {
+  const names = JURISDICTIONS.map((entry) => entry.name);
+  const key = (name) => name.toLowerCase().replace(/^(city|town|village) of /, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+  assert.equal(new Set(names.map(key)).size, names.length, 'a department is listed twice');
+  assert.ok(names.length >= 110);
+  for (const city of ['Pembroke Pines', 'Coral Springs', 'Hialeah Gardens', 'Miami Beach', 'Palm Beach', 'Stuart', 'Port St. Lucie']) {
+    assert.deepEqual(jurisdictionFor(hit(city.toUpperCase()), names), { jurisdiction: city, inDirectory: true }, city);
+  }
+  // Names the Hub already used keep their form.
+  assert.equal(jurisdictionFor(hit('WELLINGTON'), names).jurisdiction, 'Village of Wellington');
+  assert.equal(jurisdictionFor(hit('MIAMI', 'Miami-Dade County'), names).jurisdiction, 'City of Miami');
+  assert.equal(jurisdictionFor(hit('LAKE WORTH'), names).jurisdiction, 'Lake Worth Beach');
+  // New departments have no email yet, like the ones already there.
+  assert.equal(JURISDICTIONS.find((entry) => entry.name === 'Coral Springs').email, '');
+});
