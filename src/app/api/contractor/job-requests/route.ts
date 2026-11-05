@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getContractorForUser } from "@/lib/contractor";
 import { notifyAdmin } from "@/lib/admin-notify";
-import { sendAdminSms } from "@/lib/sms";
 import { sendAdminRequestEmail } from "@/lib/admin-email";
 import { PENDING_REQUEST_SUB } from "@/lib/job-request";
 import { pushJobToPermitAIO } from "@/lib/permitaio-sync";
@@ -164,7 +163,6 @@ export async function POST(req: Request) {
     const company = contractor.company_name || contractor.name || "Contractor";
     const notice = `${company} requested a new job at ${propertyAddress}${tradeType ? ` (${tradeType})` : ""}.`;
     await notifyAdmin("job_request", notice, job.id);
-    await sendAdminSms(`New job — ${company} — ${propertyAddress}`);
 
     const detailTable = `<table style="width:100%;border-collapse:collapse;margin-top:8px;">
       ${row("Contractor", company)}

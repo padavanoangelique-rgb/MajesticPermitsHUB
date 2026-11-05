@@ -2,11 +2,20 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PERMIT_STAGES, canonicalStageTitle, defaultSubStatus, inspectionsAllowed, stageKeyFromTitle, stageTitle, JOB_SUB_STATUSES } from "@/lib/stages";
+// The permit's own steps. Where the work is after approval is the inspection status, set from its own control.
+const PERMIT_STEP_KEYS = ["getting_ready", "submitted", "under_review", "corrections", "approved"];
+const PERMIT_STEPS = PERMIT_STAGES.filter((s) => PERMIT_STEP_KEYS.includes(s.key));
+const PERMIT_SUB_STATUSES = JOB_SUB_STATUSES.filter((s) => !["Complete", "Closed"].includes(s));
+const asPermitStage = (value: string) => {
+  const key = stageKeyFromTitle(value);
+  return key && !PERMIT_STEP_KEYS.includes(key) ? stageTitle("approved") : canonicalStageTitle(value);
+};
+
 export function UpdateStageForm({jobId,currentStage,currentSubStatus,contractor=false}: {
   jobId: string; currentStage: string; currentSubStatus: string; contractor?: boolean;
 }) {
   const router=useRouter();
-  const [stage,setStage]=useState(canonicalStageTitle(currentStage));
+  const [stage,setStage]=useState(asPermitStage(currentStage));
   const [subStatus,setSubStatus]=useState(currentSubStatus || defaultSubStatus(currentStage));
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState("");
@@ -25,10 +34,10 @@ export function UpdateStageForm({jobId,currentStage,currentSubStatus,contractor=
   }
   return <div className="space-y-3">
     <div className="grid gap-3 sm:grid-cols-2">
-      <label className="text-xs font-medium">Permit stage
+      <label className="text-xs font-medium">Permit status
         <select disabled={loading} value={stage} onChange={e=>{setStage(e.target.value);setSubStatus(defaultSubStatus(e.target.value));setSaved(false);}} className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm">
-          {!PERMIT_STAGES.some(s=>s.title===stage) && <option value={stage}>{stage || "Choose stage"}</option>}
-          {PERMIT_STAGES.map(s=><option key={s.key}>{s.title}</option>)}
+          {!PERMIT_STEPS.some(s=>s.title===stage) && <option value={stage}>{stage || "Choose stage"}</option>}
+          {PERMIT_STEPS.map(s=><option key={s.key}>{s.title}</option>)}
         </select>
       </label>
       <label className="text-xs font-medium">Status
@@ -39,8 +48,8 @@ export function UpdateStageForm({jobId,currentStage,currentSubStatus,contractor=
           else if (value === "Complete") setStage(stageTitle("final_passed"));
           else if (value === "Closed") setStage(stageTitle("closed"));
           setSaved(false);}} className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm">
-          {!JOB_SUB_STATUSES.includes(subStatus) && <option>{subStatus}</option>}
-          {JOB_SUB_STATUSES.map(s=><option key={s}>{s}</option>)}
+          {!PERMIT_SUB_STATUSES.includes(subStatus) && <option>{subStatus}</option>}
+          {PERMIT_SUB_STATUSES.map(s=><option key={s}>{s}</option>)}
         </select>
       </label>
     </div>

@@ -26,11 +26,11 @@ export default async function InstallPage() {
   const service = createServiceClient();
   const { data: jobs } = await service
     .from("jobs")
-    .select("id, property_address, stage, permit_number")
+    .select("id, property_address, stage, work_status, permit_number")
     .in("contractor_id", contractor.company_contractor_ids)
     .order("updated_at", { ascending: false });
 
-  const list = (jobs || []) as Array<{ id: string; property_address: string; stage: string | null; permit_number: string | null }>;
+  const list = (jobs || []) as Array<{ id: string; property_address: string; stage: string | null; work_status: string | null; permit_number: string | null }>;
   const rowsByJob = await ensureVisitsForJobs(service, list.map((j) => ({ id: j.id, stage: j.stage })));
 
   const byGroup = new Map<InstallGroup, typeof list>();
@@ -67,7 +67,7 @@ export default async function InstallPage() {
                     const line = lines.get(job.id);
                     return (
                       <li key={job.id} className="rounded-2xl border border-violet-400/25 bg-card/80 p-4">
-                        <JobStatusBar stage={job.stage || ""} flag={line?.flag} />
+                        <JobStatusBar stage={job.stage || ""} workStatus={job.work_status} flag={line?.flag} />
                         <p className="mt-3 font-semibold">{job.property_address}</p>
                         <p className="mt-0.5 text-xs text-muted-foreground">{job.permit_number ? `Permit ${job.permit_number}` : "No permit number yet"}</p>
                         {line && (

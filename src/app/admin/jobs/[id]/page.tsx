@@ -5,6 +5,10 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-guard";
 import { format } from "date-fns";
 import { UpdateStageForm } from "@/components/admin/update-stage-form";
+import { JobStatusBar } from "@/components/contractor/job-status-bar";
+import { WorkStatusControl } from "@/components/work-status-control";
+import { effectiveWorkStatus, permitApproved } from "@/lib/work-status";
+import { stageKeyFromTitle } from "@/lib/stages";
 import { SendQuoteForm } from "@/components/admin/send-quote-form";
 import { HomeownerNoteForm } from "@/components/admin/homeowner-note-form";
 import { AssignContractorForm } from "@/components/admin/assign-contractor-form";
@@ -135,9 +139,7 @@ export default async function JobDetailPage({ params }: PageProps) {
         </div>
 
         <Section title="Current status">
-          <p className="text-lg font-medium text-primary dark:text-primary">
-            {job.stage} · {job.sub_status}
-          </p>
+          <JobStatusBar stage={job.stage || ""} workStatus={job.work_status} />
           {job.permit_eta && (
             <p className="mt-1 text-sm text-primary dark:text-primary">
               ETA: {format(new Date(job.permit_eta), "MMMM d, yyyy")}
@@ -148,6 +150,15 @@ export default async function JobDetailPage({ params }: PageProps) {
               jobId={job.id}
               currentStage={job.stage}
               currentSubStatus={job.sub_status}
+            />
+          </div>
+          <div className="mt-6 border-t border-border pt-4">
+            <p className="mb-2 text-xs text-muted-foreground">The contractor sees this status and can change it too. When they do, you are told.</p>
+            <WorkStatusControl
+              jobId={job.id}
+              role="admin"
+              current={effectiveWorkStatus(stageKeyFromTitle(job.stage), job.work_status)}
+              locked={permitApproved(stageKeyFromTitle(job.stage)) ? null : "The inspection status opens once the permit is approved."}
             />
           </div>
         </Section>
