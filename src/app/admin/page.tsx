@@ -1,3 +1,4 @@
+import { REPORT_VIEWS } from "@/lib/reports";
 import { canonicalStageTitle } from "@/lib/stages";
 import { UpdateStageForm } from "@/components/admin/update-stage-form";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -132,12 +133,25 @@ export default async function AdminPage({ searchParams }: PageProps) {
             >
               Job requests
             </Link>
-            <a
-              href="/api/admin/report"
-              className="text-sm font-medium text-muted-foreground hover:text-primary dark:text-muted-foreground"
-            >
-              Download report
-            </a>
+            <details className="relative">
+              <summary className="cursor-pointer list-none text-sm font-medium text-muted-foreground hover:text-primary dark:text-muted-foreground">
+                Reports
+              </summary>
+              <div className="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-border bg-card p-1 shadow-lg">
+                {REPORT_VIEWS.map((view) => (
+                  <a
+                    key={view.key}
+                    href={`/api/admin/report?view=${view.key}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-lg px-3 py-2 text-sm hover:bg-secondary"
+                  >
+                    {view.label}
+                  </a>
+                ))}
+                <p className="px-3 pb-2 pt-1 text-xs text-muted-foreground">A printable list in jurisdiction order.</p>
+              </div>
+            </details>
             <Link
               href="/admin/new"
               className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary"
