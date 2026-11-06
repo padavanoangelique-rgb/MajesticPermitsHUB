@@ -1,16 +1,10 @@
 import { PDFDocument, StandardFonts, rgb, PDFPage, PDFFont } from "pdf-lib";
 
 const NAVY = rgb(11 / 255, 31 / 255, 63 / 255);
-const GOLD = rgb(201 / 255, 162 / 255, 75 / 255);
 const INK = rgb(20 / 255, 30 / 255, 55 / 255);
 const MUTED = rgb(90 / 255, 100 / 255, 120 / 255);
 const RULE = rgb(220 / 255, 225 / 255, 235 / 255);
-const ROW_ALT = rgb(248 / 255, 249 / 255, 252 / 255);
 
-const PAGE_W = 612; // US Letter
-const PAGE_H = 792;
-const MARGIN = 48;
-const CONTENT_W = PAGE_W - MARGIN * 2;
 
 export interface JobRow {
   property_address: string;
@@ -24,21 +18,8 @@ export interface JobRow {
   building_dept_url?: string | null;
   noc_status?: string | null;
   contractor_company?: string | null;
-}
-
-interface Fonts {
-  regular: PDFFont;
-  bold: PDFFont;
-}
-
-interface Ctx {
-  pdf: PDFDocument;
-  page: PDFPage;
-  fonts: Fonts;
-  y: number;
-  title: string;
-  subtitle: string;
-  brand: "Majestic Permits" | "The Permit Closer";
+  /** The job's status as one line of text, for the list. */
+  status_text?: string | null;
 }
 
 /** Standard PDF fonts only support WinAnsi. Replace anything they can't encode. */
@@ -64,6 +45,15 @@ function fmtDate(iso?: string | null): string {
   } catch {
     return "-";
   }
+}
+
+/** 12/1/26: short enough to stay on one line in a narrow column. Date-only values are read as written, with no time zone. */
+function shortDate(iso?: string | null): string {
+  if (!iso) return "";
+  const plain = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (plain) return `${Number(plain[2])}/${Number(plain[3])}/${plain[1].slice(2)}`;
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? "" : `${date.getMonth() + 1}/${date.getDate()}/${String(date.getFullYear()).slice(2)}`;
 }
 
 function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
@@ -99,458 +89,207 @@ function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): 
   return lines.length ? lines : [""];
 }
 
-function drawHeader(ctx: Ctx) {
-  const { page, fonts } = ctx;
-  // Navy bar
-  page.drawRectangle({
-    x: 0,
-    y: PAGE_H - 90,
-    width: PAGE_W,
-    height: 90,
-    color: NAVY,
-  });
-  // Gold accent stripe
-  page.drawRectangle({
-    x: 0,
-    y: PAGE_H - 96,
-    width: PAGE_W,
-    height: 4,
-    color: GOLD,
-  });
+// ---------- The job list ----------
+//
+// One flat list, one row per job. The status is a column, not a heading. The page is condensed to fit one sheet when
+// it can (the type shrinks a little), and when a list is longer than a sheet it runs on to the next with its column
+// headings repeated and no row split across a page. A box at the start of each row is for ticking the job off.
 
-  page.drawText(sanitize(ctx.brand), {
-    x: MARGIN,
-    y: PAGE_H - 42,
-    size: 20,
-    font: fonts.bold,
-    color: rgb(1, 1, 1),
-  });
-  page.drawText(sanitize(ctx.title), {
-    x: MARGIN,
-    y: PAGE_H - 62,
-    size: 12,
-    font: fonts.regular,
-    color: GOLD,
-  });
-  page.drawText(sanitize(ctx.subtitle), {
-    x: MARGIN,
-    y: PAGE_H - 78,
-    size: 9,
-    font: fonts.regular,
-    color: rgb(0.85, 0.87, 0.93),
-  });
+const MARGIN = 36;
+const FOOTER_H = 22;
+const TITLE_H = 40;
+const HEAD_H = 15;
+const MAX_SIZE = 9;
+const MIN_FIT_SIZE = 7;
+const PAGINATED_SIZE = 8;
 
-  ctx.y = PAGE_H - 96 - 28;
-}
-
-function drawFooter(ctx: Ctx, pageNum: number, totalPages: number) {
-  const { page, fonts } = ctx;
-  page.drawText(
-    sanitize(
-      `Majestic Permits · Confidential · Generated ${fmtDate(new Date().toISOString())}`
-    ),
-    {
-      x: MARGIN,
-      y: 24,
-      size: 8,
-      font: fonts.regular,
-      color: MUTED,
-    }
-  );
-  const pageLabel = `Page ${pageNum} of ${totalPages}`;
-  const w = fonts.regular.widthOfTextAtSize(pageLabel, 8);
-  page.drawText(pageLabel, {
-    x: PAGE_W - MARGIN - w,
-    y: 24,
-    size: 8,
-    font: fonts.regular,
-    color: MUTED,
-  });
-}
-
-function ensureRoom(ctx: Ctx, needed: number) {
-  if (ctx.y - needed >= MARGIN + 40) return;
-  ctx.page = ctx.pdf.addPage([PAGE_W, PAGE_H]);
-  drawHeader(ctx);
-}
-
-function drawSectionTitle(ctx: Ctx, title: string, count: number) {
-  ensureRoom(ctx, 40);
-  const safeTitle = sanitize(title);
-  ctx.page.drawText(safeTitle, {
-    x: MARGIN,
-    y: ctx.y,
-    size: 13,
-    font: ctx.fonts.bold,
-    color: NAVY,
-  });
-  const badge = `${count} ${count === 1 ? "permit" : "permits"}`;
-  const bw = ctx.fonts.regular.widthOfTextAtSize(badge, 9);
-  ctx.page.drawRectangle({
-    x: MARGIN + ctx.fonts.bold.widthOfTextAtSize(safeTitle, 13) + 10,
-    y: ctx.y - 3,
-    width: bw + 12,
-    height: 16,
-    color: rgb(0.94, 0.96, 1),
-  });
-  ctx.page.drawText(badge, {
-    x: MARGIN + ctx.fonts.bold.widthOfTextAtSize(safeTitle, 13) + 16,
-    y: ctx.y + 1,
-    size: 9,
-    font: ctx.fonts.regular,
-    color: NAVY,
-  });
-  ctx.y -= 12;
-  ctx.page.drawLine({
-    start: { x: MARGIN, y: ctx.y },
-    end: { x: PAGE_W - MARGIN, y: ctx.y },
-    thickness: 1,
-    color: GOLD,
-  });
-  ctx.y -= 14;
-}
-
-interface Column {
-  key: keyof JobRow | "index";
+export interface ListColumn {
+  key: keyof JobRow | "index" | "box";
   label: string;
   width: number;
-  isLink?: (row: JobRow) => string | null;
 }
 
-function drawTable(ctx: Ctx, columns: Column[], rows: JobRow[]) {
-  const size = 9;
-  const headerH = 20;
-  const pad = 6;
+export interface JobListOptions {
+  title: string;
+  subtitle: string;
+  columns: ListColumn[];
+  rows: JobRow[];
+  landscape?: boolean;
+  emptyText?: string;
+  /** A heavier line is drawn where this value changes from one row to the next (the jurisdiction, for the admin list). */
+  groupBy?: keyof JobRow;
+}
 
-  // Column headers
-  ensureRoom(ctx, headerH + 30);
-  ctx.page.drawRectangle({
-    x: MARGIN,
-    y: ctx.y - headerH + 5,
-    width: CONTENT_W,
-    height: headerH,
-    color: NAVY,
-  });
-  let x = MARGIN;
-  for (const col of columns) {
-    ctx.page.drawText(sanitize(col.label), {
-      x: x + pad,
-      y: ctx.y - 10,
-      size: 9,
-      font: ctx.fonts.bold,
-      color: rgb(1, 1, 1),
+type Measured = { cells: string[][]; height: number };
+
+function measureRows(opts: JobListOptions, font: PDFFont, size: number): Measured[] {
+  const pad = 4;
+  const leading = size + 1.5;
+  return opts.rows.map((row, index) => {
+    const cells = opts.columns.map((column) => {
+      if (column.key === "box") return [""];
+      if (column.key === "index") return [String(index + 1)];
+      const value = row[column.key];
+      const text = value == null || value === "" ? "-" : String(value);
+      return wrapText(text, font, size, column.width - pad * 2);
     });
-    x += col.width;
+    const lines = Math.max(...cells.map((lines) => lines.length));
+    return { cells, height: lines * leading + 5 };
+  });
+}
+
+/** The biggest type size (down to a readable minimum) at which the whole list fits on one sheet, or null. */
+function sizeThatFits(opts: JobListOptions, font: PDFFont, available: number): number | null {
+  for (let size = MAX_SIZE; size >= MIN_FIT_SIZE - 0.001; size -= 0.5) {
+    const total = measureRows(opts, font, size).reduce((sum, row) => sum + row.height, 0);
+    if (total <= available) return size;
   }
-  ctx.y -= headerH + 4;
-
-  // Rows
-  rows.forEach((row, idx) => {
-    // Compute wrapped lines per column so we know the row height
-    const perColLines: string[][] = columns.map((col) => {
-      // For link cells we only show the clickable label, not the raw URL.
-      if (col.isLink) return [""];
-      let text = "";
-      if (col.key === "index") text = String(idx + 1);
-      else {
-        const v = row[col.key];
-        text = v == null || v === "" ? "-" : String(v);
-      }
-      return wrapText(text, ctx.fonts.regular, size, col.width - pad * 2);
-    });
-    const rowLines = Math.max(...perColLines.map((l) => l.length));
-    const rowH = Math.max(22, rowLines * (size + 3) + pad * 2 - 4);
-
-    ensureRoom(ctx, rowH + 6);
-
-    // Zebra
-    if (idx % 2 === 0) {
-      ctx.page.drawRectangle({
-        x: MARGIN,
-        y: ctx.y - rowH + 4,
-        width: CONTENT_W,
-        height: rowH,
-        color: ROW_ALT,
-      });
-    }
-
-    // Cell contents
-    let cx = MARGIN;
-    columns.forEach((col, colIdx) => {
-      const lines = perColLines[colIdx];
-      let ly = ctx.y - 4;
-      lines.forEach((line) => {
-        ctx.page.drawText(sanitize(line), {
-          x: cx + pad,
-          y: ly,
-          size,
-          font: ctx.fonts.regular,
-          color: INK,
-        });
-        ly -= size + 3;
-      });
-
-      // Building-dept link cell: render just a clickable label, no wrapped URL.
-      if (col.isLink) {
-        const href = col.isLink(row);
-        if (href) {
-          const label = "Open portal ->";
-          const labelY = ctx.y - 4 - Math.floor(rowH / 3);
-          ctx.page.drawText(label, {
-            x: cx + pad,
-            y: labelY,
-            size,
-            font: ctx.fonts.bold,
-            color: GOLD,
-          });
-          const linkY = labelY;
-          const linkW = ctx.fonts.bold.widthOfTextAtSize(label, size);
-          ctx.page.node.addAnnot(
-            ctx.pdf.context.register(
-              ctx.pdf.context.obj({
-                Type: "Annot",
-                Subtype: "Link",
-                Rect: [cx + pad, linkY - 2, cx + pad + linkW, linkY + size + 2],
-                Border: [0, 0, 0],
-                A: {
-                  Type: "Action",
-                  S: "URI",
-                  URI: href,
-                },
-              })
-            )
-          );
-        }
-      }
-      cx += col.width;
-    });
-
-    // Row divider
-    ctx.page.drawLine({
-      start: { x: MARGIN, y: ctx.y - rowH + 4 },
-      end: { x: PAGE_W - MARGIN, y: ctx.y - rowH + 4 },
-      thickness: 0.5,
-      color: RULE,
-    });
-
-    ctx.y -= rowH;
-  });
-
-  ctx.y -= 12;
+  return null;
 }
 
-async function newDoc(
-  title: string,
-  subtitle: string,
-  brand: "Majestic Permits" | "The Permit Closer" = "Majestic Permits"
-): Promise<Ctx> {
+export async function buildJobListPdf(opts: JobListOptions): Promise<Uint8Array> {
+  const pageW = opts.landscape ? 792 : 612;
+  const pageH = opts.landscape ? 612 : 792;
+  const tableW = pageW - MARGIN * 2;
+  const columns = scaleColumns(opts.columns, tableW);
+  const list: JobListOptions = { ...opts, columns };
+
   const pdf = await PDFDocument.create();
-  pdf.setTitle(title);
+  pdf.setTitle(opts.title);
   pdf.setAuthor("Majestic Permits");
   pdf.setCreator("MajesticPermitsHUB");
-  const regular = await pdf.embedFont(StandardFonts.Helvetica);
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
-  const page = pdf.addPage([PAGE_W, PAGE_H]);
-  const ctx: Ctx = {
-    pdf,
-    page,
-    fonts: { regular, bold },
-    y: PAGE_H - MARGIN,
-    title,
-    subtitle,
-    brand,
+
+  const firstTop = pageH - MARGIN - TITLE_H;
+  const bottom = MARGIN + FOOTER_H;
+  const onePage = firstTop - HEAD_H - 6 - bottom;
+  const fitted = sizeThatFits(list, font, onePage);
+  const size = fitted ?? PAGINATED_SIZE;
+  const measured = measureRows(list, font, size);
+
+  let page = pdf.addPage([pageW, pageH]);
+  let y = pageH - MARGIN;
+
+  // Title: text on white, so it prints light.
+  page.drawText(sanitize(opts.title), { x: MARGIN, y: y - 14, size: 15, font: bold, color: NAVY });
+  page.drawText(sanitize(opts.subtitle), { x: MARGIN, y: y - 28, size: 8.5, font, color: MUTED });
+  page.drawLine({ start: { x: MARGIN, y: y - 36 }, end: { x: pageW - MARGIN, y: y - 36 }, thickness: 1.2, color: NAVY });
+  y -= TITLE_H;
+
+  const drawColumnHeads = () => {
+    page.drawRectangle({ x: MARGIN, y: y - HEAD_H + 3, width: tableW, height: HEAD_H, color: rgb(0.93, 0.94, 0.96) });
+    let x = MARGIN;
+    for (const column of columns) {
+      if (column.key !== "box") page.drawText(sanitize(column.label), { x: x + 4, y: y - 8, size: 7.5, font: bold, color: NAVY });
+      x += column.width;
+    }
+    y -= HEAD_H + 3;
   };
-  drawHeader(ctx);
-  return ctx;
-}
+  drawColumnHeads();
 
-async function finalize(ctx: Ctx): Promise<Uint8Array> {
-  const pages = ctx.pdf.getPages();
-  pages.forEach((p, i) => {
-    // Reuse drawFooter using a temp ctx pointer
-    const tempCtx: Ctx = { ...ctx, page: p };
-    drawFooter(tempCtx, i + 1, pages.length);
+  if (!measured.length) {
+    page.drawText(sanitize(opts.emptyText || "Nothing to list."), { x: MARGIN + 4, y: y - 14, size: 10, font: bold, color: NAVY });
+  }
+
+  measured.forEach((row, rowIndex) => {
+    if (y - row.height < bottom) {
+      page = pdf.addPage([pageW, pageH]);
+      y = pageH - MARGIN;
+      drawColumnHeads();
+    }
+    let x = MARGIN;
+    columns.forEach((column, columnIndex) => {
+      if (column.key === "box") {
+        page.drawRectangle({ x: x + 4, y: y - size - 1.5, width: size, height: size, borderColor: INK, borderWidth: 0.7 });
+      } else {
+        let lineY = y - size - 0.5;
+        for (const line of row.cells[columnIndex]) {
+          page.drawText(sanitize(line), { x: x + 4, y: lineY, size, font, color: INK });
+          lineY -= size + 1.5;
+        }
+      }
+      x += column.width;
+    });
+    const group = opts.groupBy;
+    const lastOfGroup = !!group && rowIndex < opts.rows.length - 1 && String(opts.rows[rowIndex][group] || "").trim().toLowerCase() !== String(opts.rows[rowIndex + 1][group] || "").trim().toLowerCase();
+    page.drawLine({
+      start: { x: MARGIN, y: y - row.height + 2 },
+      end: { x: pageW - MARGIN, y: y - row.height + 2 },
+      thickness: lastOfGroup ? 1.1 : 0.4,
+      color: lastOfGroup ? NAVY : RULE,
+    });
+    y -= row.height;
   });
-  return ctx.pdf.save();
+
+  const pages = pdf.getPages();
+  const stamp = fmtDate(new Date().toISOString());
+  pages.forEach((p, i) => {
+    p.drawText(sanitize(`Majestic Permits - Confidential - ${stamp}`), { x: MARGIN, y: MARGIN - 6, size: 7.5, font, color: MUTED });
+    const label = `Page ${i + 1} of ${pages.length}`;
+    p.drawText(label, { x: pageW - MARGIN - font.widthOfTextAtSize(label, 7.5), y: MARGIN - 6, size: 7.5, font, color: MUTED });
+  });
+  return pdf.save();
 }
 
-// ---------- Contractor weekly PDF ----------
+/** Stretch or shrink the columns to the sheet's width, keeping their proportions. */
+function scaleColumns(columns: ListColumn[], width: number): ListColumn[] {
+  const total = columns.reduce((sum, column) => sum + column.width, 0);
+  return columns.map((column) => ({ ...column, width: (column.width / total) * width }));
+}
 
+// ---------- The reports ----------
+
+const todayLong = () =>
+  new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+/** The contractor's weekly list: every open job, its status, and what is needed next. */
 export async function buildContractorWeeklyPdf(opts: {
   contractorName: string;
   jobs: JobRow[];
 }): Promise<Uint8Array> {
-  const today = new Date().toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
+  const count = opts.jobs.length;
+  return buildJobListPdf({
+    title: "Weekly permit status",
+    subtitle: `${opts.contractorName} - ${todayLong()} - ${count} open ${count === 1 ? "permit" : "permits"}`,
+    columns: [
+      { key: "box", label: "", width: 16 },
+      { key: "index", label: "#", width: 20 },
+      { key: "property_address", label: "Property", width: 170 },
+      { key: "status_text", label: "Status", width: 120 },
+      { key: "permit_number", label: "Permit #", width: 66 },
+      { key: "next_step", label: "Next step", width: 126 },
+      { key: "permit_eta", label: "ETA", width: 56 },
+    ],
+    rows: opts.jobs.map((job) => ({ ...job, status_text: job.status_text || job.sub_status || job.stage, permit_eta: shortDate(job.permit_eta) })),
+    emptyText: "No open permits this week.",
   });
-  const ctx = await newDoc(
-    "Weekly permit status",
-    `${opts.contractorName} · ${today} · ${opts.jobs.length} open ${
-      opts.jobs.length === 1 ? "permit" : "permits"
-    }`
-  );
-
-  // Intro paragraph
-  const intro = sanitize(
-    "Here is where each of your open permits stands this week, and the specific next step required to keep it moving. Permits marked complete or closed have been excluded."
-  );
-  const lines = wrapText(intro, ctx.fonts.regular, 10, CONTENT_W);
-  for (const line of lines) {
-    ctx.page.drawText(line, {
-      x: MARGIN,
-      y: ctx.y,
-      size: 10,
-      font: ctx.fonts.regular,
-      color: INK,
-    });
-    ctx.y -= 14;
-  }
-  ctx.y -= 8;
-
-  if (opts.jobs.length === 0) {
-    ctx.page.drawText(sanitize("No open permits this week. Have a great one."), {
-      x: MARGIN,
-      y: ctx.y,
-      size: 11,
-      font: ctx.fonts.bold,
-      color: NAVY,
-    });
-  } else {
-    const columns: Column[] = [
-      { key: "index", label: "#", width: 24 },
-      { key: "property_address", label: "Property", width: 150 },
-      { key: "stage", label: "Stage", width: 90 },
-      { key: "sub_status", label: "Sub-status", width: 70 },
-      { key: "next_step", label: "Next step required", width: 130 },
-      { key: "permit_eta", label: "ETA", width: 52 },
-    ];
-    const rows = opts.jobs.map((j) => ({
-      ...j,
-      permit_eta: fmtDate(j.permit_eta || null),
-    }));
-    drawTable(ctx, columns, rows);
-  }
-
-  return finalize(ctx);
 }
 
-// ---------- Admin weekly PDF ----------
-
-export async function buildAdminWeeklyPdf(opts: {
-  jobsByStage: Record<string, JobRow[]>;
-  stageOrder: string[];
-  totalOpen: number;
-  nocsToRecord: JobRow[];
+/** Majestic's list: the jobs in one flat list, landscape, status as a column, a box to tick each one off. */
+export async function buildAdminListPdf(opts: {
+  title: string;
+  rows: JobRow[];
+  nocCount: number;
 }): Promise<Uint8Array> {
-  const today = new Date().toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-  const ctx = await newDoc(
-    "Admin operations report",
-    `${today} · ${opts.totalOpen} open ${
-      opts.totalOpen === 1 ? "permit" : "permits"
-    } · ${opts.nocsToRecord.length} NOC${
-      opts.nocsToRecord.length === 1 ? "" : "s"
-    } needing attention`
-  );
-
-  // Summary block
-  const boxes = [
-    {
-      label: "Open permits",
-      value: String(opts.totalOpen),
-    },
-    {
-      label: "NOCs pending/submitted",
-      value: String(opts.nocsToRecord.length),
-    },
-    {
-      label: "Stages tracked",
-      value: String(Object.keys(opts.jobsByStage).length),
-    },
-  ];
-  const boxW = (CONTENT_W - 24) / 3;
-  boxes.forEach((b, i) => {
-    const x = MARGIN + i * (boxW + 12);
-    ctx.page.drawRectangle({
-      x,
-      y: ctx.y - 54,
-      width: boxW,
-      height: 54,
-      color: rgb(0.97, 0.98, 1),
-      borderColor: RULE,
-      borderWidth: 1,
-    });
-    ctx.page.drawText(b.value, {
-      x: x + 12,
-      y: ctx.y - 26,
-      size: 20,
-      font: ctx.fonts.bold,
-      color: NAVY,
-    });
-    ctx.page.drawText(b.label, {
-      x: x + 12,
-      y: ctx.y - 44,
-      size: 9,
-      font: ctx.fonts.regular,
-      color: MUTED,
-    });
-  });
-  ctx.y -= 70;
-
-  // NOC section (always show even when empty)
-  drawSectionTitle(ctx, "NOCs needing attention", opts.nocsToRecord.length);
-  if (opts.nocsToRecord.length === 0) {
-    ctx.page.drawText(sanitize("Nothing outstanding. NOCs are current."), {
-      x: MARGIN,
-      y: ctx.y,
-      size: 10,
-      font: ctx.fonts.regular,
-      color: MUTED,
-    });
-    ctx.y -= 20;
-  } else {
-    const columns: Column[] = [
-      { key: "property_address", label: "Property", width: 170 },
-      { key: "contractor_company", label: "Contractor", width: 110 },
-      { key: "noc_status", label: "NOC status", width: 80 },
-      { key: "jurisdiction", label: "Jurisdiction", width: 90 },
-      {
-        key: "building_dept_url",
-        label: "Portal",
-        width: 66,
-        isLink: (r) => r.building_dept_url || null,
-      },
-    ];
-    drawTable(ctx, columns, opts.nocsToRecord);
-  }
-
-  // Per-stage sections
-  for (const stage of opts.stageOrder) {
-    const list = opts.jobsByStage[stage] || [];
-    if (list.length === 0) continue;
-    drawSectionTitle(ctx, stage, list.length);
-    const columns: Column[] = [
-      { key: "index", label: "#", width: 22 },
-      { key: "property_address", label: "Property", width: 140 },
-      { key: "contractor_company", label: "Contractor", width: 90 },
-      { key: "sub_status", label: "Sub-status", width: 65 },
+  const count = opts.rows.length;
+  return buildJobListPdf({
+    title: opts.title,
+    subtitle: `${todayLong()} - ${count} ${count === 1 ? "job" : "jobs"}${opts.nocCount ? ` - ${opts.nocCount} NOC${opts.nocCount === 1 ? "" : "s"} to record` : ""}`,
+    landscape: true,
+    groupBy: "jurisdiction",
+    columns: [
+      { key: "box", label: "", width: 16 },
+      { key: "index", label: "#", width: 20 },
+      { key: "property_address", label: "Property", width: 150 },
+      { key: "contractor_company", label: "Contractor", width: 84 },
+      { key: "jurisdiction", label: "Jurisdiction", width: 104 },
+      { key: "status_text", label: "Status", width: 124 },
+      { key: "permit_number", label: "Permit #", width: 62 },
       { key: "next_step", label: "Next step", width: 110 },
-      { key: "permit_eta", label: "ETA", width: 45 },
-      {
-        key: "building_dept_url",
-        label: "Portal",
-        width: 44,
-        isLink: (r) => r.building_dept_url || null,
-      },
-    ];
-    const rows = list.map((j) => ({ ...j, permit_eta: fmtDate(j.permit_eta || null) }));
-    drawTable(ctx, columns, rows);
-  }
-
-  return finalize(ctx);
+      { key: "permit_eta", label: "ETA", width: 50 },
+    ],
+    rows: opts.rows.map((job) => ({ ...job, permit_eta: shortDate(job.permit_eta) })),
+    emptyText: "No jobs match this report.",
+  });
 }

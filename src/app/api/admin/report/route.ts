@@ -1,24 +1,24 @@
 import { NextResponse } from "next/server";
-import { buildAdminReport } from "@/lib/reports";
+import { buildAdminReport, isReportView } from "@/lib/reports";
 
 export const dynamic = "force-dynamic";
 
 /**
- * On-demand admin report download.
- * Admin auth is enforced by middleware — this is behind /api/admin/*.
+ * On-demand admin report download. `?view=` picks the jobs: all (default), need_submit, in_review, approved,
+ * inspections or noc. Admin auth is enforced by middleware, since this is behind /api/admin/*.
  */
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const { pdf } = await buildAdminReport();
-    const filename = `majestic-admin-report-${new Date()
-      .toISOString()
-      .slice(0, 10)}.pdf`;
+    const requested = new URL(req.url).searchParams.get("view");
+    const view = isReportView(requested) ? requested : "all";
+    const { pdf } = await buildAdminReport(view);
+    const filename = `majestic-${view.replace(/_/g, "-")}-jobs-${new Date().toISOString().slice(0, 10)}.pdf`;
 
     return new NextResponse(Buffer.from(pdf), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Disposition": `inline; filename="${filename}"`,
         "Cache-Control": "no-store",
       },
     });

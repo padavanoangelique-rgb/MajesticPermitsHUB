@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { isAuthorizedCron } from "@/lib/cron-auth";
 import { getResend, FROM_EMAIL, weeklyReportEmail } from "@/lib/email";
 import { buildContractorWeeklyPdf, JobRow } from "@/lib/pdf";
+import { jobStatusText } from "@/lib/reports";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -35,14 +36,14 @@ export async function GET(req: Request) {
     const { data: jobs } = await supabase
       .from("jobs")
       .select(
-        "property_address, homeowner_name, stage, sub_status, next_step, permit_number, permit_eta, jurisdiction, building_dept_url"
+        "property_address, homeowner_name, stage, work_status, sub_status, next_step, permit_number, permit_eta, jurisdiction, building_dept_url, noc_status"
       )
       .eq("contractor_id", contractor.id)
       .order("updated_at", { ascending: false });
 
-    const openJobs = (jobs || []).filter(
-      (j) => !CLOSED_STAGES.includes(j.stage || "")
-    ) as JobRow[];
+    const openJobs = (jobs || [])
+      .filter((j) => !CLOSED_STAGES.includes(j.stage || ""))
+      .map((j) => ({ ...j, status_text: jobStatusText(j) })) as JobRow[];
 
     if (openJobs.length === 0) continue;
 
